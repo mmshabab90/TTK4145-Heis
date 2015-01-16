@@ -1,6 +1,9 @@
 #include <pthread.h>
 #include <stdio.h>
 
+void thread_1_foo(void);
+void thread_2_foo(void);
+
 int main(void)
 {
 	static int i = 0;
