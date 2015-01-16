@@ -14,7 +14,7 @@ int main(void)
 	pthread_join(thread_1, NULL);
 	pthread_join(thread_2, NULL);
 
-	printf("%d\n", i);
+	printf("%d\n Oyvind sugar", i);
 
 	return 0;
 }
