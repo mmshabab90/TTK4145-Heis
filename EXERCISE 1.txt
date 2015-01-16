@@ -16,9 +16,6 @@ Coroutines are routines that can run for a while, then return control to another
 
 pthread_thread(), threading.Thread() and go make new threads.
 
-<<<<<<< HEAD
-=======
 When there are several tasks that should or can be executes in parallel, concurrent programming lets you code the parts separately. However, it requres the programmer to keep track of parallel processes.
 
 Hei her har Erik rotet
->>>>>>> origin/master
