@@ -1,6 +1,9 @@
 #include <pthread.h>
 #include <stdio.h>
 
+void thread_1_foo(void);
+void thread_2_foo(void);
+
 int main(void)
 {
 	static int i = 0;
@@ -21,6 +24,7 @@ int main(void)
 
 void thread_1_foo(void)
 {
+	static int i;
 	for (int j = 0; j < 1000000; ++j)
 	{
 		i++;
@@ -29,6 +33,7 @@ void thread_1_foo(void)
 
 void thread_2_foo(void)
 {
+	static int i;
 	for (int j = 0; j < 1000000; ++j)
 	{
 		i--;
