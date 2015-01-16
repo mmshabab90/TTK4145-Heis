@@ -24,6 +24,8 @@ int main(void)
 
 void thread_1_foo(void)
 {
+	static int i;
+
 	for (int j = 0; j < 1000000; ++j)
 	{
 		i++;
@@ -32,6 +34,8 @@ void thread_1_foo(void)
 
 void thread_2_foo(void)
 {
+	static int i;
+	
 	for (int j = 0; j < 1000000; ++j)
 	{
 		i--;
