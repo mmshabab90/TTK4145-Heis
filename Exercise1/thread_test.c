@@ -1,8 +1,8 @@
 #include <pthread.h>
 #include <stdio.h>
 
-void increase(void);
-void decrease(void);
+void * increase(void);
+void * decrease(void);
 
 int main(void)
 {
