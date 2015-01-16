@@ -2,28 +2,28 @@ from threading import Thread
 
 i = 0
 
-def main():
-	thread1 = Thread(target = thread1foo, args = (),)
-	thread1.start()
+def increase():
+	global i
 
-	thread2 = Thread(target = thread2foo, args = (),)
+	for j in range(1000000):
+		i += 1
+
+def decrease():
+	global i
+
+	for j in range(1000000):
+		i -= 1
+
+def main():
+	thread1 = Thread(target = increase, args = (),)
+	thread2 = Thread(target = decrease, args = (),)
+	
+	thread1.start()
 	thread2.start()
 
 	thread1.join()
 	thread2.join()
 
 	print i
-
-def thread1foo():
-	global i
-
-	for j in range(1000000):
-		i += 1
-
-def thread2foo():
-	global i
-
-	for j in range(1000000):
-		i -= 1
 
 main()
