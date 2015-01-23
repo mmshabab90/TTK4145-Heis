@@ -12,13 +12,13 @@ var(
 ) 
 
 func thread1foo(){
-	for j := 0; j < 1000000; j++{
+	for j := 0; j < 10000; j++{
 		i++
 	}
 }
 
 func thread2foo(){
-	for j := 0; j < 1000000; j++{
+	for j := 0; j < 10000; j++{
 		i--
 	}
 }

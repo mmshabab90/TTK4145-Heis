@@ -5,10 +5,10 @@
 void * increase(void);
 void * decrease(void);
 
-int i = 0;
 
 int main(void)
 {
+	static int i = 10;
 
 	pthread_t thread_1;
 	pthread_t thread_2;
@@ -26,6 +26,7 @@ int main(void)
 
 void * increase(void)
 {
+	static int i;
 
 	for (int j = 0; j < 1000000; ++j)
 	{
@@ -35,6 +36,7 @@ void * increase(void)
 
 void * decrease(void)
 {
+	static int i;
 
 	for (int j = 0; j < 1000000; ++j)
 	{

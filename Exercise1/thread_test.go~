@@ -7,23 +7,21 @@ import(
 	"time"
 )
 
-var(
-	i int = 0
-) 
-
 func thread1foo(){
-	for j := 0; j < 1000000; j++{
+	for j := 0; j < 10000; j++{
 		i++
 	}
 }
 
 func thread2foo(){
-	for j := 0; j < 1000000; j++{
+	for j := 0; j < 10000; j++{
 		i--
 	}
 }
 
 func main() {
+
+	int i = 0
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -31,7 +29,7 @@ func main() {
 
 	go thread2foo()
 
-	time.Sleep(100*time.Millisecond)
+	time.sleep(100*time.Millisecond)
 	
 	Println(i)
 }
