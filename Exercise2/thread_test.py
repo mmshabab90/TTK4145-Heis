@@ -1,6 +1,6 @@
 import threading
 
-i = 7
+i = 0
 lock = threading.Lock()
 
 def increase():
