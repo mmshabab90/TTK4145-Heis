@@ -1,0 +1,7 @@
+EXERCISE 2
+
+Theory:
+Atomic operation: An operation that is executed in its entirety without other parallel execution threads affecting it.
+Semaphore: A variable that controls access by parallel processes to a shared resource.
+Mutex / mutual exclusion: Making sure that no concurrent processes access shared resources at the same time.
+Critical section: Parts of code that access a shared resource (that should not be accessed by more than one thread at a time).
