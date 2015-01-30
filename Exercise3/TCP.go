@@ -1,6 +1,3 @@
-// First: Connect to TCP server
-// Port 33546 for 0-terminated messages.
-
 package main
 
 import(
@@ -10,8 +7,6 @@ import(
 )
 
 func main() {
-	//laddr, err := net.ResolveTCPAddr("tcp", nil)
-	//if err != nil {log.Fatal(err)}
 
 	raddr, err := net.ResolveTCPAddr("tcp", "129.241.187.136:33546")
 	if err != nil {log.Fatal(err)}
