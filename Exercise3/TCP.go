@@ -7,7 +7,7 @@ import(
 )
 
 //forferdelig funksjonsnavn
-func connect_to_server(socket *net.TCPConn, doneChannel chan bool) {
+func ReadFromWriteTo(socket *net.TCPConn, doneChannel chan bool) {
 	var buffer[1024] byte
 	var msg = "I am the walrus\x00"
 	for {
@@ -24,7 +24,6 @@ func connect_to_server(socket *net.TCPConn, doneChannel chan bool) {
 		time.Sleep(2000*time.Millisecond)
 	}
 	doneChannel <- true
-	
 }
 
 //forferdelig funksjonsnavn
@@ -75,9 +74,8 @@ func main() {
 	
 	doneChannel := make(chan bool, 1);
 	
-	go connect_to_server(socket, doneChannel)
+	go ReadFromWriteTo(socket, doneChannel)
 	go accept_connection(socket_connect, doneChannel)
 	
 	<- doneChannel
-	
 }
