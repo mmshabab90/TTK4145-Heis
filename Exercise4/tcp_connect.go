@@ -6,11 +6,18 @@ import(
 	"strings"
 	"strconv"
 	"log"
-	//"net"
+	"net"
 )
 
+var _ = net.ParseIP // For debugging; delete when done.
+var _ = strconv.ParseInt // For debugging; delete when done.
+
 func ConnectToSlavesByTcp(ipAddresses []string) {
-	// ! validIpList(ipAddresses) -> error!
+	for i := 0; i < len(ipAddresses); i++ {
+		if !isValidPaddedIp(ipAddresses[i]) {
+			log.Fatalf("IP adress %s is not valid!", ipAddresses[i])
+		}
+	}
 	
 	sort.Strings(ipAddresses)
 	if !sort.StringsAreSorted(ipAddresses) {log.Fatal("IP addresses not sorted!")}
@@ -27,20 +34,14 @@ func ConnectToSlavesByTcp(ipAddresses []string) {
 	}
 }
 
-func sortIpsAscending(ipAddresses []string) []string {
-	var ipByte4 int
-	for i := 0; i < len(ipAddresses); i++ {
-		ipByte4 = get4thIpByte(ipAddresses[i])
-		fmt.Println(ipByte4)
-	}
-
-	return ipAddresses
-}
-
 func padIpAddress(ipAddress string) string {
-	// check valid ip
+	index := strings.Index(ipAddress, ":")
+	ipAddress = ipAddress[:index]
+	
+	if net.ParseIP(ipAddress) == nil {log.Fatalf("IP address %s not valid!", ipAddress)}
+
 	var paddedIp string
-	var index int
+	
 	for i := 0; i < 3; i++ {
 		index = strings.Index(ipAddress, ".")
 		if index == 1 {
@@ -49,31 +50,43 @@ func padIpAddress(ipAddress string) string {
 		} else if index == 2 {
 			paddedIp += "0" + ipAddress[:3]
 			ipAddress = ipAddress[3:]
+		} else if index == 3 {
+			paddedIp += ipAddress[:4]
+			ipAddress = ipAddress[4:]
 		}
 	}
 
-	index = strings.Index(ipAddress, ":")
-	if index == 1 {
-			paddedIp += "00" + ipAddress[:1]
-		} else if index == 2 {
-			paddedIp += "0" + ipAddress[:2]
+	if len(ipAddress) == 1 {
+		paddedIp += "00" + ipAddress[:1]
+	} else if len(ipAddress) == 2 {
+		paddedIp += "0" + ipAddress[:2]
+	} else if len(ipAddress) == 3 {
+		paddedIp += ipAddress[:3]
 	}
 
-
 	return paddedIp
-
-	// for hver av de fire segmentene:
-		// stapp inn riktig antall nuller (index-3)
 }
 
-func get4thIpByte(ipAddress string) int {
-	loIndex := strings.LastIndex(ipAddress, ".")
-	hiIndex := strings.Index(ipAddress, ":")
+func isValidPaddedIp(ipAddress string) bool {
+	// use net.ParseIP to validate unpadded IPs
+	if len(ipAddress) != 15 {
+		return false
+	}
 
-	parsedInt, err := strconv.ParseInt(ipAddress[loIndex+1:hiIndex], 10, 0)
-	if err != nil {log.Fatal(err)}
+	for i := 3; i < 12; i += 4 {
+		if ipAddress[i] != '.' {
+			return false
+		}
+	}
 
-	return int(parsedInt)
+	for i := 0; i < 4; i++ {
+		parsedInt, err := strconv.ParseInt(ipAddress[4*i+0:4*i+3], 10, 0)
+		if err != nil {log.Fatal(err)}
+		if parsedInt < 0 || parsedInt > 256 {
+			return false
+		}
+	}
+	return true
 }
 
 func main() {
@@ -82,7 +95,14 @@ func main() {
 					   "129.241.187.225:3687",
 					   "129.2.187.79:10784",
 					   "29.37.187.0:41634"}
-	for i := 
-	fmt.Println(padIpAddress(rawIps[0]))
 
+	var parsedIps []string
+
+	for i := 0; i < len(rawIps); i++ {
+		parsedIps = append(parsedIps, padIpAddress(rawIps[i]))
+	}
+
+	for i := 0; i < 1; i++ {
+		fmt.Println(isValidPaddedIp(parsedIps[i]))
+	}
 }
