@@ -1,4 +1,4 @@
-package driver
+package elev_driver
 /*
 #cgo LDFLAGS: -lcomedi -lm 
 #include "io.h"
@@ -10,7 +10,7 @@ func Io_init() bool {
 }
 
 func Io_set_bit(channel int){
-	C.io_set_bit(C.int(channel)
+	C.io_set_bit(C.int(channel))
 }
 
 func Io_clear_bit(channel int){
