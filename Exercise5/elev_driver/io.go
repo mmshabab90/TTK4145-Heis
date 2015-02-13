@@ -6,7 +6,7 @@ package elev_driver
 import "C"
 
 func Io_init() bool {
-	return bool(C.io_init())
+	return bool(int(C.io_init()))
 }
 
 func Io_set_bit(channel int){
@@ -21,7 +21,7 @@ func Io_write_analog(channel int, value int){
 	C.io_write_analog(C.int(channel), C.int(value))
 }
 
-func Io_read_bit(channel int){
+func Io_read_bit(channel int) int{
 	return int(C.io_read_bit(C.int(channel)))
 }
 
