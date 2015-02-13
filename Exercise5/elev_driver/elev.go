@@ -150,7 +150,7 @@ func Elev_get_button_signal(button Elev_button_type_t, floor int) int {
 	}
 }
 
-func Elev_set_button_lamp(button Elev_button_type_t, floor int) {
+func Elev_set_button_lamp(button Elev_button_type_t, floor int, value int) {
 	if floor < 0 {log.Fatalf("Floor number %s is negative!", floor)}
 	if floor >= N_FLOORS {log.Fatalf("Floor number %s is above top floor!", floor)}
 	if button == BUTTON_CALL_UP && floor == N_FLOORS - 1 {log.Fatal("Button up from top floor does not exist!")}
