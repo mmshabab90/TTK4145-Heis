@@ -50,18 +50,18 @@ func Elev_init() int {
 	// Zero all floor button lamps
 	for i := 0; i < N_FLOORS; i++ {
 		if i != 0 {
-			Elev_set_button_lamp(BUTTON_CALL_DOWN, i, 0)
+			Elev_set_button_lamp(BUTTON_CALL_DOWN, i, false)
 		}
 		if i != N_FLOORS -1 {
-			Elev_set_button_lamp(BUTTON_CALL_UP, i, 0)
+			Elev_set_button_lamp(BUTTON_CALL_UP, i, false)
 		}
-		Elev_set_button_lamp(BUTTON_COMMAND, i, 0)
+		Elev_set_button_lamp(BUTTON_COMMAND, i, false)
 	}
 
 	// Clear stop lamp, door open lamp,
 	// and set floor indicator to ground floor.
-	Elev_set_stop_lamp(0)
-	Elev_set_door_open_lamp(0)
+	Elev_set_stop_lamp(false)
+	Elev_set_door_open_lamp(false)
 	Elev_set_floor_indicator(0)
 
 	// Return success.
@@ -123,13 +123,13 @@ func Elev_set_floor_indicator(floor int) {
 	if floor >= N_FLOORS {log.Fatalf("Floor number %s is above top floor!", floor)}
 
 	// Binary encoding. One light must always be on.
-	if floor & 0x02 {
+	if floor & 0x02 > 0 {
 		Io_set_bit(LIGHT_FLOOR_IND1)
 	} else {
 		Io_clear_bit(LIGHT_FLOOR_IND1)
 	}
 
-	if floor & 0x01 {
+	if floor & 0x01 > 0 {
 		Io_set_bit(LIGHT_FLOOR_IND2)
 	} else {
 		Io_clear_bit(LIGHT_FLOOR_IND2)
@@ -144,9 +144,9 @@ func Elev_get_button_signal(button Elev_button_type_t, floor int) bool {
 	if button != BUTTON_CALL_UP && button != BUTTON_CALL_DOWN && button != BUTTON_COMMAND {log.Fatalf("Invalid button %s", button)}
 
 	if (Io_read_bit(button_channel_matrix[floor][button])) {
-		return 1
+		return true
 	} else {
-		return 0
+		return false
 	}
 }
 
