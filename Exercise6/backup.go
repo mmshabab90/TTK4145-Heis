@@ -42,10 +42,11 @@ func backup(listenChan chan int){
 			break
 		}	
 	}
+	
 	log.Println(backupvalue);
 }
 
-func listen(listenChan chan int) bool {
+func listen(listenChan chan int) {
 	udpAddr, err := net.ResolveUDPAddr("udp", ":20014")
 	if err != nil {log.Fatal(err)}
 
@@ -60,7 +61,7 @@ func listen(listenChan chan int) bool {
 		_, _, err := udpListen.ReadFromUDP(buffer[:])
 		if err != nil {log.Fatal(err)} 
 		
-		listenChan <- int(binary.LittleEndian.Uint64(buffer))
+		listenChan <- int(binary.LittleEndian.Uint64(buffer)) //convert an bytearray to int
 		time.Sleep(100*time.Millisecond)
 	}
 }
@@ -68,4 +69,6 @@ func listen(listenChan chan int) bool {
 func main() {
 	listenChan := make(chan int, 1);
 	backup(listenChan)
+	go backup(listenChan)
+	primary()
 }
