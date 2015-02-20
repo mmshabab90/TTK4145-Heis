@@ -6,7 +6,7 @@ import(
 	"time"
 )
 
-func broadcastUdp() {
+func primary(start int) {
 	udpAddr, err := net.ResolveUDPAddr("udp","129.241.187.255:20014")
 	if err != nil {log.Fatal(err)}
 
@@ -15,18 +15,18 @@ func broadcastUdp() {
 
 	defer udpBroadcast.Close()
 	
-	msg := make([]byte, 1)
+	msg := make([]byte, 8)
 	
-	for i := 1;; i++{
+	for i := start;; i++{
 		log.Println(i)
 		msg[0] = byte(i);
 		udpBroadcast.Write(msg)
-		time.Sleep(200*time.Millisecond)
+		time.Sleep(50*time.Millisecond)
 	}
 }
 
 func main() {
-	broadcastUdp()
+	primary(1)
 }
 
 
