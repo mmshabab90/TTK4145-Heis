@@ -7,12 +7,29 @@ import (
 
 type State_t int
 
-const (
-	IDLE State_t = iota
-	RUNNING
-	OPENDOOR
-	STOPPED
+type elevator_state struct (
+	floor int
+	currentDirection Elev_motor_direction_t
 )
+
+// const (
+// 	IDLE State_t = iota
+// 	RUNNING
+// 	OPENDOOR
+// 	STOPPED
+// )
+
+func idle() State_t {
+
+}
+
+func fsm_run() {
+	for state := idle; state != nil; {
+		state = state()
+	}
+}
+
+func 
 
 func EventHandler(){
 	for {
