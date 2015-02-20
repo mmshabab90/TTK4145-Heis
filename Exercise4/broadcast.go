@@ -30,7 +30,7 @@ func listenUdp(port string, ipListChannel chan []string){
 
 	defer udpListen.Close()
 
-	ipList := make([]string ,0)
+	ipList := make([]string, 0)
 	var buffer[1024]byte
 
 	timer := make(chan bool, 1)
