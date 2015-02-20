@@ -19,9 +19,9 @@ func broadcastUdp() {
 	
 	for i := 1;; i++{
 		log.Println(i)
-		msg = byte(i);
+		msg[0] = byte(i);
 		udpBroadcast.Write(msg)
-		time.Sleep(50*time.Millisecond)
+		time.Sleep(200*time.Millisecond)
 	}
 }
 
