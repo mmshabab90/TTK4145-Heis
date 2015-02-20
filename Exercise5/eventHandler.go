@@ -20,7 +20,7 @@ type elevator_state struct (
 // )
 
 func idle() State_t {
-
+	
 }
 
 func fsm_run() {
