@@ -68,7 +68,7 @@ func ShouldStop(floor int, direction Elev_motor_direction_t) bool {
 	}
 }
 
-func RemoveOrder(floor int) {
+func RemoveOrdersAt(floor int) {
 	for b := 0; b < N_BUTTONS; b++ {
 		orders[floor][b] = false;
 	}
@@ -118,7 +118,6 @@ func isAnyOrders() bool {
 	}
 	return false
 }
-
 
 func main() {
 }
