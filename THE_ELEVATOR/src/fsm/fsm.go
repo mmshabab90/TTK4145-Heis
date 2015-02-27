@@ -16,8 +16,6 @@ const (
 	IDLE State_t = iota
 	DOOROPEN
 	MOVING
-	EMERGENCY
-	STOPPEDBETWEENFLOORS
 )
 
 var		state			State_t
@@ -39,7 +37,7 @@ func syncLights() {
 	}
 }
 
-func Fsm_init() {
+func Init() {
 	state = IDLE
 	direction = DIRN_STOP
 	floor = -1
@@ -47,14 +45,69 @@ func Fsm_init() {
 	Orders_removeAll()
 }
 
-func Fsm_eventButtonPressed(floor int, button Elev_button_type_t) {
+func EventButtonPressed(buttonFloor int, buttonType Elev_button_type_t) {
 	switch state {
 		case IDLE:
-			orders.AddOrder(floor, button)
+			orders.AddOrder(buttonFloor, buttonType)
 			direction = orders.ChooseDirection(floor, direction)
 			if direction == DIRN_STOP {
-				
+				driver.SetDoorOpenLamp(true)
+				orders.RemoveOrdersAt(floor)
+				// timer.Start(doorOpenTime)
+				state = DOOROPEN
+			} else {
+				driver.SetMotorDirection(direction)
+				state = MOVING
+				departDirection = direction
 			}
+		case DOOROPEN:
+			if floor == buttonFloor {
+				// timer.Start(doorOpenTime)
+			} else {
+				orders.AddOrder(buttonFloor, buttonType)
+			}
+		case MOVING:
+			orders.AddOrder(buttonFloor, buttonType)
+		default:
+			// log error invalid state
+	}
+	syncLights()
+}
+
+func EventArrivedAtFloor(newFloor int) {
+	floor = newFloor
+	driver.SetFloorIndicator(floor)
+	switch state {
+	case MOVING:
+		if orders.ShouldStop(floor, direction) {
+			driver.SetMotorDirection(DIRN_STOP)
+			driver.SetDoorOpenLamp(true)
+			orders.RemoveOrdersAt(floor)
+			// timer.Start(doorOpenTime)
+			syncLights()
+			state = DOOROPEN
+		} else {
+			departDirection = direction
+		}
+	default:
+		// log error makes no sense to arrive at floor in state <state>
+	}
+}
+
+func EventTimerTimeOut() {
+	switch state {
+	case DOOROPEN:
+		direction = orders.ChooseDirection(floor, direction)
+		driver.SetDoorOpenLamp(false)
+		driver.SetMotorDirection(direction)
+		if direction == DIRN_STOP {
+			state = IDLE
+		} else {
+			state = MOVING
+			departDirection = direction
+		}
+	default:
+		// makes no sense
 	}
 }
 
