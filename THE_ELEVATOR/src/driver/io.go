@@ -1,4 +1,4 @@
-package elev_driver
+package driver
 /*
 #cgo LDFLAGS: -lcomedi -lm 
 #include "io.h"
