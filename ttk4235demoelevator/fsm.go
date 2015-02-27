@@ -50,7 +50,11 @@ func Fsm_init() {
 func Fsm_eventButtonPressed(floor int, button Elev_button_type_t) {
 	switch state {
 		case IDLE:
-			Orders_addOrder
+			orders.AddOrder(floor, button)
+			direction = orders.ChooseDirection(floor, direction)
+			if direction == DIRN_STOP {
+				
+			}
 	}
 }
 
