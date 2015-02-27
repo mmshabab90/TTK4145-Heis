@@ -1,5 +1,3 @@
-//testprogram for elev.go
-
 package main
 
 import (
@@ -7,49 +5,78 @@ import (
 	"log"
 )
 
+type State_t int
+
+type elevator_state struct (
+	floor int
+	currentDirection Elev_motor_direction_t
+)
+
+// const (
+// 	IDLE State_t = iota
+// 	RUNNING
+// 	OPENDOOR
+// 	STOPPED
+// )
+
+// func fsm_run() {
+// 	for state := idle; state != nil; {
+// 		state = state()
+// 	}
+// }
+
 func main(){
-	driver.Elev_init()
-	driver.Elev_set_motor_direction(driver.DIRN_UP)
-	
-	log.Println(driver.DIRN_STOP)
-	
-	for{
-		floor := driver.Elev_get_floor_sensor_signal()
-		stop := driver.Elev_get_stop_signal()
-		obstr := driver.Elev_get_obstruction_signal()
-		if floor == 3 {
-			driver.Elev_set_floor_indicator(floor)
-			driver.Elev_set_motor_direction(driver.DIRN_DOWN)
-			for j:= driver.BUTTON_CALL_DOWN; j < 3; j++ {
-				driver.Elev_set_button_lamp(j, floor, false)
-			}
-		} else if floor == 0 {
-			driver.Elev_set_floor_indicator(floor)
-			driver.Elev_set_motor_direction(driver.DIRN_UP)
-			for j:= driver.BUTTON_CALL_UP; j < 3; j++ {
-				if j == driver.BUTTON_CALL_DOWN{continue}
-				driver.Elev_set_button_lamp(j, floor, false)
-			}
-		} else if floor != -1 {
-			driver.Elev_set_floor_indicator(floor)
-			for j:= driver.BUTTON_CALL_UP; j < 3; j++ {
-				driver.Elev_set_button_lamp(j, floor, false)
-			}
+
+	init()
+
+	for {
+		if Elev_get_stop_signal() {
+			// Worry about stop signal.
 		}
-		for j:= driver.BUTTON_CALL_UP; j < 3; j++ {
-			for i:=0; i < 4; i++{
-				if i == 3 && j == driver.BUTTON_CALL_UP{continue}
-				if i == 0 && j == driver.BUTTON_CALL_DOWN{continue}
-				button := driver.Elev_get_button_signal(j, i)
-				if button {
-					driver.Elev_set_button_lamp(j, i, button)
+
+		for button := 0; button < N_BUTTONS; button++ {
+			for floor := 0; floor < N_FLOORS; floor++ {
+				if isValidOrderButton(button, floor) {
+					// Worry about button.
+				} else {
+					continue
 				}
 			}
 		}
-		driver.Elev_set_stop_lamp(stop)
-		driver.Elev_set_door_open_lamp(obstr)
-		if(stop){
-			driver.Elev_set_motor_direction(driver.DIRN_STOP)
+
+		if Elev_get_floor_sensor_signal() != -1 {
+			// Worry about reaching a floor.
 		}
 	}
+}
+
+func init(){
+	if !Elev_init() {
+		log.Fatal("Elev_init error!\n")
+	}
+	
+	Elev_set_speed(-300)
+	for{
+		floor := Elev_get_floor_sensor_signal()
+		if floor != -1{
+		
+		}
+	}
+}
+
+func isValidOrderButton(button Elev_button_type_t, floor int) {
+	if floor >= N_FLOORS {
+		return false
+	} else if floor < 0 {
+		return false
+	} else if floor == 0 && button == BUTTON_CALL_DOWN {
+		return false
+	} else if floor == N_FLOORS - 1 && button == BUTTON_CALL_UP {
+		return false
+	} else if button != BUTTON_CALL_UP &&
+	button != BUTTON_CALL_DOWN &&
+	button != BUTTON_COMMAND {
+		return false
+	}
+	return true
 }
