@@ -1,27 +1,9 @@
 package main
 
 import (
-	"log"
 	"./driver"
+	"log"
 )
-
-// THESE ARE IN THE DRIVER; REMOVE FROM THIS FILE
-// AFTER DRIVER IS IMPORTED
-const N_BUTTONS = 3
-const N_FLOORS  = 4
-type Elev_button_type_t int
-type Elev_motor_direction_t int
-const (
-	DIRN_DOWN Elev_motor_direction_t = -1
-	DIRN_STOP Elev_motor_direction_t  = 0
-	DIRN_UP Elev_motor_direction_t = 1
-)
-const (
-	BUTTON_CALL_UP Elev_button_type_t = iota
-	BUTTON_CALL_DOWN
-	BUTTON_COMMAND
-)
-/////////////////////////////////////////////////
 
 var orders = [N_FLOORS][N_BUTTONS] bool {
 	{false, false, false},
