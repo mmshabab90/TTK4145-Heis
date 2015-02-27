@@ -20,6 +20,11 @@ procedure exercise7 is
         begin
             ------------------------------------------
             -- PART 3: Complete the exit protocol here
+            Should_Commit := not Aborted;
+            Finished_Gate_Open := Finished'Count /= 0;
+            if not Finished_Gate_Open then
+                Aborted := False;
+            end if;
             ------------------------------------------
         end Finished;
 
