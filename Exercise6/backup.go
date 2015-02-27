@@ -37,7 +37,7 @@ func backup(udpListen *net.UDPConn) int{
 			case <-time.After(1*time.Second):
 				log.Println("The primary is dead, long live the primary")
 				return backupvalue
-		
+		}
 	}
 	
 	
