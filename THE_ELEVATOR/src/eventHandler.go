@@ -1,6 +1,7 @@
-package driver
+package main
 
 import (
+	"./driver"
 	"log"
 )
 
@@ -30,7 +31,7 @@ func fsm_run() {
 
 func 
 
-func EventHandler(){
+func main(){
 	for {
 		if Elev_get_stop_signal() {
 			// Worry about stop signal.
