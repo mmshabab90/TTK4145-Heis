@@ -65,10 +65,17 @@ procedure exercise7 is
             Put_Line ("Worker" & Integer'Image(Initial) & " started round" & Integer'Image(Round_Num));
             Round_Num := Round_Num + 1;
 
-            ---------------------------------------
-            -- PART 2: Do the transaction work here             
-            ---------------------------------------
-            
+            -------------------------------------------
+            -- PART 2: Do the transaction work here
+            begin
+                Num = Unreliable_Slow_Add(Prev);
+            exception
+                when Count_Failed =>
+                    Manager.Signal_Abort;
+            end
+            Manager.Finished;
+            -------------------------------------------
+
             if Manager.Commit = True then
                 Put_Line ("  Worker" & Integer'Image(Initial) & " comitting" & Integer'Image(Num));
             else
@@ -77,6 +84,7 @@ procedure exercise7 is
                              " to" & Integer'Image(Prev));
                 -------------------------------------------
                 -- PART 2: Roll back to previous value here
+                Num := Prev;
                 -------------------------------------------
             end if;
 
