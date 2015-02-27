@@ -41,7 +41,7 @@ var button_channel_matrix = [N_FLOORS][N_BUTTONS] int {
 	{BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 }
 
-func Elev_init() int {
+func Init() int {
 	// Init hardware
 	if !Io_init() {
 		return 0
@@ -50,25 +50,25 @@ func Elev_init() int {
 	// Zero all floor button lamps
 	for i := 0; i < N_FLOORS; i++ {
 		if i != 0 {
-			Elev_set_button_lamp(BUTTON_CALL_DOWN, i, false)
+			SetButtonLamp(BUTTON_CALL_DOWN, i, false)
 		}
 		if i != N_FLOORS -1 {
-			Elev_set_button_lamp(BUTTON_CALL_UP, i, false)
+			SetButtonLamp(BUTTON_CALL_UP, i, false)
 		}
-		Elev_set_button_lamp(BUTTON_COMMAND, i, false)
+		SetButtonLamp(BUTTON_COMMAND, i, false)
 	}
 
 	// Clear stop lamp, door open lamp,
 	// and set floor indicator to ground floor.
-	Elev_set_stop_lamp(false)
-	Elev_set_door_open_lamp(false)
-	Elev_set_floor_indicator(0)
+	SetStopLamp(false)
+	SetDoorOpenLamp(false)
+	SetFloorIndicator(0)
 
 	// Return success.
 	return 1
 }
 
-func Elev_set_motor_direction(dirn Elev_motor_direction_t) {
+func SetMotorDirection(dirn Elev_motor_direction_t) {
 	if dirn == 0 {
 		Io_write_analog(MOTOR, 0)
 	} else if dirn > 0 {
@@ -80,7 +80,7 @@ func Elev_set_motor_direction(dirn Elev_motor_direction_t) {
 	}
 }
 
-func Elev_set_door_open_lamp(value bool) {
+func SetDoorOpenLamp(value bool) {
 	if value {
 		Io_set_bit(LIGHT_DOOR_OPEN)
 	} else {
@@ -88,15 +88,15 @@ func Elev_set_door_open_lamp(value bool) {
 	}
 }
 
-func Elev_get_obstruction_signal() bool {
+func GetObstructionSignal() bool {
 	return Io_read_bit(OBSTRUCTION)
 }
 
-func Elev_get_stop_signal() bool {
+func GetStopSignal() bool {
 	return Io_read_bit(STOP)
 }
 
-func Elev_set_stop_lamp(value bool) {
+func SetStopLamp(value bool) {
 	if value {
 		Io_set_bit(LIGHT_STOP)
 	} else {
@@ -104,7 +104,7 @@ func Elev_set_stop_lamp(value bool) {
 	}
 }
 
-func Elev_get_floor_sensor_signal() int {
+func GetFloorSensorSignal() int {
 	if Io_read_bit(SENSOR_FLOOR1) {
 		return 0
 	} else if Io_read_bit(SENSOR_FLOOR2) {
@@ -118,7 +118,7 @@ func Elev_get_floor_sensor_signal() int {
 	}
 }
 
-func Elev_set_floor_indicator(floor int) {
+func SetFloorIndicator(floor int) {
 	if floor < 0 {log.Fatalf("Floor number %s is negative!", floor)}
 	if floor >= N_FLOORS {log.Fatalf("Floor number %s is above top floor!", floor)}
 
@@ -136,7 +136,7 @@ func Elev_set_floor_indicator(floor int) {
 	}
 }
 
-func Elev_get_button_signal(button Elev_button_type_t, floor int) bool {
+func GetButtonSignal(button Elev_button_type_t, floor int) bool {
 	if floor < 0 {log.Fatalf("Floor number %s is negative!", floor)}
 	if floor >= N_FLOORS {log.Fatalf("Floor number %s is above top floor!", floor)}
 	if button == BUTTON_CALL_UP && floor == N_FLOORS - 1 {log.Fatal("Button up from top floor does not exist!")}
@@ -150,7 +150,7 @@ func Elev_get_button_signal(button Elev_button_type_t, floor int) bool {
 	}
 }
 
-func Elev_set_button_lamp(button Elev_button_type_t, floor int, value bool) {
+func SetButtonLamp(button Elev_button_type_t, floor int, value bool) {
 	if floor < 0 {log.Fatalf("Floor number %s is negative!", floor)}
 	if floor >= N_FLOORS {log.Fatalf("Floor number %s is above top floor!", floor)}
 	if button == BUTTON_CALL_UP && floor == N_FLOORS - 1 {log.Fatal("Button up from top floor does not exist!")}
