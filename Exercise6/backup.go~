@@ -25,6 +25,17 @@ func primary(start int, udpBroadcast *net.UDPConn){
 	
 }
 
+/*func broadcaster(start int, udpBroadcast *net.UDPConn){
+	msg := make([]byte, 1)
+
+	for i := start;; i++{
+		log.Println(i)
+		msg[0] = byte(i);
+		udpBroadcast.Write(msg)
+		time.Sleep(100*time.Millisecond)
+	}
+}*/
+
 func backup(udpListen *net.UDPConn) int{
 	listenChan := make(chan int, 1); 
 	backupvalue := 0
@@ -37,6 +48,11 @@ func backup(udpListen *net.UDPConn) int{
 			case <-time.After(1*time.Second):
 				log.Println("The primary is dead, long live the primary")
 				return backupvalue
+				
+
+		}
+		
+		//listenChan <- int(binary.LittleEndian.Uint64(buffer)) //convert an bytearray to int
 		
 	}
 	

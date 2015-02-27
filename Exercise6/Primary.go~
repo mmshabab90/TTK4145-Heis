@@ -21,7 +21,7 @@ func primary(start int) {
 		log.Println(i)
 		msg[0] = byte(i);
 		udpBroadcast.Write(msg)
-		time.Sleep(100*time.Millisecond)
+		time.Sleep(50*time.Millisecond)
 	}
 }
 
