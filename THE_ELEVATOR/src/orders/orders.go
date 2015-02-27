@@ -12,11 +12,11 @@ var orders = [N_FLOORS][N_BUTTONS] bool {
 	{false, false, false},
 }
 
-func Orders_addOrder(floor int, button Elev_button_type_t) {
+func AddOrder(floor int, button Elev_button_type_t) {
 	orders[floor][button] = true;
 }
 
-func Orders_chooseDirection(currFloor int, currDir Elev_motor_direction_t) Elev_motor_direction_t {
+func ChooseDirection(currFloor int, currDir Elev_motor_direction_t) Elev_motor_direction_t {
 	if !isAnyOrders() {
 		return DIRN_STOP
 	}
@@ -47,7 +47,7 @@ func Orders_chooseDirection(currFloor int, currDir Elev_motor_direction_t) Elev_
 	}
 }
 
-func Orders_shouldStop(floor int, direction Elev_motor_direction_t) bool {
+func ShouldStop(floor int, direction Elev_motor_direction_t) bool {
 	switch direction {
 	case DIRN_DOWN:
 		return	orders[floor][BUTTON_CALL_DOWN] ||
@@ -69,13 +69,13 @@ func Orders_shouldStop(floor int, direction Elev_motor_direction_t) bool {
 	}
 }
 
-func Orders_removeOrder(floor int) {
+func RemoveOrder(floor int) {
 	for b := 0; b < N_BUTTONS; b++ {
 		orders[floor][b] = false;
 	}
 }
 
-func Orders_removeAll() {
+func RemoveAll() {
 	for f := 0; f < N_FLOORS; f++ {
 		for b := 0; b < N_BUTTONS; b++ {
 			orders[f][b] = false;
@@ -83,7 +83,7 @@ func Orders_removeAll() {
 	}
 }
 
-func Orders_isOrder(floor int, button Elev_button_type_t) bool {
+func IsOrder(floor int, button Elev_button_type_t) bool {
 	return orders[floor][button];
 }
 
