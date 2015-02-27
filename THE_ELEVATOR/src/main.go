@@ -5,20 +5,18 @@ import (
 	"log"
 )
 
-type State_t int
-
-type elevator_state struct (
-	floor int
-	currentDirection Elev_motor_direction_t
-)
-
+// THIS STUFF SHOULD BE PUT INTO THE FSM FILE/MODULE:
+// type State_t int
+// type elevator_state struct (
+// 	floor int
+// 	currentDirection Elev_motor_direction_t
+// )
 // const (
 // 	IDLE State_t = iota
 // 	RUNNING
 // 	OPENDOOR
 // 	STOPPED
 // )
-
 // func fsm_run() {
 // 	for state := idle; state != nil; {
 // 		state = state()
@@ -54,7 +52,7 @@ func init(){
 	if !Elev_init() {
 		log.Fatal("Elev_init error!\n")
 	}
-	
+
 	Elev_set_speed(-300)
 	for{
 		floor := Elev_get_floor_sensor_signal()
