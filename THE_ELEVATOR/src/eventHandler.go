@@ -1,5 +1,4 @@
 package driver
-// check package naming!
 
 import (
 	"log"
@@ -50,8 +49,6 @@ func EventHandler(){
 		if Elev_get_floor_sensor_signal() != -1 {
 			// Worry about reaching a floor.
 		}
-
-
 	}
 }
 
@@ -75,9 +72,9 @@ func isValidOrderButton(button Elev_button_type_t, floor int) {
 		return false
 	} else if floor == N_FLOORS - 1 && button == BUTTON_CALL_UP {
 		return false
-	} else if button != BUTTON_CALL_UP
-	&& button != BUTTON_CALL_DOWN
-	&& button != BUTTON_COMMAND {
+	} else if button != BUTTON_CALL_UP &&
+	button != BUTTON_CALL_DOWN &&
+	button != BUTTON_COMMAND {
 		return false
 	}
 	return true
