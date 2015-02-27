@@ -76,11 +76,11 @@ procedure exercise7 is
             -------------------------------------------
             -- PART 2: Do the transaction work here
             begin
-                Num = Unreliable_Slow_Add(Prev);
+                Num := Unreliable_Slow_Add(Prev);
             exception
                 when Count_Failed =>
                     Manager.Signal_Abort;
-            end
+            end;
             Manager.Finished;
             -------------------------------------------
 
