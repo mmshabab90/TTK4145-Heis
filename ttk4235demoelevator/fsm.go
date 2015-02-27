@@ -1,15 +1,32 @@
 package main
 
 import (
-	"./driver"
 	"log"
 	"reflect"
 	"runtime"
 )
 
 var _ = log.Fatal // For debugging only, remove when done
-var _ = reflect.ValueOf // For debugging only, remove when done
-var _ = runtime.FuncForPC // For debugging only, remove when done
+var _ = reflect.ValueOf
+var _ = runtime.FuncForPC
+
+// THESE ARE IN THE DRIVER; REMOVE FROM THIS FILE
+// AFTER DRIVER IS IMPORTED
+const N_BUTTONS = 3
+const N_FLOORS  = 4
+type Elev_button_type_t int
+type Elev_motor_direction_t int
+const (
+	DIRN_DOWN Elev_motor_direction_t = -1
+	DIRN_STOP Elev_motor_direction_t  = 0
+	DIRN_UP Elev_motor_direction_t = 1
+)
+const (
+	BUTTON_CALL_UP Elev_button_type_t = iota
+	BUTTON_CALL_DOWN
+	BUTTON_COMMAND
+)
+/////////////////////////////////////////////////
 
 type State_t int
 const (
@@ -49,7 +66,7 @@ func Fsm_init() {
 }
 
 func Fsm_eventButtonPressed(floor int, button Elev_button_type_t) {
-	switch 
+
 }
 
 func main() {}
