@@ -13,8 +13,7 @@ var _ = runtime.FuncForPC // For debugging only, remove when done
 
 type State_t int
 const (
-	INIT State_t = iota
-	IDLE
+	IDLE State_t = iota
 	DOOROPEN
 	MOVING
 	EMERGENCY
@@ -41,7 +40,7 @@ func syncLights() {
 }
 
 func Fsm_init() {
-	state = INIT
+	state = IDLE
 	direction = DIRN_STOP
 	floor = -1
 	departDirection = DIRN_DOWN
@@ -49,7 +48,10 @@ func Fsm_init() {
 }
 
 func Fsm_eventButtonPressed(floor int, button Elev_button_type_t) {
-	switch 
+	switch state {
+		case IDLE:
+			Orders_addOrder
+	}
 }
 
 func main() {}
