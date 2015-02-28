@@ -28,10 +28,10 @@ var departDirection Elev_motor_direction_t
 const doorOpenTime = 3.0
 
 func syncLights() {
-	for f := 0; f < N_FLOORS; f++ {
-		for b := 0; b < N_BUTTONS; b++ {
-			if (b == BUTTON_CALL_UP && f == N_FLOORS-1) ||
-				(b == BUTTON_CALL_DOWN && f == 0) {
+	for f := 0; f < nFloors; f++ {
+		for b := 0; b < nButtons; b++ {
+			if (b == ButtonCallUp && f == nFloors-1) ||
+				(b == ButtonCallDown && f == 0) {
 				continue
 			} else {
 				Elev_set_button_lamp(b, f, Orders_isOrder(f, b))
@@ -42,9 +42,9 @@ func syncLights() {
 
 func Init() {
 	state = idle
-	direction = DIRN_STOP
+	direction = DirnStop
 	floor = -1
-	departDirection = DIRN_DOWN
+	departDirection = DirnDown
 	Orders_removeAll()
 }
 
@@ -53,7 +53,7 @@ func EventButtonPressed(buttonFloor int, buttonType Elev_button_type_t) {
 	case idle:
 		queue.AddOrder(buttonFloor, buttonType)
 		direction = queue.ChooseDirection(floor, direction)
-		if direction == DIRN_STOP {
+		if direction == DirnStop {
 			driver.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			// timer.Start(doorOpenTime)
@@ -83,7 +83,7 @@ func EventArrivedAtFloor(newFloor int) {
 	switch state {
 	case moving:
 		if queue.ShouldStop(floor, direction) {
-			driver.SetMotorDirection(DIRN_STOP)
+			driver.SetMotorDirection(DirnStop)
 			driver.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			// timer.Start(doorOpenTime)
@@ -103,7 +103,7 @@ func EventTimerTimeOut() {
 		direction = queue.ChooseDirection(floor, direction)
 		driver.SetDoorOpenLamp(false)
 		driver.SetMotorDirection(direction)
-		if direction == DIRN_STOP {
+		if direction == DirnStop {
 			state = idle
 		} else {
 			state = moving
