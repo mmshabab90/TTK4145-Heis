@@ -27,25 +27,12 @@ var departDirection Elev_motor_direction_t
 
 const doorOpenTime = 3.0
 
-func syncLights() {
-	for f := 0; f < nFloors; f++ {
-		for b := 0; b < nButtons; b++ {
-			if (b == ButtonCallUp && f == nFloors-1) ||
-				(b == ButtonCallDown && f == 0) {
-				continue
-			} else {
-				Elev_set_button_lamp(b, f, Orders_isOrder(f, b))
-			}
-		}
-	}
-}
-
 func Init() {
 	state = idle
 	direction = DirnStop
-	floor = -1
+	floor = elev.GetFloor()
 	departDirection = DirnDown
-	Orders_removeAll()
+	queue.RemoveAll()
 }
 
 func EventButtonPressed(buttonFloor int, buttonType Elev_button_type_t) {
@@ -60,8 +47,8 @@ func EventButtonPressed(buttonFloor int, buttonType Elev_button_type_t) {
 			state = doorOpen
 		} else {
 			driver.SetMotorDirection(direction)
-			state = moving
 			departDirection = direction
+			state = moving
 		}
 	case doorOpen:
 		if floor == buttonFloor {
@@ -72,12 +59,12 @@ func EventButtonPressed(buttonFloor int, buttonType Elev_button_type_t) {
 	case moving:
 		queue.AddOrder(buttonFloor, buttonType)
 	default:
-		// log error invalid state
+		log.Fatalf("State %d is invalid!\n", state)
 	}
 	syncLights()
 }
 
-func EventArrivedAtFloor(newFloor int) {
+func EventFloorReached(newFloor int) {
 	floor = newFloor
 	driver.SetFloorIndicator(floor)
 	switch state {
@@ -87,17 +74,17 @@ func EventArrivedAtFloor(newFloor int) {
 			driver.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			// timer.Start(doorOpenTime)
-			syncLights()
 			state = doorOpen
 		} else {
 			departDirection = direction
 		}
 	default:
-		// log error makes no sense to arrive at floor in state <state>
+		log.Fatalf("Makes no sense to arrive at a floor in state %d", state)
 	}
+	syncLights()
 }
 
-func EventTimerTimeOut() {
+func EventTimerOut() {
 	switch state {
 	case doorOpen:
 		direction = queue.ChooseDirection(floor, direction)
@@ -110,6 +97,19 @@ func EventTimerTimeOut() {
 			departDirection = direction
 		}
 	default:
-		// makes no sense
+		log.Fatalf("Makes no sense to time out when not in doorOpen\n")
+	}
+}
+
+func syncLights() {
+	for f := 0; f < nFloors; f++ {
+		for b := 0; b < nButtons; b++ {
+			if (b == ButtonCallUp && f == nFloors-1) ||
+				(b == ButtonCallDown && f == 0) {
+				continue
+			} else {
+				elev.SetButtonLamp(b, f, queue.IsOrder(f, b))
+			}
+		}
 	}
 }
