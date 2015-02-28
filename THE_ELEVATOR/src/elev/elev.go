@@ -1,12 +1,12 @@
+/*
+ *  This file is a golang port of elev.c
+ */
+
 package elev
 
 import(
 	"log"
 )
-
-/*
- *  This file is a port of elev.c
- */
 
 var _ = log.Fatal // For debugging; delete when done.
 
