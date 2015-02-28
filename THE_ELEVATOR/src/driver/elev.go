@@ -119,8 +119,11 @@ func GetFloorSensorSignal() int {
 }
 
 func SetFloorIndicator(floor int) {
-	if floor < 0 {log.Fatalf("Floor number %s is negative!", floor)}
-	if floor >= N_FLOORS {log.Fatalf("Floor number %s is above top floor!", floor)}
+	if floor < 0 || floor >= N_FLOORS {
+		log.Printf("Error: Floor %d out of range!\n", floor)
+		log.Println("No floor indicator will be set.")
+		return
+	}
 
 	// Binary encoding. One light must always be on.
 	if floor & 0x02 > 0 {
@@ -137,11 +140,24 @@ func SetFloorIndicator(floor int) {
 }
 
 func GetButtonSignal(button Elev_button_type_t, floor int) bool {
-	if floor < 0 {log.Fatalf("Floor number %s is negative!", floor)}
-	if floor >= N_FLOORS {log.Fatalf("Floor number %s is above top floor!", floor)}
-	if button == BUTTON_CALL_UP && floor == N_FLOORS - 1 {log.Fatal("Button up from top floor does not exist!")}
-	if button == BUTTON_CALL_DOWN && floor == 0 {log.Fatal("Button down from ground floor does not exist!")}
-	if button != BUTTON_CALL_UP && button != BUTTON_CALL_DOWN && button != BUTTON_COMMAND {log.Fatalf("Invalid button %s", button)}
+	if floor < 0 || floor >= N_FLOORS {
+		log.Printf("Error: Floor %d out of range!\n", floor)
+		return false
+	}
+	if button == BUTTON_CALL_UP && floor == N_FLOORS - 1 {
+		log.Println("Button up from top floor does not exist!")
+		return false
+	}
+	if button == BUTTON_CALL_DOWN && floor == 0 {
+		log.Println("Button down from ground floor does not exist!")
+		return false
+	}
+	if button != BUTTON_CALL_UP &&
+	button != BUTTON_CALL_DOWN &&
+	button != BUTTON_COMMAND {
+		log.Printf("Invalid button %d\n", button)
+		return false
+	}
 
 	if (Io_read_bit(button_channel_matrix[floor][button])) {
 		return true
@@ -151,11 +167,24 @@ func GetButtonSignal(button Elev_button_type_t, floor int) bool {
 }
 
 func SetButtonLamp(button Elev_button_type_t, floor int, value bool) {
-	if floor < 0 {log.Fatalf("Floor number %s is negative!", floor)}
-	if floor >= N_FLOORS {log.Fatalf("Floor number %s is above top floor!", floor)}
-	if button == BUTTON_CALL_UP && floor == N_FLOORS - 1 {log.Fatal("Button up from top floor does not exist!")}
-	if button == BUTTON_CALL_DOWN && floor == 0 {log.Fatal("Button down from ground floor does not exist!")}
-	if button != BUTTON_CALL_UP && button != BUTTON_CALL_DOWN && button != BUTTON_COMMAND {log.Fatalf("Invalid button %s", button)}
+	if floor < 0 || floor >= N_FLOORS {
+		log.Printf("Error: Floor %d out of range!\n", floor)
+		return false
+	}
+	if button == BUTTON_CALL_UP && floor == N_FLOORS - 1 {
+		log.Println("Button up from top floor does not exist!")
+		return false
+	}
+	if button == BUTTON_CALL_DOWN && floor == 0 {
+		log.Println("Button down from ground floor does not exist!")
+		return false
+	}
+	if button != BUTTON_CALL_UP &&
+	button != BUTTON_CALL_DOWN &&
+	button != BUTTON_COMMAND {
+		log.Printf("Invalid button %d\n", button)
+		return false
+	}
 
 	if value {
 		Io_set_bit(lamp_channel_matrix[floor][button])
