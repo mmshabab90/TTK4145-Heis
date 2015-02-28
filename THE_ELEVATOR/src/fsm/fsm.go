@@ -1,4 +1,4 @@
-package main
+package fsm
 
 import (
 	"../elev"
@@ -14,9 +14,9 @@ var _ = runtime.FuncForPC // For debugging only, remove when done
 
 type State_t int
 const (
-	IDLE State_t = iota
-	DOOROPEN
-	MOVING
+	idle State_t = iota
+	moving
+	doorOpen
 )
 
 var		state			State_t
@@ -39,7 +39,7 @@ func syncLights() {
 }
 
 func Init() {
-	state = IDLE
+	state = idle
 	direction = DIRN_STOP
 	floor = -1
 	departDirection = DIRN_DOWN
@@ -48,26 +48,26 @@ func Init() {
 
 func EventButtonPressed(buttonFloor int, buttonType Elev_button_type_t) {
 	switch state {
-		case IDLE:
+		case idle:
 			queue.AddOrder(buttonFloor, buttonType)
 			direction = queue.ChooseDirection(floor, direction)
 			if direction == DIRN_STOP {
 				driver.SetDoorOpenLamp(true)
 				queue.RemoveOrdersAt(floor)
 				// timer.Start(doorOpenTime)
-				state = DOOROPEN
+				state = doorOpen
 			} else {
 				driver.SetMotorDirection(direction)
-				state = MOVING
+				state = moving
 				departDirection = direction
 			}
-		case DOOROPEN:
+		case doorOpen:
 			if floor == buttonFloor {
 				// timer.Start(doorOpenTime)
 			} else {
 				queue.AddOrder(buttonFloor, buttonType)
 			}
-		case MOVING:
+		case moving:
 			queue.AddOrder(buttonFloor, buttonType)
 		default:
 			// log error invalid state
@@ -79,14 +79,14 @@ func EventArrivedAtFloor(newFloor int) {
 	floor = newFloor
 	driver.SetFloorIndicator(floor)
 	switch state {
-	case MOVING:
+	case moving:
 		if queue.ShouldStop(floor, direction) {
 			driver.SetMotorDirection(DIRN_STOP)
 			driver.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			// timer.Start(doorOpenTime)
 			syncLights()
-			state = DOOROPEN
+			state = doorOpen
 		} else {
 			departDirection = direction
 		}
@@ -97,14 +97,14 @@ func EventArrivedAtFloor(newFloor int) {
 
 func EventTimerTimeOut() {
 	switch state {
-	case DOOROPEN:
+	case doorOpen:
 		direction = queue.ChooseDirection(floor, direction)
 		driver.SetDoorOpenLamp(false)
 		driver.SetMotorDirection(direction)
 		if direction == DIRN_STOP {
-			state = IDLE
+			state = idle
 		} else {
-			state = MOVING
+			state = moving
 			departDirection = direction
 		}
 	default:
