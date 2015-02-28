@@ -2,6 +2,7 @@ package queue
 
 import (
 	"log"
+	"../elev"
 )
 
 var queue = [N_FLOORS][N_BUTTONS] bool {
