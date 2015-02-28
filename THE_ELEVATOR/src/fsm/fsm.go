@@ -108,7 +108,7 @@ func syncLights() {
 				(b == ButtonCallDown && f == 0) {
 				continue
 			} else {
-				elev.SetButtonLamp(b, f, queue.IsOrder(f, b))
+				elev.SetButtonLamp(f, b, queue.IsOrder(f, b))
 			}
 		}
 	}

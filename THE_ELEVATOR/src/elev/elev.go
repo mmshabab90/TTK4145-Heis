@@ -52,12 +52,12 @@ func Init() int {
 	// Zero all floor button lamps
 	for i := 0; i < nFloors; i++ {
 		if i != 0 {
-			SetButtonLamp(ButtonCallDown, i, false)
+			SetButtonLamp(i, ButtonCallDown, false)
 		}
 		if i != nFloors-1 {
-			SetButtonLamp(ButtonCallUp, i, false)
+			SetButtonLamp(i, ButtonCallUp, false)
 		}
-		SetButtonLamp(ButtonCommand, i, false)
+		SetButtonLamp(i, ButtonCommand, false)
 	}
 
 	// Clear stop lamp, door open lamp,
@@ -168,7 +168,7 @@ func GetButton(floor int, button Elev_button_type_t) bool {
 	}
 }
 
-func SetButtonLamp(button Elev_button_type_t, floor int, value bool) {
+func SetButtonLamp(floor int, value bool, button Elev_button_type_t) {
 	if floor < 0 || floor >= nFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return false
