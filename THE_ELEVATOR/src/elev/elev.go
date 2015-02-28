@@ -50,12 +50,12 @@ func Init() int {
 	}
 
 	// Zero all floor button lamps
-	for i := 0; i < nFloors; i++ {
-		if i != 0 {
-			SetButtonLamp(i, ButtonCallDown, false)
+	for f := 0; f < nFloors; f++ {
+		if f != 0 {
+			SetButtonLamp(f, ButtonCallDown, false)
 		}
-		if i != nFloors-1 {
-			SetButtonLamp(i, ButtonCallUp, false)
+		if f != nFloors-1 {
+			SetButtonLamp(f, ButtonCallUp, false)
 		}
 		SetButtonLamp(i, ButtonCommand, false)
 	}
