@@ -1,7 +1,8 @@
 package main
 
 import (
-	"./driver"
+	"../elev"
+	"../queue"
 	"log"
 	"reflect"
 	"runtime"
@@ -48,11 +49,11 @@ func Init() {
 func EventButtonPressed(buttonFloor int, buttonType Elev_button_type_t) {
 	switch state {
 		case IDLE:
-			orders.AddOrder(buttonFloor, buttonType)
-			direction = orders.ChooseDirection(floor, direction)
+			queue.AddOrder(buttonFloor, buttonType)
+			direction = queue.ChooseDirection(floor, direction)
 			if direction == DIRN_STOP {
 				driver.SetDoorOpenLamp(true)
-				orders.RemoveOrdersAt(floor)
+				queue.RemoveOrdersAt(floor)
 				// timer.Start(doorOpenTime)
 				state = DOOROPEN
 			} else {
@@ -64,10 +65,10 @@ func EventButtonPressed(buttonFloor int, buttonType Elev_button_type_t) {
 			if floor == buttonFloor {
 				// timer.Start(doorOpenTime)
 			} else {
-				orders.AddOrder(buttonFloor, buttonType)
+				queue.AddOrder(buttonFloor, buttonType)
 			}
 		case MOVING:
-			orders.AddOrder(buttonFloor, buttonType)
+			queue.AddOrder(buttonFloor, buttonType)
 		default:
 			// log error invalid state
 	}
@@ -79,10 +80,10 @@ func EventArrivedAtFloor(newFloor int) {
 	driver.SetFloorIndicator(floor)
 	switch state {
 	case MOVING:
-		if orders.ShouldStop(floor, direction) {
+		if queue.ShouldStop(floor, direction) {
 			driver.SetMotorDirection(DIRN_STOP)
 			driver.SetDoorOpenLamp(true)
-			orders.RemoveOrdersAt(floor)
+			queue.RemoveOrdersAt(floor)
 			// timer.Start(doorOpenTime)
 			syncLights()
 			state = DOOROPEN
@@ -97,7 +98,7 @@ func EventArrivedAtFloor(newFloor int) {
 func EventTimerTimeOut() {
 	switch state {
 	case DOOROPEN:
-		direction = orders.ChooseDirection(floor, direction)
+		direction = queue.ChooseDirection(floor, direction)
 		driver.SetDoorOpenLamp(false)
 		driver.SetMotorDirection(direction)
 		if direction == DIRN_STOP {
