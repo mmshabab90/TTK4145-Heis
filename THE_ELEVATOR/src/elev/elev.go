@@ -106,7 +106,7 @@ func SetStopLamp(value bool) {
 	}
 }
 
-func GetFloorSensorSignal() int {
+func GetFloor() int {
 	if Io_read_bit(SENSOR_FLOOR1) {
 		return 0
 	} else if Io_read_bit(SENSOR_FLOOR2) {
@@ -141,7 +141,7 @@ func SetFloorIndicator(floor int) {
 	}
 }
 
-func GetButtonSignal(button Elev_button_type_t, floor int) bool {
+func GetButton(floor int, button Elev_button_type_t) bool {
 	if floor < 0 || floor >= nFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return false
