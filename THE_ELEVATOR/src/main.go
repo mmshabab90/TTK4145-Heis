@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
 	"./elev"
-	"./queue"
 	"./fsm"
+	"./queue"
+	"log"
 )
 
 func main() {
