@@ -22,9 +22,9 @@ const (
 
 type Elev_motor_direction_t int
 const (
-	DIRN_DOWN Elev_motor_direction_t = -1
-	DIRN_STOP Elev_motor_direction_t  = 0
-	DIRN_UP Elev_motor_direction_t = 1
+	DIRN_DOWN Elev_motor_direction_t = iota - 1
+	DIRN_STOP
+	DIRN_UP
 )
 
 var lamp_channel_matrix = [N_FLOORS][N_BUTTONS] int {
