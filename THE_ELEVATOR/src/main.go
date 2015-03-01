@@ -45,7 +45,7 @@ func init() {
 }
 
 func pollKeypresses(c chan Keypress) {
-	var buttonState = [nFloors][nButtons]bool{
+	var buttonState = [NumFloors][NumButtons]bool{
 		{false, false, false},
 		{false, false, false},
 		{false, false, false},
@@ -53,10 +53,10 @@ func pollKeypresses(c chan Keypress) {
 	}
 
 	for {
-		for f := 0; f < nFloors; f++ {
-			for b := 0; b < nButtons; b++ {
+		for f := 0; f < NumFloors; f++ {
+			for b := 0; b < NumButtons; b++ {
 				if (f == 0 && b == ButtonCallDown) ||
-				(f == nFloors-1 && b == ButtonCallUp) {
+				(f == NumFloors-1 && b == ButtonCallUp) {
 					continue
 				}
 				if elev.GetButton(f, b) {

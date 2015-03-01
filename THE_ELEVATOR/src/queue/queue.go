@@ -1,10 +1,11 @@
 package queue
 
 import (
+	"../elev"
 	"log"
 )
 
-var queue = [nFloors][nButtons]bool{
+var queue = [NumFloors][NumButtons]bool{
 	{false, false, false},
 	{false, false, false},
 	{false, false, false},
@@ -27,7 +28,7 @@ func ChooseDirection(currFloor int, currDir Elev_motor_direction_t) Elev_motor_d
 			return DirnUp
 		}
 	case DirnUp:
-		if isOrdersAbove(currFloor) && currFloor < nFloors-1 {
+		if isOrdersAbove(currFloor) && currFloor < NumFloors-1 {
 			return DirnUp
 		} else {
 			return DirnDown
@@ -56,7 +57,7 @@ func ShouldStop(floor int, direction Elev_motor_direction_t) bool {
 	case DirnUp:
 		return queue[floor][ButtonCallUp] ||
 			queue[floor][ButtonCommand] ||
-			floor == nFloors-1 ||
+			floor == NumFloors-1 ||
 			!isOrdersAbove(floor)
 	case DirnStop:
 		return queue[floor][ButtonCallDown] ||
@@ -69,14 +70,14 @@ func ShouldStop(floor int, direction Elev_motor_direction_t) bool {
 }
 
 func RemoveOrdersAt(floor int) {
-	for b := 0; b < nButtons; b++ {
+	for b := 0; b < NumButtons; b++ {
 		queue[floor][b] = false
 	}
 }
 
 func RemoveAll() {
-	for f := 0; f < nFloors; f++ {
-		for b := 0; b < nButtons; b++ {
+	for f := 0; f < NumFloors; f++ {
+		for b := 0; b < NumButtons; b++ {
 			queue[f][b] = false
 		}
 	}
@@ -87,8 +88,8 @@ func IsOrder(floor int, button Elev_button_type_t) bool {
 }
 
 func isOrdersAbove(floor int) bool {
-	for f := floor + 1; f < nFloors; f++ {
-		for b := 0; b < nButtons; b++ {
+	for f := floor + 1; f < NumFloors; f++ {
+		for b := 0; b < NumButtons; b++ {
 			if queue[f][b] {
 				return true
 			}
@@ -99,7 +100,7 @@ func isOrdersAbove(floor int) bool {
 
 func isOrdersBelow(floor int) bool {
 	for f := 0; f < floor; f++ {
-		for b := 0; b < nButtons; b++ {
+		for b := 0; b < NumButtons; b++ {
 			if queue[f][b] {
 				return true
 			}
@@ -109,8 +110,8 @@ func isOrdersBelow(floor int) bool {
 }
 
 func isAnyOrders() bool {
-	for f := 0; f < nFloors; f++ {
-		for b := 0; b < nButtons; b++ {
+	for f := 0; f < NumFloors; f++ {
+		for b := 0; b < NumButtons; b++ {
 			if queue[f][b] {
 				return true
 			}

@@ -10,8 +10,8 @@ import (
 
 var _ = log.Fatal // For debugging; delete when done.
 
-const nButtons = 3
-const nFloors = 4
+const NumButtons = 3
+const NumFloors = 4
 
 type Elev_button_type_t int
 
@@ -29,14 +29,14 @@ const (
 	DirnUp
 )
 
-var lamp_channel_matrix = [nFloors][nButtons]int{
+var lamp_channel_matrix = [NumFloors][NumButtons]int{
 	{LIGHT_UP1, LIGHT_DOWN1, LIGHT_COMMAND1},
 	{LIGHT_UP2, LIGHT_DOWN2, LIGHT_COMMAND2},
 	{LIGHT_UP3, LIGHT_DOWN3, LIGHT_COMMAND3},
 	{LIGHT_UP4, LIGHT_DOWN4, LIGHT_COMMAND4},
 }
 
-var button_channel_matrix = [nFloors][nButtons]int{
+var button_channel_matrix = [NumFloors][NumButtons]int{
 	{BUTTON_UP1, BUTTON_DOWN1, ButtonCommand1},
 	{BUTTON_UP2, BUTTON_DOWN2, ButtonCommand2},
 	{BUTTON_UP3, BUTTON_DOWN3, ButtonCommand3},
@@ -50,11 +50,11 @@ func Init() int {
 	}
 
 	// Zero all floor button lamps
-	for f := 0; f < nFloors; f++ {
+	for f := 0; f < NumFloors; f++ {
 		if f != 0 {
 			SetButtonLamp(f, ButtonCallDown, false)
 		}
-		if f != nFloors-1 {
+		if f != NumFloors-1 {
 			SetButtonLamp(f, ButtonCallUp, false)
 		}
 		SetButtonLamp(i, ButtonCommand, false)
@@ -121,7 +121,7 @@ func GetFloor() int {
 }
 
 func SetFloorIndicator(floor int) {
-	if floor < 0 || floor >= nFloors {
+	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		log.Println("No floor indicator will be set.")
 		return
@@ -142,11 +142,11 @@ func SetFloorIndicator(floor int) {
 }
 
 func GetButton(floor int, button Elev_button_type_t) bool {
-	if floor < 0 || floor >= nFloors {
+	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return false
 	}
-	if button == ButtonCallUp && floor == nFloors-1 {
+	if button == ButtonCallUp && floor == NumFloors-1 {
 		log.Println("Button up from top floor does not exist!")
 		return false
 	}
@@ -169,11 +169,11 @@ func GetButton(floor int, button Elev_button_type_t) bool {
 }
 
 func SetButtonLamp(floor int, value bool, button Elev_button_type_t) {
-	if floor < 0 || floor >= nFloors {
+	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return false
 	}
-	if button == ButtonCallUp && floor == nFloors-1 {
+	if button == ButtonCallUp && floor == NumFloors-1 {
 		log.Println("Button up from top floor does not exist!")
 		return false
 	}
