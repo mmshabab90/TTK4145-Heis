@@ -21,26 +21,26 @@ const (
 )
 
 var state State_t
-var direction Elev_motor_direction_t
+var direction elev.MotorDirnType
 var floor int
-var departDirection Elev_motor_direction_t
+var departDirection elev.MotorDirnType
 
 const doorOpenTime = 3.0
 
 func Init() {
 	state = idle
-	direction = DirnStop
+	direction = elev.DirnStop
 	floor = elev.GetFloor()
-	departDirection = DirnDown
+	departDirection = elev.DirnDown
 	queue.RemoveAll()
 }
 
-func EventButtonPressed(buttonFloor int, buttonType Elev_button_type_t) {
+func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 	switch state {
 	case idle:
 		queue.AddOrder(buttonFloor, buttonType)
 		direction = queue.ChooseDirection(floor, direction)
-		if direction == DirnStop {
+		if direction == elev.DirnStop {
 			elev.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			// timer.Start(doorOpenTime)
@@ -70,7 +70,7 @@ func EventFloorReached(newFloor int) {
 	switch state {
 	case moving:
 		if queue.ShouldStop(floor, direction) {
-			elev.SetMotorDirection(DirnStop)
+			elev.SetMotorDirection(elev.DirnStop)
 			elev.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			// timer.Start(doorOpenTime)
@@ -90,7 +90,7 @@ func EventTimerOut() {
 		direction = queue.ChooseDirection(floor, direction)
 		elev.SetDoorOpenLamp(false)
 		elev.SetMotorDirection(direction)
-		if direction == DirnStop {
+		if direction == elev.DirnStop {
 			state = idle
 		} else {
 			state = moving
@@ -102,10 +102,10 @@ func EventTimerOut() {
 }
 
 func syncLights() {
-	for f := 0; f < NumFloors; f++ {
-		for b := 0; b < NumButtons; b++ {
-			if (b == ButtonCallUp && f == NumFloors-1) ||
-				(b == ButtonCallDown && f == 0) {
+	for f := 0; f < elev.NumFloors; f++ {
+		for b := 0; b < elev.NumButtons; b++ {
+			if (b == elev.ButtonCallUp && f == elev.NumFloors-1) ||
+				(b == elev.ButtonCallDown && f == 0) {
 				continue
 			} else {
 				elev.SetButtonLamp(f, b, queue.IsOrder(f, b))
