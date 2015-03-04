@@ -13,18 +13,17 @@ var _ = log.Fatal // For debugging; delete when done.
 const NumButtons = 3
 const NumFloors = 4
 
-type Elev_button_type_t int
+type ButtonType int
+type MotorDirnType int
 
 const (
-	ButtonCallUp Elev_button_type_t = iota
+	ButtonCallUp int = iota
 	ButtonCallDown
 	ButtonCommand
 )
 
-type Elev_motor_direction_t int
-
 const (
-	DirnDown Elev_motor_direction_t = iota - 1
+	DirnDown MotorDirnType = iota - 1
 	DirnStop
 	DirnUp
 )
@@ -37,16 +36,16 @@ var lamp_channel_matrix = [NumFloors][NumButtons]int{
 }
 
 var button_channel_matrix = [NumFloors][NumButtons]int{
-	{BUTTON_UP1, BUTTON_DOWN1, ButtonCommand1},
-	{BUTTON_UP2, BUTTON_DOWN2, ButtonCommand2},
-	{BUTTON_UP3, BUTTON_DOWN3, ButtonCommand3},
-	{BUTTON_UP4, BUTTON_DOWN4, ButtonCommand4},
+	{BUTTON_UP1, BUTTON_DOWN1, BUTTON_COMMAND1},
+	{BUTTON_UP2, BUTTON_DOWN2, BUTTON_COMMAND2},
+	{BUTTON_UP3, BUTTON_DOWN3, BUTTON_COMMAND3},
+	{BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 }
 
-func Init() int {
+func Init() bool {
 	// Init hardware
 	if !Io_init() {
-		return 0
+		return false
 	}
 
 	// Zero all floor button lamps
@@ -57,7 +56,7 @@ func Init() int {
 		if f != NumFloors-1 {
 			SetButtonLamp(f, ButtonCallUp, false)
 		}
-		SetButtonLamp(i, ButtonCommand, false)
+		SetButtonLamp(f, ButtonCommand, false)
 	}
 
 	// Clear stop lamp, door open lamp,
@@ -67,10 +66,10 @@ func Init() int {
 	SetFloorIndicator(0)
 
 	// Return success.
-	return 1
+	return true
 }
 
-func SetMotorDirection(dirn Elev_motor_direction_t) {
+func SetMotorDirection(dirn MotorDirnType) {
 	if dirn == 0 {
 		Io_write_analog(MOTOR, 0)
 	} else if dirn > 0 {
@@ -141,7 +140,7 @@ func SetFloorIndicator(floor int) {
 	}
 }
 
-func GetButton(floor int, button Elev_button_type_t) bool {
+func GetButton(floor int, button int) bool {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return false
@@ -168,24 +167,24 @@ func GetButton(floor int, button Elev_button_type_t) bool {
 	}
 }
 
-func SetButtonLamp(floor int, value bool, button Elev_button_type_t) {
+func SetButtonLamp(floor int, button int, value bool) {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
-		return false
+		return
 	}
 	if button == ButtonCallUp && floor == NumFloors-1 {
 		log.Println("Button up from top floor does not exist!")
-		return false
+		return
 	}
 	if button == ButtonCallDown && floor == 0 {
 		log.Println("Button down from ground floor does not exist!")
-		return false
+		return
 	}
 	if button != ButtonCallUp &&
 		button != ButtonCallDown &&
 		button != ButtonCommand {
 		log.Printf("Invalid button %d\n", button)
-		return false
+		return
 	}
 
 	if value {
