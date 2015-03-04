@@ -5,64 +5,66 @@ import (
 	"log"
 )
 
-var queue = [NumFloors][NumButtons]bool{
+var _ = elev.Init
+
+var queue = [elev.NumFloors][elev.NumButtons]bool{
 	{false, false, false},
 	{false, false, false},
 	{false, false, false},
 	{false, false, false},
 }
 
-func AddOrder(floor int, button Elev_button_type_t) {
+func AddOrder(floor int, button elev.ButtonType) {
 	queue[floor][button] = true
 }
 
-func ChooseDirection(currFloor int, currDir Elev_motor_direction_t) Elev_motor_direction_t {
+func ChooseDirection(currFloor int, currDir elev.MotorDirnType) elev.MotorDirnType {
 	if !isAnyOrders() {
-		return DirnStop
+		return elev.DirnStop
 	}
 	switch currDir {
-	case DirnDown:
+	case elev.DirnDown:
 		if isOrdersBelow(currFloor) && currFloor > 0 {
-			return DirnDown
+			return elev.DirnDown
 		} else {
-			return DirnUp
+			return elev.DirnUp
 		}
-	case DirnUp:
-		if isOrdersAbove(currFloor) && currFloor < NumFloors-1 {
-			return DirnUp
+	case elev.DirnUp:
+		if isOrdersAbove(currFloor) && currFloor < elev.NumFloors-1 {
+			return elev.DirnUp
 		} else {
-			return DirnDown
+			return elev.DirnDown
 		}
-	case DirnStop:
+	case elev.DirnStop:
 		if isOrdersAbove(currFloor) {
-			return DirnUp
+			return elev.DirnUp
 		} else if isOrdersBelow(currFloor) {
-			return DirnDown
+			return elev.DirnDown
 		} else {
-			return DirnStop
+			return elev.DirnStop
 		}
 	default:
 		log.Printf("Orders_chooseDirection called with unexpected direction %d!", currDir)
-		return DirnStop
+		return elev.DirnStop
 	}
 }
 
-func ShouldStop(floor int, direction Elev_motor_direction_t) bool {
+func ShouldStop(floor int, direction elev.MotorDirnType) bool {
 	switch direction {
-	case DirnDown:
-		return queue[floor][ButtonCallDown] ||
-			queue[floor][ButtonCommand] ||
+	case elev.DirnDown:
+		return queue[floor][elev.ButtonCallDown] ||
+			queue[floor][elev.ButtonCommand] ||
 			floor == 0 ||
 			!isOrdersBelow(floor)
-	case DirnUp:
-		return queue[floor][ButtonCallUp] ||
-			queue[floor][ButtonCommand] ||
-			floor == NumFloors-1 ||
+	case elev.DirnUp:
+		return queue[floor][elev.ButtonCallUp] ||
+			queue[floor][elev.ButtonCommand] ||
+			floor == elev.NumFloors-1 ||
 			!isOrdersAbove(floor)
-	case DirnStop:
-		return queue[floor][ButtonCallDown] ||
-			queue[floor][ButtonCallUp] ||
-			queue[floor][ButtonCommand]
+	case elev.DirnStop:
+		return queue[floor][elev.ButtonCallDown] ||
+			queue[floor][elev.ButtonCallUp] ||
+			queue[floor][elev.ButtonCommand]
 	default:
 		log.Printf("Orders_shouldStop called with unexpected direction %d!", direction)
 		return false
@@ -70,26 +72,26 @@ func ShouldStop(floor int, direction Elev_motor_direction_t) bool {
 }
 
 func RemoveOrdersAt(floor int) {
-	for b := 0; b < NumButtons; b++ {
+	for b := 0; b < elev.NumButtons; b++ {
 		queue[floor][b] = false
 	}
 }
 
 func RemoveAll() {
-	for f := 0; f < NumFloors; f++ {
-		for b := 0; b < NumButtons; b++ {
+	for f := 0; f < elev.NumFloors; f++ {
+		for b := 0; b < elev.NumButtons; b++ {
 			queue[f][b] = false
 		}
 	}
 }
 
-func IsOrder(floor int, button Elev_button_type_t) bool {
+func IsOrder(floor int, button int) bool {
 	return queue[floor][button]
 }
 
 func isOrdersAbove(floor int) bool {
-	for f := floor + 1; f < NumFloors; f++ {
-		for b := 0; b < NumButtons; b++ {
+	for f := floor + 1; f < elev.NumFloors; f++ {
+		for b := 0; b < elev.NumButtons; b++ {
 			if queue[f][b] {
 				return true
 			}
@@ -100,7 +102,7 @@ func isOrdersAbove(floor int) bool {
 
 func isOrdersBelow(floor int) bool {
 	for f := 0; f < floor; f++ {
-		for b := 0; b < NumButtons; b++ {
+		for b := 0; b < elev.NumButtons; b++ {
 			if queue[f][b] {
 				return true
 			}
@@ -110,8 +112,8 @@ func isOrdersBelow(floor int) bool {
 }
 
 func isAnyOrders() bool {
-	for f := 0; f < NumFloors; f++ {
-		for b := 0; b < NumButtons; b++ {
+	for f := 0; f < elev.NumFloors; f++ {
+		for b := 0; b < elev.NumButtons; b++ {
 			if queue[f][b] {
 				return true
 			}
@@ -120,5 +122,3 @@ func isAnyOrders() bool {
 	return false
 }
 
-func main() {
-}
