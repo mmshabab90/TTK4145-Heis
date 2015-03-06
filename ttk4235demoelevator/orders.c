@@ -45,7 +45,7 @@ static int hasOrders(void){
 
 
 void orders_add(int floor, elev_button_type_t btn){
-    orders[floor][btn] = 1;
+    orders[floor][btn] = 1;    
 }
 
 
@@ -132,3 +132,10 @@ void orders_removeAll(void){
 int orders_read(int floor, elev_button_type_t btn){
     return orders[floor][btn];
 }
+
+
+
+
+
+
+
