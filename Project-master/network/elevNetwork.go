@@ -1,61 +1,103 @@
 package main
 
-import(
+import (
 	"log"
 	"net"
 	"time"
 )
 
-func Broadcast(addr string, msg string){
+type UdpConnection struct {
+	Addr  string
+	Timer *time.Timer
+}
+
+func Broadcast(addr string, msg string) {
 	udpAddr, err := net.ResolveUDPAddr("udp", addr)
-	if err != nil {log.Fatal(err)}
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	udpBroadcast, err := net.DialUDP("udp", nil, udpAddr)
-	if err != nil {log.Fatal(err)}
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	defer udpBroadcast.Close()
 
-	for{
-		udpBroadcast.Write([]byte(msg))
+	udpBroadcast.Write([]byte(msg))
+}
+
+func StillAliveBroadcast() {
+	for {
+		Broadcast("129.241.187.255:20014", "I'm alive!")
 		time.Sleep(100*time.Millisecond)
 	}
 }
 
-func Listen(port string){
+func Listen(port string, timeoutChan chan UdpConnection, msgChan chan string) {
 	udpAddr, err := net.ResolveUDPAddr("udp", port)
-	if err != nil {log.Fatal(err)}
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	udpListen, err := net.ListenUDP("udp", udpAddr)
-	if err != nil {log.Fatal(err)}
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	defer udpListen.Close()
 
-	ipList := make([]string, 0)
-	var buffer[1024]byte
+	var buffer [1024]byte
+	var connectionMap map[string] UdpConnection 
 
-	for{
+	for {
 		_, ipAddr, err := udpListen.ReadFromUDP(buffer[:])
-		if err != nil {log.Fatal(err)} 
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		if(!ipInList(ipAddr.String(), ipList)){
-			ipList = append(ipList, ipAddr.String())
-			//go timer(), the timer most be connected to the spesific ipAddr somehow
-			
+		if connection, exist := connectionMap[ipAddr.String()]; exist {
+			connection.Timer.Reset(1*time.Second)
 		} else {
-			//resetTimer, this most be connected to the right timer function somehow
-		}	
-		time.Sleep(100*time.Millisecond)
+			newConnection := UdpConnection{ipAddr.String(), time.NewTimer(1*time.Second)}
+			connectionMap[ipAddr.String()] = newConnection
+			go connectionTimer(&newConnection, timeoutChan)
+		}
+		
+		if string(buffer[:]) != "I'm alive" {
+			msgChan <- string(buffer[:])  
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
-func ipInList(ipAddr string, ipList []string) bool {
-    for _, b := range ipList {
-        if b == ipAddr {
-            return true
-        }
-    }
-    return false
+func connectionTimer(connection *UdpConnection, timeoutChan chan UdpConnection) {
+	for {
+		select {
+		case <- connection.Timer.C:
+			timeoutChan <- *connection
+		}
+	}
 }
+
+func main() {
+	msgChan := make(chan string)
+	timeoutChan := make(chan UdpConnection)
+	
+	go StillAliveBroadcast()
+	go Listen(":20014", timeoutChan, msgChan)
+
+	for {
+		select {
+		case connection := <- timeoutChan:
+			log.Println(connection.Addr, "is dead")
+		case msg := <- msgChan:
+			log.Println(msg)
+		}
+	}
+}
+
+
 
 
 
