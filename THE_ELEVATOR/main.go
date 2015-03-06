@@ -13,11 +13,11 @@ var _ = log.Println
 func main() {
 	temp.Init()
 	
-	buttonChan := make(chan keypress) // does this need to be buffered to handle many keypresses happening "at once"?
+	buttonChan := make(chan temp.Keypress) // does this need to be buffered to handle many keypresses happening "at once"?
 	floorChan := make(chan int)
 
-	go PollKeypresses(buttonChan)
-	go PollFloor(floorChan)
+	go temp.PollKeypresses(buttonChan)
+	go temp.PollFloor(floorChan)
 
 	for {
 		select {

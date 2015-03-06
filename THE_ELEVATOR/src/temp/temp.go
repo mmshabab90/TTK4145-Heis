@@ -1,5 +1,11 @@
 package temp
 
+import (
+	"elev"
+	"log"
+	"fsm"
+)
+
 type Keypress struct {
 	Button int
 	Floor int
@@ -18,7 +24,7 @@ func Init() {
 	// Add some error handling here.
 }
 
-func PollKeypresses(c chan keypress) {
+func PollKeypresses(c chan Keypress) {
 	var buttonState = [elev.NumFloors][elev.NumButtons]bool{
 		{false, false, false},
 		{false, false, false},
