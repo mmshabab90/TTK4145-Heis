@@ -3,28 +3,26 @@ package main
 import (
 	"elev"
 	"fsm"
-	"temp"
-	//	"./queue"
 	"log"
 )
 
 var _ = elev.Init
 var _ = log.Println
 
-type Keypress struct {
-	Button int
-	Floor int
+type keypress struct {
+	button int
+	floor int
 }
 
 func main() {
-	temp.Init()
+	init()
 	
-	var buttonChan chan temp.Keypress
+	var buttonChan chan keypress
 	//buttonChan := make(chan temp.Keypress) // does this need to be buffered to handle many keypresses happening "at once"?
 	floorChan := make(chan int)
 
-	go temp.PollKeypresses(buttonChan)
-	go temp.PollFloor(floorChan)
+	go pollKeypresses(buttonChan)
+	go pollFloor(floorChan)
 
 	//var myKeypress = Keypress{floor: 0, button: 0}
 	//myKeypress := Keypress{floor: 0, button: 0}
@@ -40,7 +38,7 @@ func main() {
 	}
 }
 
-func Init() {
+func init() {
 	if !elev.Init() {
 		log.Fatalln("Io_init() failed!")
 	}
@@ -53,7 +51,7 @@ func Init() {
 	// Add some error handling here.
 }
 
-func PollKeypresses(c chan Keypress) {
+func pollKeypresses(c chan keypress) {
 	var buttonState = [elev.NumFloors][elev.NumButtons]bool{
 		{false, false, false},
 		{false, false, false},
