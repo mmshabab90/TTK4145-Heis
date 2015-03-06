@@ -1,8 +1,8 @@
 package fsm
 
 import (
-	"../elev"
-	"../queue"
+	"elev"
+	"queue"
 	"log"
 	"reflect"
 	"runtime"
