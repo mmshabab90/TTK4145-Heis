@@ -17,8 +17,8 @@ type keypress struct {
 func main() {
 	init()
 	
-	var buttonChan chan keypress
-	//buttonChan := make(chan temp.Keypress) // does this need to be buffered to handle many keypresses happening "at once"?
+	//var buttonChan chan keypress
+	buttonChan := make(chan keypress) // does this need to be buffered to handle many keypresses happening "at once"?
 	floorChan := make(chan int)
 
 	go pollKeypresses(buttonChan)
@@ -79,7 +79,7 @@ func pollKeypresses(c chan keypress) {
 	}
 }
 
-func PollFloor(c chan int) {
+func pollFloor(c chan int) {
 	oldFloor := elev.GetFloor()
 
 	for {
