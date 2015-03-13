@@ -13,7 +13,7 @@ const doorOpenTime = 3 * time.Second
 
 func Init() {
 	timer := time.NewTimer(0)
-	//timer.Stop()
+	timer.Stop()
 
 	go func() {
 		for {
