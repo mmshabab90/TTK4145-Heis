@@ -57,7 +57,7 @@ func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 			state = moving
 		}
 	case doorOpen:
-		fmt.Println("door open")
+		log.Println("door open")
 		if floor == buttonFloor {
 			go timer.Start(doorOpenTime)
 		} else {

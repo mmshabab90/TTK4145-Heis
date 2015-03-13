@@ -13,4 +13,3 @@ func Start(sleepytime int) {
 	time.Sleep(time.Duration(sleepytime) * time.Second)
 	TimerChan <- true
 }
-
