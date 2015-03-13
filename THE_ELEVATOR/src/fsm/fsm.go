@@ -5,29 +5,23 @@ import (
 	"fmt"
 	"log"
 	"queue"
-	"reflect"
-	"runtime"
 	"timer"
 )
 
-var _ = log.Fatal         // For debugging only, remove when done
-var _ = reflect.ValueOf   // For debugging only, remove when done
-var _ = runtime.FuncForPC // For debugging only, remove when done
+var _ = log.Fatal // For debugging only, remove when done
 
-type State_t int
+type stateType int // Does this have scope?
 
 const (
-	idle State_t = iota
+	idle stateType = iota
 	moving
 	doorOpen
 )
 
-var state State_t
+var state stateType
 var direction elev.MotorDirnType
 var floor int
 var departDirection elev.MotorDirnType
-
-const doorOpenTime = 3.0
 
 func Init() {
 	log.Println("Init")
