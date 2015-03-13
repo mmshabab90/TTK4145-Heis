@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"fsm"
 	"log"
-	"temp"
+	"poller"
 	"time"
 	"timer"
 )
@@ -16,19 +16,21 @@ var _ = fmt.Println
 var _ = time.Sleep
 
 func main() {
-	temp.Init()
-
-	buttonChan := temp.PollKeypresses()
-	floorChan := temp.PollFloor()
-
-	for {
-		select {
-		case myKeypress := <-buttonChan:
-			fsm.EventButtonPressed(myKeypress.Floor, myKeypress.Button)
-		case floor := <-floorChan:
-			fsm.EventFloorReached(floor)
-		case <-timer.TimerOut:
-			fsm.EventTimerOut()
-		}
+	if !elev.Init() {
+		log.Fatalln("Io_init() failed!")
 	}
+
+	fsm.Init()
+	timer.Init()
+
+	// Move to defined state:
+	elev.SetMotorDirection(elev.DirnDown)
+	floor := elev.GetFloor()
+	for floor == -1 {
+		floor = elev.GetFloor()
+	}
+	elev.SetFloorIndicator(floor)
+	elev.SetMotorDirection(elev.DirnStop)
+
+	poller.Run()
 }
