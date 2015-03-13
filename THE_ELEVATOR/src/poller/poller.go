@@ -8,6 +8,8 @@ import (
 	"timer"
 )
 
+var _ = log.Println
+
 type keypress struct {
 	button elev.ButtonType
 	floor  int
@@ -29,8 +31,8 @@ func Run() {
 	}
 }
 
-func pollButtons() <-chan Keypress {
-	c := make(chan Keypress)
+func pollButtons() <-chan keypress {
+	c := make(chan keypress)
 
 	go func() {
 		var buttonState [elev.NumFloors][elev.NumButtons]bool
@@ -45,7 +47,7 @@ func pollButtons() <-chan Keypress {
 					}
 					if elev.GetButton(f, b) {
 						if !buttonState[f][b] {
-							c <- Keypress{button: b, floor: f}
+							c <- keypress{button: b, floor: f}
 						}
 						buttonState[f][b] = true
 					} else {
