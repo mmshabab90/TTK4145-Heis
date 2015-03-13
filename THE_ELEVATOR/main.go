@@ -21,7 +21,7 @@ func main() {
 	//buttonChan := make(chan temp.Keypress) // does this need to be buffered to handle many keypresses happening "at once"?
 	//floorChan := make(chan int)
 
-	keyChan := temp.PollKeypresses()
+	buttonChan := temp.PollKeypresses()
 	floorChan := temp.PollFloor()
 
 	for {
