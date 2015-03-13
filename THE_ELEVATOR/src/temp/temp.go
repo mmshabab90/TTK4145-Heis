@@ -27,48 +27,59 @@ func Init() {
 	// Add some error handling here.
 }
 
-func PollKeypresses(c chan Keypress) {
-	var buttonState = [elev.NumFloors][elev.NumButtons]bool{
-		{false, false, false},
-		{false, false, false},
-		{false, false, false},
-		{false, false, false}, // find a better way to do this
-	}
-	
-	var b elev.ButtonType
-	for {
-		for f := 0; f < elev.NumFloors; f++ {
-			for b = 0; b < elev.NumButtons; b++ {
-				if (f == 0 && b == elev.ButtonCallDown) ||
-				(f == elev.NumFloors-1 && b == elev.ButtonCallUp) {
-					continue
-				}
-				if elev.GetButton(f, b) {
-					if !buttonState[f][b] {
-						c <- Keypress{Button: b, Floor: f}
+func PollKeypresses() {
+	c := make(chan Keypress)
+
+	go func() {
+		var buttonState = [elev.NumFloors][elev.NumButtons]bool{
+			{false, false, false},
+			{false, false, false},
+			{false, false, false},
+			{false, false, false}, // find a better way to do this
+		}
+		
+		var b elev.ButtonType
+		for {
+			for f := 0; f < elev.NumFloors; f++ {
+				for b = 0; b < elev.NumButtons; b++ {
+					if (f == 0 && b == elev.ButtonCallDown) ||
+					(f == elev.NumFloors-1 && b == elev.ButtonCallUp) {
+						continue
 					}
-					buttonState[f][b] = true
-				} else {
-					buttonState[f][b] = false
+					if elev.GetButton(f, b) {
+						if !buttonState[f][b] {
+							c <- Keypress{Button: b, Floor: f}
+						}
+						buttonState[f][b] = true
+					} else {
+						buttonState[f][b] = false
+					}
 				}
 			}
+			time.Sleep(time.Millisecond * 5)
 		}
-		time.Sleep(time.Millisecond * 5)
-	}
+	}()
+
+	return c
 }
 
-func PollFloor(c chan int) {
-	oldFloor := elev.GetFloor()
+func PollFloor() {
+	c := make(chan int)
 
-	for {
-		newFloor := elev.GetFloor()
-		if newFloor != oldFloor {
-			if newFloor != -1 {
-				c <- newFloor
+	go func() {
+		oldFloor := elev.GetFloor()
+
+		for {
+			newFloor := elev.GetFloor()
+			if newFloor != oldFloor {
+				if newFloor != -1 {
+					c <- newFloor
+				}
+				oldFloor = newFloor
 			}
-			oldFloor = newFloor
+			time.Sleep(time.Millisecond * 5)
 		}
-		time.Sleep(time.Millisecond * 5)
-	}
-}
+	}()
 
+	return c
+}
