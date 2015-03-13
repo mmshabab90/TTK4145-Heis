@@ -49,7 +49,7 @@ func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 		if direction == elev.DirnStop {
 			elev.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
-			go timer.Start(doorOpenTime)
+			timer.ResetTimer <- true
 			state = doorOpen
 		} else {
 			elev.SetMotorDirection(direction)
@@ -59,7 +59,7 @@ func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 	case doorOpen:
 		fmt.Println("door open")
 		if floor == buttonFloor {
-			go timer.Start(doorOpenTime)
+			timer.ResetTimer <- true
 		} else {
 			queue.AddOrder(buttonFloor, buttonType)
 		}
@@ -83,7 +83,7 @@ func EventFloorReached(newFloor int) {
 			elev.SetMotorDirection(elev.DirnStop)
 			elev.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
-			go timer.Start(doorOpenTime)
+			timer.ResetTimer <- true
 			state = doorOpen
 		} else {
 			departDirection = direction

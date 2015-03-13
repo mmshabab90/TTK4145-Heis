@@ -5,6 +5,7 @@ import (
 	"log"
 	"fsm"
 	"time"
+	"timer"
 )
 
 type Keypress struct {
@@ -24,6 +25,7 @@ func Init() {
 	elev.SetMotorDirection(elev.DirnStop)
 
 	fsm.Init()
+	go timer.Timer()
 	// Add some error handling here.
 }
 

@@ -30,7 +30,7 @@ func main() {
 			fsm.EventButtonPressed(myKeypress.Floor, myKeypress.Button)
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
-		case <- timer.TimerChan:
+		case <- timer.TimerOut:
 			fsm.EventTimerOut()
 		}
 	}
