@@ -27,7 +27,7 @@ func Init() {
 	// Add some error handling here.
 }
 
-func PollKeypresses() {
+func PollKeypresses() <- chan Keypress {
 	c := make(chan Keypress)
 
 	go func() {
@@ -63,7 +63,7 @@ func PollKeypresses() {
 	return c
 }
 
-func PollFloor() {
+func PollFloor() <-chan int {
 	c := make(chan int)
 
 	go func() {
@@ -71,12 +71,10 @@ func PollFloor() {
 
 		for {
 			newFloor := elev.GetFloor()
-			if newFloor != oldFloor {
-				if newFloor != -1 {
-					c <- newFloor
-				}
-				oldFloor = newFloor
+			if newFloor != oldFloor && newFloor != -1 {
+				c <- newFloor
 			}
+			oldFloor = newFloor
 			time.Sleep(time.Millisecond * 5)
 		}
 	}()
