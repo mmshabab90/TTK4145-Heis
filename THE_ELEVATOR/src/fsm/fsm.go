@@ -6,6 +6,7 @@ import (
 	"log"
 	"reflect"
 	"runtime"
+	"fmt"
 )
 
 var _ = log.Fatal         // For debugging only, remove when done
@@ -28,16 +29,20 @@ var departDirection elev.MotorDirnType
 const doorOpenTime = 3.0
 
 func Init() {
+	fmt.Println("Init")
 	state = idle
 	direction = elev.DirnStop
 	floor = elev.GetFloor()
 	departDirection = elev.DirnDown
 	queue.RemoveAll()
+	syncLights()
 }
 
 func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
+	fmt.Print("Event button pressed in state ")
 	switch state {
 	case idle:
+		fmt.Println("idle")
 		queue.AddOrder(buttonFloor, buttonType)
 		direction = queue.ChooseDirection(floor, direction)
 		if direction == elev.DirnStop {
@@ -51,12 +56,14 @@ func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 			state = moving
 		}
 	case doorOpen:
+		fmt.Println("door open")
 		if floor == buttonFloor {
 			// timer.Start(doorOpenTime)
 		} else {
 			queue.AddOrder(buttonFloor, buttonType)
 		}
 	case moving:
+		fmt.Println("moving")
 		queue.AddOrder(buttonFloor, buttonType)
 	default:
 		log.Fatalf("State %d is invalid!\n", state)
@@ -65,10 +72,12 @@ func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 }
 
 func EventFloorReached(newFloor int) {
+	fmt.Print("Event floor reached in state ")
 	floor = newFloor
 	elev.SetFloorIndicator(floor)
 	switch state {
 	case moving:
+		fmt.Println("moving")
 		if queue.ShouldStop(floor, direction) {
 			elev.SetMotorDirection(elev.DirnStop)
 			elev.SetDoorOpenLamp(true)
@@ -85,8 +94,10 @@ func EventFloorReached(newFloor int) {
 }
 
 func EventTimerOut() {
+	fmt.Print("Event timer out in state ")
 	switch state {
 	case doorOpen:
+		fmt.Println("Washington")
 		direction = queue.ChooseDirection(floor, direction)
 		elev.SetDoorOpenLamp(false)
 		elev.SetMotorDirection(direction)
@@ -99,11 +110,13 @@ func EventTimerOut() {
 	default:
 		log.Fatalf("Makes no sense to time out when not in doorOpen\n")
 	}
+	syncLights()
 }
 
 func syncLights() {
+	var b elev.ButtonType
 	for f := 0; f < elev.NumFloors; f++ {
-		for b := 0; b < elev.NumButtons; b++ {
+		for b = 0; b < elev.NumButtons; b++ {
 			if (b == elev.ButtonCallUp && f == elev.NumFloors-1) ||
 				(b == elev.ButtonCallDown && f == 0) {
 				continue

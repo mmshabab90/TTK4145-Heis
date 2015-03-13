@@ -17,7 +17,7 @@ type ButtonType int
 type MotorDirnType int
 
 const (
-	ButtonCallUp int = iota
+	ButtonCallUp ButtonType = iota
 	ButtonCallDown
 	ButtonCommand
 )
@@ -140,7 +140,7 @@ func SetFloorIndicator(floor int) {
 	}
 }
 
-func GetButton(floor int, button int) bool {
+func GetButton(floor int, button ButtonType) bool {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return false
@@ -167,7 +167,7 @@ func GetButton(floor int, button int) bool {
 	}
 }
 
-func SetButtonLamp(floor int, button int, value bool) {
+func SetButtonLamp(floor int, button ButtonType, value bool) {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return

@@ -85,7 +85,7 @@ func RemoveAll() {
 	}
 }
 
-func IsOrder(floor int, button int) bool {
+func IsOrder(floor int, button elev.ButtonType) bool {
 	return queue[floor][button]
 }
 

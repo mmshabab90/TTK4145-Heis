@@ -7,7 +7,7 @@ import (
 )
 
 type Keypress struct {
-	Button int
+	Button elev.ButtonType
 	Floor int
 }
 
@@ -31,10 +31,11 @@ func PollKeypresses(c chan Keypress) {
 		{false, false, false},
 		{false, false, false}, // find a better way to do this
 	}
-
+	
+	var b elev.ButtonType
 	for {
 		for f := 0; f < elev.NumFloors; f++ {
-			for b := 0; b < elev.NumButtons; b++ {
+			for b = 0; b < elev.NumButtons; b++ {
 				if (f == 0 && b == elev.ButtonCallDown) ||
 				(f == elev.NumFloors-1 && b == elev.ButtonCallUp) {
 					continue
