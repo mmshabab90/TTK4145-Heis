@@ -2,12 +2,12 @@ package fsm
 
 import (
 	"elev"
-	"queue"
 	"fmt"
-	"timer"
+	"log"
+	"queue"
 	"reflect"
 	"runtime"
-	"log"
+	"timer"
 )
 
 var _ = log.Fatal         // For debugging only, remove when done

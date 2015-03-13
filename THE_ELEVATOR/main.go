@@ -2,12 +2,12 @@ package main
 
 import (
 	"elev"
+	"fmt"
 	"fsm"
-	"timer"
+	"log"
 	"temp"
 	"time"
-	"log"
-	"fmt"
+	"timer"
 )
 
 var _ = elev.Init
@@ -17,7 +17,7 @@ var _ = time.Sleep
 
 func main() {
 	temp.Init()
-	
+
 	buttonChan := temp.PollKeypresses()
 	floorChan := temp.PollFloor()
 
@@ -27,9 +27,8 @@ func main() {
 			fsm.EventButtonPressed(myKeypress.Floor, myKeypress.Button)
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
-		case <- timer.TimerOut:
+		case <-timer.TimerOut:
 			fsm.EventTimerOut()
 		}
 	}
 }
-

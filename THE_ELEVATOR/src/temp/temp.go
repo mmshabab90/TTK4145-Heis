@@ -2,15 +2,15 @@ package temp
 
 import (
 	"elev"
-	"log"
 	"fsm"
+	"log"
 	"time"
 	"timer"
 )
 
 type Keypress struct {
 	Button elev.ButtonType
-	Floor int
+	Floor  int
 }
 
 func Init() {
@@ -20,7 +20,9 @@ func Init() {
 
 	floor := elev.GetFloor()
 	elev.SetMotorDirection(elev.DirnDown)
-	for floor == -1 {floor = elev.GetFloor()}
+	for floor == -1 {
+		floor = elev.GetFloor()
+	}
 	elev.SetFloorIndicator(floor)
 	elev.SetMotorDirection(elev.DirnStop)
 
@@ -29,18 +31,18 @@ func Init() {
 	// Add some error handling here.
 }
 
-func PollKeypresses() <- chan Keypress {
+func PollKeypresses() <-chan Keypress {
 	c := make(chan Keypress)
 
 	go func() {
-		var buttonState [elev.NumFloors][elev.NumButtons] bool
-		
+		var buttonState [elev.NumFloors][elev.NumButtons]bool
+
 		var b elev.ButtonType
 		for {
 			for f := 0; f < elev.NumFloors; f++ {
 				for b = 0; b < elev.NumButtons; b++ {
 					if (f == 0 && b == elev.ButtonCallDown) ||
-					(f == elev.NumFloors-1 && b == elev.ButtonCallUp) {
+						(f == elev.NumFloors-1 && b == elev.ButtonCallUp) {
 						continue
 					}
 					if elev.GetButton(f, b) {
