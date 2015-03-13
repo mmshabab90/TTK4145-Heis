@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-var queue = [elev.NumFloors][elev.NumButtons]bool
+var queue [elev.NumFloors][elev.NumButtons]bool
 
 func AddOrder(floor int, button elev.ButtonType) {
 	queue[floor][button] = true
