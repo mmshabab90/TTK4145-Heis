@@ -5,14 +5,7 @@ import (
 	"log"
 )
 
-var _ = elev.Init
-
-var queue = [elev.NumFloors][elev.NumButtons]bool{
-	{false, false, false},
-	{false, false, false},
-	{false, false, false},
-	{false, false, false},
-}
+var queue = [elev.NumFloors][elev.NumButtons]bool
 
 func AddOrder(floor int, button elev.ButtonType) {
 	queue[floor][button] = true
@@ -44,7 +37,7 @@ func ChooseDirection(currFloor int, currDir elev.MotorDirnType) elev.MotorDirnTy
 			return elev.DirnStop
 		}
 	default:
-		log.Printf("Orders_chooseDirection called with unexpected direction %d!", currDir)
+		log.Printf("queue: ChooseDirection called with invalid direction %d!\n", currDir)
 		return elev.DirnStop
 	}
 }
@@ -66,7 +59,7 @@ func ShouldStop(floor int, direction elev.MotorDirnType) bool {
 			queue[floor][elev.ButtonCallUp] ||
 			queue[floor][elev.ButtonCommand]
 	default:
-		log.Printf("Orders_shouldStop called with unexpected direction %d!", direction)
+		log.Printf("queue: ShouldStop called with invalid direction %d!\n", direction)
 		return false
 	}
 }
