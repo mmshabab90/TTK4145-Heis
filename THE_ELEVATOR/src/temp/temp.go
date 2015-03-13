@@ -31,12 +31,7 @@ func PollKeypresses() <- chan Keypress {
 	c := make(chan Keypress)
 
 	go func() {
-		var buttonState = [elev.NumFloors][elev.NumButtons]bool{
-			{false, false, false},
-			{false, false, false},
-			{false, false, false},
-			{false, false, false}, // find a better way to do this
-		}
+		var buttonState [elev.NumFloors][elev.NumButtons] bool
 		
 		var b elev.ButtonType
 		for {
