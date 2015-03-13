@@ -5,27 +5,26 @@ import (
 	"time"
 )
 
-var _ = log.Fatal // for debugging only
+var _ = log.Fatal // For debugging only, remove when done
 
 var TimerOut = make(chan bool) 
 var ResetTimer = make(chan bool)
+var doorOpenTime = 3 * time.Second
 
-/*func Start(sleepytime int) {
-	time.Sleep(time.Duration(sleepytime) * time.Second)
-	TimerChan <- true
-}*/
-
-func Timer() {
-	myTimer := time.NewTimer(3 * time.Second)
-	myTimer.Stop()
-	for{
-		select{
-		case <- ResetTimer:
-			myTimer.Reset(3 * time.Second)
-		case <- myTimer.C:
-			TimerOut <- true
-			myTimer.Stop()
+func Init() {
+	timer := time.NewTimer(doorOpenTime)
+	timer.Stop()
+	
+	go func() {
+		for{
+			select{
+			case <- ResetTimer:
+				timer.Reset(doorOpenTime)
+			case <- timer.C:
+				TimerOut <- true
+				timer.Stop()
+			}
 		}
-	}
+	}()
 }
 

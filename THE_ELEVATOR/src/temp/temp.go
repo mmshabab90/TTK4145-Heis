@@ -25,7 +25,7 @@ func Init() {
 	elev.SetMotorDirection(elev.DirnStop)
 
 	fsm.Init()
-	go timer.Timer()
+	timer.Init()
 	// Add some error handling here.
 }
 
