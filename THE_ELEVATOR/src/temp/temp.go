@@ -4,6 +4,7 @@ import (
 	"elev"
 	"log"
 	"fsm"
+	"time"
 )
 
 type Keypress struct {
@@ -16,8 +17,10 @@ func Init() {
 		log.Fatalln("Io_init() failed!")
 	}
 
+	floor := elev.GetFloor()
 	elev.SetMotorDirection(elev.DirnDown)
-	for elev.GetFloor() == -1 {}
+	for floor == -1 {floor = elev.GetFloor()}
+	elev.SetFloorIndicator(floor)
 	elev.SetMotorDirection(elev.DirnStop)
 
 	fsm.Init()
@@ -50,6 +53,7 @@ func PollKeypresses(c chan Keypress) {
 				}
 			}
 		}
+		time.Sleep(time.Millisecond * 5)
 	}
 }
 
@@ -64,6 +68,7 @@ func PollFloor(c chan int) {
 			}
 			oldFloor = newFloor
 		}
+		time.Sleep(time.Millisecond * 5)
 	}
 }
 

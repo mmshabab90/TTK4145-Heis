@@ -40,7 +40,7 @@ func Init() {
 }
 
 func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
-	log.Print("Event button pressed in state ")
+	fmt.Print("Event button pressed in state ")
 	switch state {
 	case idle:
 		fmt.Println("idle")
@@ -73,7 +73,7 @@ func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 }
 
 func EventFloorReached(newFloor int) {
-	log.Print("Event floor reached in state ")
+	fmt.Print("Event floor reached in state ")
 	floor = newFloor
 	elev.SetFloorIndicator(floor)
 	switch state {
@@ -95,7 +95,7 @@ func EventFloorReached(newFloor int) {
 }
 
 func EventTimerOut() {
-	log.Print("Event timer out in state ")
+	fmt.Print("Event timer out in state ")
 	switch state {
 	case doorOpen:
 		fmt.Println("door open")

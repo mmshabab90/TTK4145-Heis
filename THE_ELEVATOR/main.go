@@ -27,13 +27,13 @@ func main() {
 	for {
 		select {
 		case myKeypress := <-buttonChan:
-			log.Println("Got keypress")
+			//log.Println("Got keypress")
 			fsm.EventButtonPressed(myKeypress.Floor, myKeypress.Button)
 		case floor := <-floorChan:
-			log.Println("Got floor")
+			//log.Println("Got floor")
 			fsm.EventFloorReached(floor)
 		case <- timer.TimerChan:
-			log.Println("Got timeout")
+			//log.Println("Got timeout")
 			fsm.EventTimerOut()
 		}
 	}
