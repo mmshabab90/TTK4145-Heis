@@ -33,7 +33,7 @@ func StillAliveBroadcast(){ //global?
 		Send_ch <- sndMsg
 		fmt.Println("Msg sent")
 		Print_udp_message(sndMsg)
-		time.Sleep(500*time.Second)
+		time.Sleep(500*time.Millisecond)
 	} 
 }
 
