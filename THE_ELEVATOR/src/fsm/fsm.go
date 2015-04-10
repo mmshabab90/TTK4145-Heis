@@ -2,10 +2,10 @@ package fsm
 
 import (
 	"../elev"
-	"fmt"
-	"log"
 	"../queue"
 	"../timer"
+	"fmt"
+	"log"
 )
 
 type stateType int // Does this have scope?

@@ -3,9 +3,9 @@ package poller
 import (
 	"../elev"
 	"../fsm"
+	"../timer"
 	"log"
 	"time"
-	"../timer"
 )
 
 var _ = log.Println
