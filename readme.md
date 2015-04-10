@@ -1,3 +1,6 @@
+Morten Late Night Tales
+=======================
+
 Datastrukturer
 --------------
 
@@ -19,3 +22,8 @@ Når en ny ytre bestilling kommer skal følgende skje:
 - Masterheisen sender ut den oppdaterte køen
 - Heisen som mottok bestillingen fortsetter å sende den frem til den får en oppdatert kø med bestillingen lagt til
 - Heisene fortsetter å kjøre og håndtere bestillinger på samme måte som soloheis-koden
+
+Kostfunksjon
+------------
+
+Kostnad én for hver etasje heisen må gå og hver etasje heisen skal stoppe i på veien mot målet.
