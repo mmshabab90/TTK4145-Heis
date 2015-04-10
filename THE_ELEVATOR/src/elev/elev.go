@@ -1,5 +1,6 @@
 /*
- *  This file is a golang port of elev.c
+ *  This file is a golang port of elev.c from the hand out driver
+ *  https://github.com/TTK4145/Project
  */
 
 package elev
