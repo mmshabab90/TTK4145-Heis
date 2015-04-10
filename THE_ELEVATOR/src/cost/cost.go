@@ -1,5 +1,9 @@
 package cost
 
+import (
+	"log"
+)
+
 // this doesn't belong here:
 type queueEntry struct {
 	isOrder bool
@@ -9,23 +13,13 @@ type queueEntry struct {
 var sharedQueue [elev.NumFloors][2]queueEntry
 // end does not belong
 
-func calculateCost(targetFloor int, targetDirection elev.DirnType) int {
+func CalculateCost(targetFloor int, targetDirection elev.DirnType) int {
 	cost := 0
-	// Add 1 cost if lift between floors:
+
 	floor := elev.GetFloor()
 	if floor == -1 {
 		cost++
-		floor = fsm.GetFloor()
-
-		// Find next floor:
-		switch fsm.GetDirection() {
-		case elev.DirnDown:
-			floor--
-		case elev.DirnUp:
-			floor++
-		default:
-			// Error!
-		}
+		floor = incrementFloor(fsm.GetFloor(), direction) // Is this correct?
 	}
 
 	// Loop through floors until target found, and accumulate cost:
@@ -42,10 +36,29 @@ func calculateCost(targetFloor int, targetDirection elev.DirnType) int {
 		}
 
 		if queue.ShouldStop(floor, direction) {
+			if floor == targetFloor {
+				break
+			}
 			cost += 2
 		}
 		cost += 2
+
+		floor = incrementFloor(floor, direction)
+		}
 	}
 
 	return cost
+}
+
+func incrementFloor(floor int, direction elev.DirnType) int {
+	switch direction {
+	case elev.DirnDown:
+		floor--
+	case elev.DirnUp:
+		floor++
+	default:
+		log.Println("Error: Invalid direction, floor not incremented.")
+	}
+
+	return floor
 }
