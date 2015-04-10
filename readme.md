@@ -6,6 +6,7 @@ Alle heiser har en kopi av en struct (eller noe) som inneholder:
 - For hver bestilling: Hvilken heis som er satt til å utføre den
 - Liste over aktive heiser på nettverket
 - Hvor lenge det er siden heisene har gitt lyd fra seg
+
 Denne skal 'alltid' være lagret lokalt i alle levende heiser, og være identisk i alle heiser.
 
 I tillegg skal alle heiser ha en separat, utelukkende lokal liste over indre bestillinger.
