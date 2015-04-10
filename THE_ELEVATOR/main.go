@@ -2,18 +2,11 @@ package main
 
 import (
 	"./src/elev"
-	"fmt"
 	"./src/fsm"
-	"log"
 	"./src/poller"
-	"time"
 	"./src/timer"
+	"log"
 )
-
-var _ = elev.Init
-var _ = log.Println
-var _ = fmt.Println
-var _ = time.Sleep
 
 func main() {
 	if !elev.Init() {

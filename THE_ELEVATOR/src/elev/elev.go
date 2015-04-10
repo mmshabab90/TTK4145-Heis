@@ -12,7 +12,7 @@ const NumButtons = 3
 const NumFloors = 4
 
 type ButtonType int
-type MotorDirnType int
+type DirnType int
 
 const (
 	ButtonCallUp ButtonType = iota
@@ -21,7 +21,7 @@ const (
 )
 
 const (
-	DirnDown MotorDirnType = iota - 1
+	DirnDown DirnType = iota - 1
 	DirnStop
 	DirnUp
 )
@@ -67,7 +67,7 @@ func Init() bool {
 	return true
 }
 
-func SetMotorDirection(dirn MotorDirnType) {
+func SetMotorDirection(dirn DirnType) {
 	if dirn == 0 {
 		Io_write_analog(MOTOR, 0)
 	} else if dirn > 0 {

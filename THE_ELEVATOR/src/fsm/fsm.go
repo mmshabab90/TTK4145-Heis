@@ -17,9 +17,9 @@ const (
 )
 
 var state stateType
-var direction elev.MotorDirnType
+var direction elev.DirnType
 var floor int
-var departDirection elev.MotorDirnType
+var departDirection elev.DirnType
 
 func Init() {
 	log.Println("Init")

@@ -11,7 +11,7 @@ func AddOrder(floor int, button elev.ButtonType) {
 	queue[floor][button] = true
 }
 
-func ChooseDirection(currFloor int, currDir elev.MotorDirnType) elev.MotorDirnType {
+func ChooseDirection(currFloor int, currDir elev.DirnType) elev.DirnType {
 	if !isAnyOrders() {
 		return elev.DirnStop
 	}
@@ -42,7 +42,7 @@ func ChooseDirection(currFloor int, currDir elev.MotorDirnType) elev.MotorDirnTy
 	}
 }
 
-func ShouldStop(floor int, direction elev.MotorDirnType) bool {
+func ShouldStop(floor int, direction elev.DirnType) bool {
 	switch direction {
 	case elev.DirnDown:
 		return queue[floor][elev.ButtonCallDown] ||
