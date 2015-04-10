@@ -1,11 +1,11 @@
 package poller
 
 import (
-	"elev"
-	"fsm"
+	"../elev"
+	"../fsm"
 	"log"
 	"time"
-	"timer"
+	"../timer"
 )
 
 var _ = log.Println

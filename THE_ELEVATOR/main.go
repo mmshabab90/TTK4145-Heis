@@ -1,13 +1,13 @@
 package main
 
 import (
-	"elev"
+	"./src/elev"
 	"fmt"
-	"fsm"
+	"./src/fsm"
 	"log"
-	"poller"
+	"./src/poller"
 	"time"
-	"timer"
+	"./src/timer"
 )
 
 var _ = elev.Init

@@ -1,11 +1,11 @@
 package fsm
 
 import (
-	"elev"
+	"../elev"
 	"fmt"
 	"log"
-	"queue"
-	"timer"
+	"../queue"
+	"../timer"
 )
 
 var _ = log.Fatal // For debugging only, remove when done
