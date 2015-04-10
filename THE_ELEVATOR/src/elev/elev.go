@@ -8,8 +8,6 @@ import (
 	"log"
 )
 
-var _ = log.Fatal // For debugging; delete when done.
-
 const NumButtons = 3
 const NumFloors = 4
 
@@ -119,6 +117,7 @@ func GetFloor() int {
 	}
 }
 
+// Suggestion: Change name to SetFloorLamp
 func SetFloorIndicator(floor int) {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)

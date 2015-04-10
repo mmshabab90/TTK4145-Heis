@@ -2,13 +2,11 @@ package fsm
 
 import (
 	"../elev"
-	"fmt"
-	"log"
 	"../queue"
 	"../timer"
+	"fmt"
+	"log"
 )
-
-var _ = log.Fatal // For debugging only, remove when done
 
 type stateType int // Does this have scope?
 
