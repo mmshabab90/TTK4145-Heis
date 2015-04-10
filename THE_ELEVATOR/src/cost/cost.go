@@ -3,8 +3,9 @@ package cost
 // this doesn't belong here:
 type queueEntry struct {
 	isOrder bool
-	ipAddr string
+	ipAddr  string
 }
+
 var sharedQueue [elev.NumFloors][2]queueEntry
 // end does not belong
 
