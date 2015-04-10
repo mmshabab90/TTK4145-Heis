@@ -8,8 +8,6 @@ import (
 	"../timer"
 )
 
-var _ = log.Fatal // For debugging only, remove when done
-
 type stateType int // Does this have scope?
 
 const (
