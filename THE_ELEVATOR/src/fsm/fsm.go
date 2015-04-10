@@ -17,9 +17,9 @@ const (
 )
 
 var state stateType
-var direction elev.MotorDirnType
+var direction elev.DirnType
 var floor int
-var departDirection elev.MotorDirnType
+var departDirection elev.DirnType
 
 func Init() {
 	log.Println("Init")
@@ -104,6 +104,14 @@ func EventTimerOut() {
 		log.Fatalf("Makes no sense to time out when not in doorOpen\n")
 	}
 	syncLights()
+}
+
+func GetDirection() elev.DirnType {
+	return direction
+}
+
+func GetFloor() int {
+	return floor
 }
 
 func syncLights() {

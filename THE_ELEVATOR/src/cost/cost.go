@@ -1,17 +1,35 @@
 package cost
 
-func calculateCost(newOrder orderType) {
-	cost := 0
+// this doesn't belong here:
+type queueEntry struct {
+	isOrder bool
+	ipAddr string
+}
+var sharedQueue [elev.NumFloors][2]queueEntry
+// end does not belong
 
-	// legg til 1 cost om heisen er mellom etasjer:
+func calculateCost(targetFloor int, targetDirection elev.DirnType) int {
+	cost := 0
+	// Add 1 cost if lift between floors:
 	floor := elev.GetFloor()
 	if floor == -1 {
 		cost++
-		floor = "første etasje heisen vil nå"
+		floor = fsm.GetFloor()
+
+		// Find next floor:
+		switch fsm.GetDirection() {
+		case elev.DirnDown:
+			floor--
+		case elev.DirnUp:
+			floor++
+		default:
+			// Error!
+		}
 	}
 
-	direction = "current direction"
-	for floor != newOrder.floor && direction != newOrder.direction {
+	// Loop through floors until target found, and accumulate cost:
+	direction = fsm.GetDirection()
+	for floor != targetFloor && direction != targetDirection {
 		if floor <= 0 {
 			floor = 1
 			direction *= -1
@@ -22,15 +40,11 @@ func calculateCost(newOrder orderType) {
 			floor += direction
 		}
 
-		cost += 2
-		if shouldStop() {
+		if queue.ShouldStop(floor, direction) {
 			cost += 2
 		}
+		cost += 2
 	}
 
 	return cost
-
-	// finn antall stopp før ankomst til newOrder:
-	// finn antall etasjer å kjøre før ankomst til newOrder:
-	// (pass på at det tas høyde for retningen heisen evt. kjører)
 }
