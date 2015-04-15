@@ -1,14 +1,29 @@
-package queue
+package localQueue
 
 import (
 	"../elev"
 	"log"
 )
 
-var queue [elev.NumFloors][elev.NumButtons]bool
+var laddr string
+const invalidAddr = "0.0.0.0"
+
+// Burde ikke alive-telleren gå i en annen liste over heiser?
+
+type sharedOrder struct {
+	isOrderActive bool
+	elevatorAddr string
+}
+
+var sharedQueue [elev.NumFloors][elev.NumButtons]sharedOrder // internal orders in this are not used
+var localQueue [elev.NumFloors][elev.NumButtons]bool
+
+func Init() {
+	// set laddr variable
+}
 
 func AddOrder(floor int, button elev.ButtonType) {
-	queue[floor][button] = true
+	localQueue[floor][button] = true
 }
 
 func ChooseDirection(currFloor int, currDir elev.DirnType) elev.DirnType {
@@ -37,7 +52,7 @@ func ChooseDirection(currFloor int, currDir elev.DirnType) elev.DirnType {
 			return elev.DirnStop
 		}
 	default:
-		log.Printf("queue: ChooseDirection called with invalid direction %d!\n", currDir)
+		log.Printf("localQueue: ChooseDirection called with invalid direction %d!\n", currDir)
 		return elev.DirnStop
 	}
 }
@@ -45,47 +60,47 @@ func ChooseDirection(currFloor int, currDir elev.DirnType) elev.DirnType {
 func ShouldStop(floor int, direction elev.DirnType) bool {
 	switch direction {
 	case elev.DirnDown:
-		return queue[floor][elev.ButtonCallDown] ||
-			queue[floor][elev.ButtonCommand] ||
+		return localQueue[floor][elev.ButtonCallDown] ||
+			localQueue[floor][elev.ButtonCommand] ||
 			floor == 0 ||
 			!isOrdersBelow(floor)
 	case elev.DirnUp:
-		return queue[floor][elev.ButtonCallUp] ||
-			queue[floor][elev.ButtonCommand] ||
+		return localQueue[floor][elev.ButtonCallUp] ||
+			localQueue[floor][elev.ButtonCommand] ||
 			floor == elev.NumFloors-1 ||
 			!isOrdersAbove(floor)
 	case elev.DirnStop:
-		return queue[floor][elev.ButtonCallDown] ||
-			queue[floor][elev.ButtonCallUp] ||
-			queue[floor][elev.ButtonCommand]
+		return localQueue[floor][elev.ButtonCallDown] ||
+			localQueue[floor][elev.ButtonCallUp] ||
+			localQueue[floor][elev.ButtonCommand]
 	default:
-		log.Printf("queue: ShouldStop called with invalid direction %d!\n", direction)
+		log.Printf("localQueue: ShouldStop called with invalid direction %d!\n", direction)
 		return false
 	}
 }
 
 func RemoveOrdersAt(floor int) {
 	for b := 0; b < elev.NumButtons; b++ {
-		queue[floor][b] = false
+		localQueue[floor][b] = false
 	}
 }
 
 func RemoveAll() {
 	for f := 0; f < elev.NumFloors; f++ {
 		for b := 0; b < elev.NumButtons; b++ {
-			queue[f][b] = false
+			localQueue[f][b] = false
 		}
 	}
 }
 
 func IsOrder(floor int, button elev.ButtonType) bool {
-	return queue[floor][button]
+	return localQueue[floor][button]
 }
 
 func isOrdersAbove(floor int) bool {
 	for f := floor + 1; f < elev.NumFloors; f++ {
 		for b := 0; b < elev.NumButtons; b++ {
-			if queue[f][b] {
+			if localQueue[f][b] {
 				return true
 			}
 		}
@@ -96,7 +111,7 @@ func isOrdersAbove(floor int) bool {
 func isOrdersBelow(floor int) bool {
 	for f := 0; f < floor; f++ {
 		for b := 0; b < elev.NumButtons; b++ {
-			if queue[f][b] {
+			if localQueue[f][b] {
 				return true
 			}
 		}
@@ -107,10 +122,40 @@ func isOrdersBelow(floor int) bool {
 func isAnyOrders() bool {
 	for f := 0; f < elev.NumFloors; f++ {
 		for b := 0; b < elev.NumButtons; b++ {
-			if queue[f][b] {
+			if localQueue[f][b] {
 				return true
 			}
 		}
 	}
 	return false
+}
+
+func updateLocalQueue() {
+	for f := 0; f < elev.NumFloors; f++ {
+		for b := 0; b < elev.NumButtons; b++ {
+			if b != elev.ButtonCommand
+			&& sharedQueue[f][b].isOrderActive
+			&& sharedQueue[f][b].elevatorAddr == laddr {
+				localQueue[f][b] = true
+			}
+		}
+	}
+}
+
+func updateSharedQueue(floor int, button elev.ButtonType) {
+	// If order completed was assigned to this elevator: Remove from shared queue
+	if button == elev.ButtonCommand {
+		// error
+		return
+	}
+
+	if sharedQueue[floor][button].isOrderActive
+	&& sharedQueue[floor][button].elevatorAddr == laddr {
+		sharedQueue[floor][button].isOrderActive = false
+		sharedQueue[floor][button].elevatorAddr = invalidAddr
+	}
+}
+
+func removeSharedOrder(floor int, button elev.ButtonType) {
+	
 }
