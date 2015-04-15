@@ -24,8 +24,24 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 	}
 
 	cost := 0
+	floor := fsm.GetFloor()
+	direction := fsm.GetDirection()
 
-	floor := elev.GetFloor()
+	if elev.GetFloor() == -1 {
+		cost += 1
+		floor = incrementFloor(floor, direction)
+	}
+
+	for floor != targetFloor && !queue.ShouldStop(floor, direction) {
+		if queue.ShouldStop(floor, direction) {
+			cost += 2
+		}
+		direction = queue.ChooseDirection(floor, direction)
+		floor = incrementFloor(floor, direction)
+		cost += 2
+	}
+
+	/*floor := elev.GetFloor()
 	direction := fsm.GetDirection()
 	log.Printf("Floor: %d, direction: %d\n", floor, direction)
 	if floor == -1 {
@@ -59,7 +75,7 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 			cost += 2
 		}
 	}
-	return cost
+	return cost*/
 }
 
 func incrementFloor(floor int, direction elev.DirnType) int {
