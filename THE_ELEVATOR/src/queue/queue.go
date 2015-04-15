@@ -142,7 +142,17 @@ func updateLocalQueue() {
 	}
 }
 
-func updateSharedQueue(floor int, button elev.ButtonType) {
+func removeSharedOrder(floor int, button elev.ButtonType) {
+	if button == elev.ButtonCommand {
+		// error
+		return
+	}
+
+	sharedQueue[floor][button].isOrderActive = false
+	sharedQueue[floor][button].elevatorAddr = invalidAddr
+}
+
+/*func updateSharedQueue(floor int, button elev.ButtonType) {
 	// If order completed was assigned to this elevator: Remove from shared queue
 	if button == elev.ButtonCommand {
 		// error
@@ -154,8 +164,4 @@ func updateSharedQueue(floor int, button elev.ButtonType) {
 		sharedQueue[floor][button].isOrderActive = false
 		sharedQueue[floor][button].elevatorAddr = invalidAddr
 	}
-}
-
-func removeSharedOrder(floor int, button elev.ButtonType) {
-	
-}
+}*/
