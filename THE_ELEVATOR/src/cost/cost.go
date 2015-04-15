@@ -8,21 +8,18 @@ import (
 )
 
 func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
-	// Really need some good error taking care of here
-	var targetDirection elev.DirnType
 
 	switch targetButton {
 	case elev.ButtonCallUp:
-		targetDirection = elev.DirnUp
 	case elev.ButtonCallDown:
-		targetDirection = elev.DirnDown
 	case elev.ButtonCommand:
-		log.Println("Should not calculate cost on internal command!")
-		return -1
+		log.Println("CalculateCost() called with internal order!")
+		return -1 // return something else
 	default:
-		log.Fatalln("Error direction in cost")
+		log.Printf("CalculateCost() called with invalid order: %d\n", targetButton)
+		return -1 // Ditto
 	}
-
+	
 	cost := 0
 	floor := fsm.GetFloor()
 	direction := fsm.GetDirection()
@@ -32,7 +29,8 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 		floor = incrementFloor(floor, direction)
 	}
 
-	for floor != targetFloor && !queue.ShouldStop(floor, direction) {
+	for !(floor == targetFloor && queue.ShouldStop(floor, direction)) {
+		log.Printf("Floor: %d, direction: %d\n", floor, direction)
 		if queue.ShouldStop(floor, direction) {
 			cost += 2
 		}
@@ -40,42 +38,8 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 		floor = incrementFloor(floor, direction)
 		cost += 2
 	}
-
-	/*floor := elev.GetFloor()
-	direction := fsm.GetDirection()
-	log.Printf("Floor: %d, direction: %d\n", floor, direction)
-	if floor == -1 {
-		cost += 1
-		floor = incrementFloor(fsm.GetFloor(), direction) // Is this correct?
-	}
-
-	// Loop through floors until target found, and accumulate cost:
-	for floor != targetFloor && direction != targetDirection {
-		// Assert something
-
-		// Handle top/bottom floors:
-		if floor <= 0 {
-			floor = 1
-			direction = elev.DirnUp
-		} else if floor >= elev.NumFloors - 1 {
-			floor = elev.NumFloors - 2
-			direction = elev.DirnDown
-		} else {
-			floor = incrementFloor(floor, direction)
-			direction = queue.ChooseDirection(floor, direction)
-		}
-		cost += 2
-
-		log.Printf("Floor: %d, direction: %d\n", floor, direction)
-
-		if queue.ShouldStop(floor, direction) {
-			if floor == targetFloor {
-				break
-			}
-			cost += 2
-		}
-	}
-	return cost*/
+	
+	return cost
 }
 
 func incrementFloor(floor int, direction elev.DirnType) int {
@@ -90,3 +54,4 @@ func incrementFloor(floor int, direction elev.DirnType) int {
 
 	return floor
 }
+
