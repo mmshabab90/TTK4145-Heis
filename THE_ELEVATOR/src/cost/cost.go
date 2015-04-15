@@ -30,23 +30,26 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 	log.Printf("Floor: %d, direction: %d\n", floor, direction)
 	if floor == -1 {
 		cost += 1
-		floor = incrementFloor(floor, direction) // Is this correct?
+		floor = incrementFloor(fsm.GetFloor(), direction) // Is this correct?
 	}
 
 	// Loop through floors until target found, and accumulate cost:
 	for floor != targetFloor && direction != targetDirection {
+		// Assert something
+
 		// Handle top/bottom floors:
 		if floor <= 0 {
-			floor = 0
+			floor = 1
 			direction = elev.DirnUp
 		} else if floor >= elev.NumFloors - 1 {
-			floor = elev.NumFloors - 1
+			floor = elev.NumFloors - 2
 			direction = elev.DirnDown
+		} else {
+			floor = incrementFloor(floor, direction)
+			direction = queue.ChooseDirection(floor, direction)
 		}
-
-		// Go to next floor:
-		floor = incrementFloor(floor, direction)
 		cost += 2
+
 		log.Printf("Floor: %d, direction: %d\n", floor, direction)
 
 		if queue.ShouldStop(floor, direction) {
