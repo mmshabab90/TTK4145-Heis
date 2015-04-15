@@ -6,17 +6,26 @@ import (
 	"../fsm"
 )
 
-func CalculateCost(targetFloor int, targetDirection elev.DirnType) int {
+func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
+	switch targetButton {
+	case elev.ButtonCallUp:
+		targetDirection := elev.DirnUp
+	case elev.ButtonCallDown:
+		targetDirection := elev.DirnDown
+	default:
+		log.Println("Error dir cost")
+	}
+
 	cost := 0
 
 	floor := elev.GetFloor()
+	direction = fsm.GetDirection()
 	if floor == -1 {
 		cost++
-		floor = incrementFloor(fsm.GetFloor(), direction) // Is this correct?
+		floor = incrementFloor(floor, direction) // Is this correct?
 	}
 
 	// Loop through floors until target found, and accumulate cost:
-	direction = fsm.GetDirection()
 	for floor != targetFloor && direction != targetDirection {
 		if floor <= 0 {
 			floor = 1
