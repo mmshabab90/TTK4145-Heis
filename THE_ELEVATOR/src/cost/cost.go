@@ -4,14 +4,16 @@ import (
 	"log"
 	"../elev"
 	"../fsm"
+	"../queue"
 )
 
 func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
+	var targetDirection elev.DirnType
 	switch targetButton {
 	case elev.ButtonCallUp:
-		targetDirection := elev.DirnUp
+		targetDirection = elev.DirnUp
 	case elev.ButtonCallDown:
-		targetDirection := elev.DirnDown
+		targetDirection = elev.DirnDown
 	default:
 		log.Println("Error dir cost")
 	}
@@ -19,7 +21,7 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 	cost := 0
 
 	floor := elev.GetFloor()
-	direction = fsm.GetDirection()
+	direction := fsm.GetDirection()
 	if floor == -1 {
 		cost++
 		floor = incrementFloor(floor, direction) // Is this correct?
@@ -30,11 +32,12 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 		if floor <= 0 {
 			floor = 1
 			direction *= -1
-		} else if floor >= NumFloors-1 {
-			floor = NumFloors - 2
+		} else if floor >= elev.NumFloors-1 {
+			floor = elev.NumFloors - 2
 			direction *= -1
 		} else {
-			floor += direction
+			floor = incrementFloor(floor, direction)
+			//floor += direction
 		}
 
 		if queue.ShouldStop(floor, direction) {
@@ -46,7 +49,6 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 		cost += 2
 
 		floor = incrementFloor(floor, direction)
-		}
 	}
 
 	return cost

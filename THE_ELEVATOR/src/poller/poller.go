@@ -4,6 +4,7 @@ import (
 	"../elev"
 	"../fsm"
 	"../timer"
+	"../cost"
 	"log"
 	"time"
 	"fmt"
@@ -24,7 +25,7 @@ func Run() {
 		select {
 		case keypress := <-buttonChan:
 			fsm.EventButtonPressed(keypress.floor, keypress.button)
-			fmt.Println("Cost: %d", cost.CalculateCost(keypress.floor, keypress.button))
+			fmt.Printf("Cost: %d\n", cost.CalculateCost(keypress.floor, keypress.button))
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
 		case <-timer.TimerOut:
