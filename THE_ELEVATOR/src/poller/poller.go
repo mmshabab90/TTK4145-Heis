@@ -6,6 +6,7 @@ import (
 	"../timer"
 	"log"
 	"time"
+	"fmt"
 )
 
 var _ = log.Println
@@ -23,6 +24,7 @@ func Run() {
 		select {
 		case keypress := <-buttonChan:
 			fsm.EventButtonPressed(keypress.floor, keypress.button)
+			fmt.Println("Cost: %d", cost.CalculateCost(keypress.floor, keypress.button))
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
 		case <-timer.TimerOut:
