@@ -1,5 +1,6 @@
 /*
- *  This file is a golang port of elev.c
+ *  This file is a golang port of elev.c from the hand out driver
+ *  https://github.com/TTK4145/Project
  */
 
 package elev
@@ -8,13 +9,11 @@ import (
 	"log"
 )
 
-var _ = log.Fatal // For debugging; delete when done.
-
 const NumButtons = 3
 const NumFloors = 4
 
 type ButtonType int
-type MotorDirnType int
+type DirnType int
 
 const (
 	ButtonCallUp ButtonType = iota
@@ -23,7 +22,7 @@ const (
 )
 
 const (
-	DirnDown MotorDirnType = iota - 1
+	DirnDown DirnType = iota - 1
 	DirnStop
 	DirnUp
 )
@@ -69,7 +68,7 @@ func Init() bool {
 	return true
 }
 
-func SetMotorDirection(dirn MotorDirnType) {
+func SetMotorDirection(dirn DirnType) {
 	if dirn == 0 {
 		Io_write_analog(MOTOR, 0)
 	} else if dirn > 0 {
@@ -119,6 +118,7 @@ func GetFloor() int {
 	}
 }
 
+// Suggestion: Change name to SetFloorLamp
 func SetFloorIndicator(floor int) {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
