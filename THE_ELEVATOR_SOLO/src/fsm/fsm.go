@@ -108,6 +108,14 @@ func EventTimerOut() {
 	syncLights()
 }
 
+func GetDirection() elev.DirnType {
+	return direction
+}
+
+func GetFloor() int {
+	return floor
+}
+
 func syncLights() {
 	var b elev.ButtonType
 	for f := 0; f < elev.NumFloors; f++ {
