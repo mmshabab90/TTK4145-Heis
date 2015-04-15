@@ -16,6 +16,9 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 		targetDirection = elev.DirnUp
 	case elev.ButtonCallDown:
 		targetDirection = elev.DirnDown
+	case elev.ButtonCommand:
+		log.Println("Should not calculate cost on internal command!")
+		return -1
 	default:
 		log.Fatalln("Error direction in cost")
 	}
