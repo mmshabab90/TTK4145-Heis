@@ -19,7 +19,6 @@ func main() {
 	if !elev.Init() {
 		log.Fatalln("Io_init() failed!")
 	}
-
 	fsm.Init()
 	timer.Init()
 
@@ -32,5 +31,6 @@ func main() {
 	elev.SetFloorIndicator(floor)
 	elev.SetMotorDirection(elev.DirnStop)
 
+	// Run elevator:
 	poller.Run()
 }
