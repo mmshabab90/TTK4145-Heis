@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	network.NetworkInit()
+	network.Init()
 	for {
 		network.SendMsg("Hello Morten")
 	}

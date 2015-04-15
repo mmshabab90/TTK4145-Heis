@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	network.NetworkInit()
+	network.Init()
 	network.ReceiveMsg()
 }

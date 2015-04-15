@@ -1,4 +1,4 @@
-package timer
+package timer //rename to doortimer?
 
 import (
 	"log"

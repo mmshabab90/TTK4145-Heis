@@ -6,17 +6,17 @@ import (
 	"time"
 )
 
-type udpConnection struct {
-	addr  string
-	timer *time.Timer
+type UdpConnection struct {
+	Addr  string
+	Timer *time.Timer
 }
 
 //must these be global?
 var Send_ch = make (chan udp.Udp_message)
 var Receive_ch = make (chan udp.Udp_message)
-var ConnectionTimerChan = make(chan udpConnection)
+var ConnectionTimerChan = make(chan UdpConnection)
 
-func NetworkInit (){
+func Init (){
 	err := udp.Udp_init(20001, 20058, 1024, Send_ch, Receive_ch)	
 
 	if (err != nil){
@@ -33,7 +33,7 @@ func SendMsg(msg string){
 }
 
 func ReceiveMsg(){
-	var connectionMap map[string] udpConnection
+	var connectionMap map[string] UdpConnection
 	for {
 		rcvMsg := <- Receive_ch
 		fmt.Println("Msg received")
@@ -41,11 +41,11 @@ func ReceiveMsg(){
 		
 		//keep track of witch connections that exist
 		if connection, exist := connectionMap[rcvMsg.Raddr]; exist {
-			connection.timer.Reset(1*time.Second)
+			connection.Timer.Reset(1*time.Second)
 			fmt.Println("timer reset for IP: ")
 			fmt.Println(rcvMsg.Raddr)
 		} else {
-			newConnection := udpConnection{rcvMsg.Raddr, time.NewTimer(1*time.Second)}
+			newConnection := UdpConnection{rcvMsg.Raddr, time.NewTimer(1*time.Second)}
 			connectionMap[rcvMsg.Raddr] = newConnection
 			fmt.Println("New connection, with IP: ")
 			fmt.Println(rcvMsg.Raddr)
@@ -54,10 +54,10 @@ func ReceiveMsg(){
 	}
 }
 
-func connectionTimer(connection *udpConnection) {
+func connectionTimer(connection *UdpConnection) {
 	for {
 		select {
-		case <- connection.timer.C:
+		case <- connection.Timer.C:
 			ConnectionTimerChan <- *connection
 		}
 	}
