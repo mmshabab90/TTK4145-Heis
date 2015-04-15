@@ -54,4 +54,3 @@ func incrementFloor(floor int, direction elev.DirnType) int {
 
 	return floor
 }
-
