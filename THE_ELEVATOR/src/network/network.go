@@ -27,7 +27,23 @@ func NetworkInit (){
 	}
 }
 
-func StillAliveBroadcast(){ //global?
+func SendMsg(msg string){
+	sndMsg := udp.Udp_message{Raddr:"broadcast", Data:msg, Length:len(msg)}
+	Send_ch <- sndMsg
+	fmt.Println("Msg sent")
+	Print_udp_message(sndMsg)
+	time.Sleep(500*time.Millisecond)
+}
+
+func ReceiveMsg(){
+	for {
+		rcvMsg := <- Receive_ch
+		fmt.Println("Msg received")
+		Print_udp_message(rcvMsg)
+	}
+}
+
+func StillAliveBroadcast(){ //global? //should this exist? probably we should just use SendMsg whit "I'm alive" at an interval.
 	for {
 		sndMsg := udp.Udp_message{Raddr:"broadcast", Data:"I'm alive", Length:9}
 		Send_ch <- sndMsg
@@ -37,13 +53,15 @@ func StillAliveBroadcast(){ //global?
 	} 
 }
 
-func ListenForLiveElevators(){ //global?
+func ListenForLiveElevators(){ //global? //should this exist? probably not, but maybe the code should
 	var connectionMap map[string] UdpConnection
 	for {
 		rcvMsg := <- Receive_ch
 		
 		if connection, exist := connectionMap[rcvMsg.Raddr]; exist {
 			connection.Timer.Reset(1*time.Second)
+			fmt.Println("timer reset for IP: ")
+			fmt.Println(rcvMsg.Raddr)
 		} else {
 			newConnection := UdpConnection{rcvMsg.Raddr, time.NewTimer(1*time.Second)}
 			connectionMap[rcvMsg.Raddr] = newConnection
