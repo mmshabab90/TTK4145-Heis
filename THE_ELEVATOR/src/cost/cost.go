@@ -46,6 +46,7 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 
 		// Go to next floor:
 		floor = incrementFloor(floor, direction)
+		cost += 2
 		log.Printf("Floor: %d, direction: %d\n", floor, direction)
 
 		if queue.ShouldStop(floor, direction) {
@@ -54,7 +55,6 @@ func CalculateCost(targetFloor int, targetButton elev.ButtonType) int {
 			}
 			cost += 2
 		}
-		cost += 2
 	}
 	return cost
 }
