@@ -15,6 +15,10 @@ type Udp_message struct {
 	Length int    //length of received data, in #bytes // N/A for sending
 }
 
+func Print_udp_message(msg Udp_message){ 
+	fmt.Printf("msg:  \n \t raddr = %s \n \t data = %s \n \t length = %v \n", msg.Raddr, msg.Data, msg.Length)
+}
+
 func Udp_init(localListenPort, broadcastListenPort, message_size int, send_ch, receive_ch chan Udp_message) (err error) {
 	//Generating broadcast address
 	baddr, err = net.ResolveUDPAddr("udp4", "255.255.255.255:"+strconv.Itoa(broadcastListenPort))
