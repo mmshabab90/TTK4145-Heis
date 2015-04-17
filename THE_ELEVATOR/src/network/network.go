@@ -52,12 +52,6 @@ func Send(message Message) {
 	}
 }
 
-// func SendMsg(msg []byte){ // Replaced by Send(), should be removed sometime
-// 	sndMsg := udpMessage{raddr:"broadcast", data:msg, length:len(msg)}
-// 	sendChan <- sndMsg
-// 	time.Sleep(500*time.Millisecond)
-// }
-
 func ReceiveMsg(){ // bad abstraction! doesn't just receive msg. GIVE THIS NEW NAME!
 	connectionMap := make(map[string] UdpConnection)
 	for {

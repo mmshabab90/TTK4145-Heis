@@ -39,19 +39,7 @@ func AddOrder(floor int, button hw.ButtonType) {
 	if button == hw.ButtonCommand {
 		localQueue[floor][button] = true
 	} else {
-		// message := message{kind: newOrder, floor: floor, button: button, cost: -1}
-		// printMessage(message)
-		// jsonMsg, err := json.Marshal(message)
-		// if err != nil{
-		// 	// worry
-		// }
-		// network.SendMsg(jsonMsg)
-
-		// new and improved:
-		message := network.Message{
-			kind: newOrder,
-			floor: floor,
-			button: button}
+		message := network.Message{kind: newOrder, floor: floor, button: button}
 		network.Send(message)
 	}
 }

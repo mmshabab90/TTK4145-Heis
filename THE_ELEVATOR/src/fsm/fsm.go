@@ -53,7 +53,6 @@ func runTimer() {
 	}()
 }
 
-
 func EventButtonPressed(buttonFloor int, buttonType hw.ButtonType) {
 	fmt.Print("Event button pressed in state ")
 	switch state {
