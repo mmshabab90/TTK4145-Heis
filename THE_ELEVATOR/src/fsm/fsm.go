@@ -4,12 +4,12 @@ import (
 	"../elev"
 	"../queue"
 	"../timer"
+	"../network"
 	"fmt"
 	"log"
 )
 
 type stateType int // Does this have scope?
-
 const (
 	idle stateType = iota
 	moving
@@ -17,8 +17,8 @@ const (
 )
 
 var state stateType
-var direction elev.DirnType
 var floor int
+var direction elev.DirnType
 var departDirection elev.DirnType
 
 func Init() {
