@@ -1,5 +1,7 @@
 package main
 
+//this was useless
+
 import (
 	"./network"
 	"fmt"
