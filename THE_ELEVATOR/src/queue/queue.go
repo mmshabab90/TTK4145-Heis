@@ -14,10 +14,10 @@ const invalidAddr = "0.0.0.0"
 
 type messageType int
 const (
-	alive messageType = iota
-	newOrder
-	completeOrder
-	cost
+	Alive messageType = iota
+	NewOrder
+	CompleteOrder
+	Cost
 )
 
 type sharedOrder struct {
@@ -31,11 +31,12 @@ var sharedQueue [elev.NumFloors][elev.NumButtons]sharedOrder
 
 // --------------- PUBLIC: ---------------
 
-type Message struct { // maybe should make this public
-	kind messageType
-	floor int
-	button elev.ButtonType
-	cost int
+type Message struct {
+	Kind messageType
+	Addr string
+	Floor int
+	Button elev.ButtonType
+	Cost int
 }
 
 func Init() {
