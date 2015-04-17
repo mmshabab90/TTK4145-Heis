@@ -7,32 +7,58 @@ import (
 
 // --------------- PUBLIC: ---------------
 
+const (
+	Alive int = iota
+	NewOrder
+	CompleteOrder
+	Cost
+)
+
+type Message struct {
+	Kind int
+	Addr string
+	Floor int
+	Button elev.ButtonType
+	Cost int
+}
+
 type UdpConnection struct { //should this be in udp.go
 	Addr  string
 	Timer *time.Timer
 }
 
 //must these be global?
-var Send_ch = make (chan Udp_message)
-var ReceiveChan = make (chan Udp_message)
+var sendChan = make (chan udpMessage)
+var ReceiveChan = make (chan udpMessage)
 //this must be global (i think)
 var ConnectionTimer	 = make(chan UdpConnection)
 
 func Init (){
-	err := Udp_init(20001, 20058, 1024, Send_ch, ReceiveChan)	
+	err := Udp_init(20001, 20058, 1024, sendChan, ReceiveChan)	
 
 	if (err != nil){
 		fmt.Print("err = %s \n", err)
 	}
 }
 
-func SendMsg(msg []byte){
-	sndMsg := Udp_message{Raddr:"broadcast", Data:msg, Length:len(msg)}
-	Send_ch <- sndMsg
+func Send(message Message) {
+	printMessage(message)
+	jsonMessage, err := json.Marshal(message)
+	if err != nil {
+		// worry
+	} else {
+		sendChan <- udpMessage{raddr: "broadcast", data: msg, length: len(msg)}
+		time.Sleep(500*time.Millisecond)	// What's this for?
+	}
+}
+
+func SendMsg(msg []byte){ // Replaced by Send(), should be removed sometime
+	sndMsg := udpMessage{raddr:"broadcast", data:msg, length:len(msg)}
+	sendChan <- sndMsg
 	time.Sleep(500*time.Millisecond)
 }
 
-func ReceiveMsg(){ //bad abstraction? doesn't just receive msg. GIVE THIS NEW NAME!
+func ReceiveMsg(){ // bad abstraction! doesn't just receive msg. GIVE THIS NEW NAME!
 	connectionMap := make(map[string] UdpConnection)
 	for {
 		select{
@@ -40,15 +66,15 @@ func ReceiveMsg(){ //bad abstraction? doesn't just receive msg. GIVE THIS NEW NA
 			Print_udp_message(rcvMsg)
 			
 			//keep track of witch connections that exist
-			if connection, exist := connectionMap[rcvMsg.Raddr]; exist {
+			if connection, exist := connectionMap[rcvMsg.raddr]; exist {
 				connection.Timer.Reset(1*time.Second)
 				fmt.Println("timer reset for IP: ")
-				fmt.Println(rcvMsg.Raddr)
+				fmt.Println(rcvMsg.raddr)
 			} else {
-				newConnection := UdpConnection{rcvMsg.Raddr, time.NewTimer(1*time.Second)}
-				connectionMap[rcvMsg.Raddr] = newConnection
+				newConnection := UdpConnection{rcvMsg.raddr, time.NewTimer(1*time.Second)}
+				connectionMap[rcvMsg.raddr] = newConnection
 				fmt.Println("New connection, with IP: ")
-				fmt.Println(rcvMsg.Raddr)
+				fmt.Println(rcvMsg.raddr)
 				go connectionTimer(&newConnection)
 			}
 		//deletes connection when timer goes out
@@ -59,6 +85,27 @@ func ReceiveMsg(){ //bad abstraction? doesn't just receive msg. GIVE THIS NEW NA
 				fmt.Println(key)
 			}
 		}
+	}
+}
+
+func printMessage(msg Message) {
+	fmt.Println("Message")
+	fmt.Println("---------------------------")
+	switch msg.Kind {
+	case Alive:
+		fmt.Println("I'm alive\n")
+	case NewOrder:
+		fmt.Println("New order:")
+		fmt.Printf("Floor: %d\n", msg.Floor)
+		fmt.Printf("Button: %d\n\n", msg.Button)
+	case CompleteOrder:
+		fmt.Println("Complete order:")
+		fmt.Printf("Floor: %d\n", msg.Floor)
+		fmt.Printf("Button: %d\n\n", msg.Button)
+	case Cost:
+		fmt.Printf("Cost: %d\n\n", msg.Cost)
+	default:
+		log.Println("Invalid message type!\n")
 	}
 }
 

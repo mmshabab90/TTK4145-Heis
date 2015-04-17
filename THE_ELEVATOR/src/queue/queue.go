@@ -12,14 +12,6 @@ var laddr string
 
 const invalidAddr = "0.0.0.0"
 
-type messageType int
-const (
-	Alive messageType = iota
-	NewOrder
-	CompleteOrder
-	Cost
-)
-
 type sharedOrder struct {
 	isOrderActive bool
 	elevatorAddr  string
@@ -30,14 +22,6 @@ var localQueue [elev.NumFloors][elev.NumButtons]bool
 var sharedQueue [elev.NumFloors][elev.NumButtons]sharedOrder
 
 // --------------- PUBLIC: ---------------
-
-type Message struct {
-	Kind messageType
-	Addr string
-	Floor int
-	Button elev.ButtonType
-	Cost int
-}
 
 func Init() {
 	resetLocalQueue()
@@ -55,13 +39,20 @@ func AddOrder(floor int, button elev.ButtonType) {
 	if button == elev.ButtonCommand {
 		localQueue[floor][button] = true
 	} else {
-		msg := message{kind: newOrder, floor: floor, button: button, cost: -1}
-		printMessage(msg)
-		jsonMsg, err := json.Marshal(msg)
-		if err != nil{
-			// worry
-		}
-		network.SendMsg(jsonMsg)
+		// message := message{kind: newOrder, floor: floor, button: button, cost: -1}
+		// printMessage(message)
+		// jsonMsg, err := json.Marshal(message)
+		// if err != nil{
+		// 	// worry
+		// }
+		// network.SendMsg(jsonMsg)
+
+		// new and improved:
+		message := network.Message{
+			kind: newOrder,
+			floor: floor,
+			button: button}
+		network.Send(message)
 	}
 }
 
@@ -126,27 +117,6 @@ func RemoveOrdersAt(floor int) {
 
 func IsOrder(floor int, button elev.ButtonType) bool {
 	return localQueue[floor][button]
-}
-
-func PrintMessage(msg message) {
-	fmt.Println("Message")
-	fmt.Println("---------------------------")
-	switch msg.kind {
-	case alive:
-		fmt.Println("I'm alive\n")
-	case newOrder:
-		fmt.Println("New order:")
-		fmt.Printf("Floor: %d\n", msg.floor)
-		fmt.Printf("Button: %d\n\n", msg.button)
-	case completeOrder:
-		fmt.Println("Complete order:")
-		fmt.Printf("Floor: %d\n", msg.floor)
-		fmt.Printf("Button: %d\n\n", msg.button)
-	case cost:
-		fmt.Printf("Cost: %d\n\n", msg.cost)
-	default:
-		log.Println("Invalid message type\n")
-	}
 }
 
 // --------------- PRIVATE: ---------------

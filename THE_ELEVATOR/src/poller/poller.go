@@ -5,9 +5,11 @@ import (
 	"../fsm"
 	"../timer"
 	"../cost"
+	"../network"
 	"log"
 	"time"
 	"fmt"
+	"encoding/json"
 )
 
 var _ = log.Println
@@ -30,6 +32,8 @@ func Run() {
 			fsm.EventFloorReached(floor)
 		case <-timer.TimerOut:
 			fsm.EventTimerOut()
+		case udpMessage := <-network.ReceiveChan:
+			handleMessage(parseMessage(udpMessage))
 		}
 	}
 }
@@ -82,4 +86,29 @@ func pollFloors() <-chan int {
 	}()
 
 	return c
+}
+
+func parseMessage(udpMessage network.Udp_message) network.Message { // work this into network package!
+	var message network.Message
+	message = json.Unmarshal(udpMessage.Data)
+	message.Addr = udpMessage.Raddr
+	return message
+}
+
+func handleMessage(message network.Message) {
+	switch message.Kind {
+		case queue.Alive:
+			// reset lift timer (not door timer lol)
+		case queue.NewOrder:
+			costMessage := queue.Message{
+				Kind: queue.Cost,
+				Floor: message.Floor,
+				Button: message.Button,
+				Cost: cost.CalculateCost(message.Floor, message.Button)}
+			
+		case queue.CompleteOrder:
+			// remove from queues
+		case queue.Cost:
+			// notify assignment routine
+	}
 }
