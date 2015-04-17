@@ -1,6 +1,8 @@
 Message syntax
 ==============
 
+This defines the syntax for all messages to be passed between lifts.
+
 New orders
 ----------
 - Syntax:	"neworder",<floor>,<button>
