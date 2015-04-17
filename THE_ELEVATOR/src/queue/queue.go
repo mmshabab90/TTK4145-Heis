@@ -5,6 +5,7 @@ import (
 	"../network"
 	"log"
 	"encoding/json"
+	"fmt"
 )
 
 var laddr string
@@ -31,6 +32,27 @@ type message struct { // maybe should make this public
 	cost int
 }
 
+func printMessage(msg message) {
+	fmt.Println("Message")
+	fmt.Println("---------------------------")
+	switch msg.kind {
+	case alive:
+		fmt.Println("I'm alive\n")
+	case newOrder:
+		fmt.Println("New order:")
+		fmt.Printf("Floor: %d\n", msg.floor)
+		fmt.Printf("Button: %d\n\n", msg.button)
+	case completeOrder:
+		fmt.Println("Complete order:")
+		fmt.Printf("Floor: %d\n", msg.floor)
+		fmt.Printf("Button: %d\n\n", msg.button)
+	case cost:
+		fmt.Printf("Cost: %d\n\n", msg.cost)
+	default:
+		log.Println("Invalid message type\n")
+	}
+}
+
 var localQueue [elev.NumFloors][elev.NumButtons]bool
 // Internal orders in shared queue are unused, but present for better indexing:
 var sharedQueue [elev.NumFloors][elev.NumButtons]sharedOrder
@@ -53,6 +75,7 @@ func AddOrder(floor int, button elev.ButtonType) {
 		localQueue[floor][button] = true
 	} else {
 		msg := message{kind: newOrder, floor: floor, button: button, cost: -1}
+		printMessage(msg)
 		jsonMsg, err := json.Marshal(msg)
 		if err != nil{
 			// worry
