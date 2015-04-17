@@ -1,29 +1,64 @@
-package localQueue
+package queue
 
 import (
 	"../elev"
+	"../network"
 	"log"
+	"encoding/json"
 )
 
 var laddr string
+
 const invalidAddr = "0.0.0.0"
 
-// Burde ikke alive-telleren gå i en annen liste over heiser?
+type messageType int
+const (
+	alive messageType = iota
+	newOrder
+	completeOrder
+	cost
+)
 
 type sharedOrder struct {
 	isOrderActive bool
-	elevatorAddr string
+	elevatorAddr  string
 }
 
-var sharedQueue [elev.NumFloors][elev.NumButtons]sharedOrder // internal orders in this are not used
-var localQueue [elev.NumFloors][elev.NumButtons]bool
+type message struct { // maybe should make this public
+	kind messageType
+	floor int
+	button elev.ButtonType
+	cost int
+}
 
+var localQueue [elev.NumFloors][elev.NumButtons]bool
+// Internal orders in shared queue are unused, but present for better indexing:
+var sharedQueue [elev.NumFloors][elev.NumButtons]sharedOrder
+
+// --------------- PUBLIC: ---------------
 func Init() {
+	resetLocalQueue()
+	resetSharedQueue()
 	// set laddr variable
 }
 
 func AddOrder(floor int, button elev.ButtonType) {
-	localQueue[floor][button] = true
+	// New AddOrder should:
+		// Send message about new order to all lifts
+		// Another func should receive replies and
+		// assign the order to the lift with the lowest
+		// cost (or lowest ip if several lifts have same cost)
+
+	if button == elev.ButtonCommand {
+		localQueue[floor][button] = true
+	} else {
+		msg := message{kind: newOrder, floor: floor, button: button, cost: -1}
+		jsonMsg, err := json.Marshal(msg)
+		if err {
+			// worry
+		}
+		network.SendMsg(jsonMsg)
+	}
 }
 
 func ChooseDirection(currFloor int, currDir elev.DirnType) elev.DirnType {
@@ -85,17 +120,11 @@ func RemoveOrdersAt(floor int) {
 	}
 }
 
-func RemoveAll() {
-	for f := 0; f < elev.NumFloors; f++ {
-		for b := 0; b < elev.NumButtons; b++ {
-			localQueue[f][b] = false
-		}
-	}
-}
-
 func IsOrder(floor int, button elev.ButtonType) bool {
 	return localQueue[floor][button]
 }
+
+// --------------- PRIVATE: ---------------
 
 func isOrdersAbove(floor int) bool {
 	for f := floor + 1; f < elev.NumFloors; f++ {
@@ -133,9 +162,9 @@ func isAnyOrders() bool {
 func updateLocalQueue() {
 	for f := 0; f < elev.NumFloors; f++ {
 		for b := 0; b < elev.NumButtons; b++ {
-			if b != elev.ButtonCommand
-			&& sharedQueue[f][b].isOrderActive
-			&& sharedQueue[f][b].elevatorAddr == laddr {
+			if b != elev.ButtonCommand &&
+				sharedQueue[f][b].isOrderActive &&
+				sharedQueue[f][b].elevatorAddr == laddr {
 				localQueue[f][b] = true
 			}
 		}
@@ -151,6 +180,25 @@ func removeSharedOrder(floor int, button elev.ButtonType) {
 	sharedQueue[floor][button].isOrderActive = false
 	sharedQueue[floor][button].elevatorAddr = invalidAddr
 }
+
+func resetLocalQueue() {
+	for f := 0; f < elev.NumFloors; f++ {
+		for b := 0; b < elev.NumButtons; b++ {
+			localQueue[f][b] = false
+		}
+	}
+}
+
+func resetSharedQueue() {
+	blankOrder := sharedOrder{isOrderActive: false, elevatorAddr: invalidAddr}
+	for f := 0; f < elev.NumFloors; f++ {
+		for b := 0; b < elev.NumButtons; b++ {
+			sharedQueue[f][b] = blankOrder
+		}
+	}
+}
+
+
 
 /*func updateSharedQueue(floor int, button elev.ButtonType) {
 	// If order completed was assigned to this elevator: Remove from shared queue
