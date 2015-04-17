@@ -1,7 +1,7 @@
 package fsm
 
 import (
-	"../elev"
+	"../hw"
 	"../queue"
 	"../network"
 	"fmt"
@@ -18,8 +18,8 @@ const (
 
 var state stateType
 var floor int
-var direction elev.DirnType
-var departDirection elev.DirnType
+var direction hw.DirnType
+var departDirection hw.DirnType
 
 var DoorTimeout = make(chan bool)
 var doorReset = make(chan bool)
@@ -30,9 +30,9 @@ func Init() {
 	queue.Init()
 	runTimer()
 	state = idle
-	direction = elev.DirnStop
-	floor = elev.GetFloor()
-	departDirection = elev.DirnDown
+	direction = hw.DirnStop
+	floor = hw.GetFloor()
+	departDirection = hw.DirnDown
 	syncLights()
 }
 
@@ -54,20 +54,20 @@ func runTimer() {
 }
 
 
-func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
+func EventButtonPressed(buttonFloor int, buttonType hw.ButtonType) {
 	fmt.Print("Event button pressed in state ")
 	switch state {
 	case idle:
 		fmt.Println("idle")
 		queue.AddOrder(buttonFloor, buttonType)
 		direction = queue.ChooseDirection(floor, direction)
-		if direction == elev.DirnStop {
-			elev.SetDoorOpenLamp(true)
+		if direction == hw.DirnStop {
+			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			doorReset <- true
 			state = doorOpen
 		} else {
-			elev.SetMotorDirection(direction)
+			hw.SetMotorDirection(direction)
 			departDirection = direction
 			state = moving
 		}
@@ -90,13 +90,13 @@ func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 func EventFloorReached(newFloor int) {
 	fmt.Print("Event floor reached in state ")
 	floor = newFloor
-	elev.SetFloorIndicator(floor)
+	hw.SetFloorIndicator(floor)
 	switch state {
 	case moving:
 		fmt.Println("moving")
 		if queue.ShouldStop(floor, direction) {
-			elev.SetMotorDirection(elev.DirnStop)
-			elev.SetDoorOpenLamp(true)
+			hw.SetMotorDirection(hw.DirnStop)
+			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			doorReset <- true
 			state = doorOpen
@@ -115,9 +115,9 @@ func EventTimerOut() {
 	case doorOpen:
 		fmt.Println("door open")
 		direction = queue.ChooseDirection(floor, direction)
-		elev.SetDoorOpenLamp(false)
-		elev.SetMotorDirection(direction)
-		if direction == elev.DirnStop {
+		hw.SetDoorOpenLamp(false)
+		hw.SetMotorDirection(direction)
+		if direction == hw.DirnStop {
 			state = idle
 		} else {
 			state = moving
@@ -129,7 +129,7 @@ func EventTimerOut() {
 	syncLights()
 }
 
-func GetDirection() elev.DirnType {
+func GetDirection() hw.DirnType {
 	return direction
 }
 
@@ -138,14 +138,14 @@ func GetFloor() int {
 }
 
 func syncLights() {
-	var b elev.ButtonType
-	for f := 0; f < elev.NumFloors; f++ {
-		for b = 0; b < elev.NumButtons; b++ {
-			if (b == elev.ButtonCallUp && f == elev.NumFloors-1) ||
-				(b == elev.ButtonCallDown && f == 0) {
+	var b hw.ButtonType
+	for f := 0; f < hw.NumFloors; f++ {
+		for b = 0; b < hw.NumButtons; b++ {
+			if (b == hw.ButtonCallUp && f == hw.NumFloors-1) ||
+				(b == hw.ButtonCallDown && f == 0) {
 				continue
 			} else {
-				elev.SetButtonLamp(f, b, queue.IsOrder(f, b))
+				hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
 			}
 		}
 	}

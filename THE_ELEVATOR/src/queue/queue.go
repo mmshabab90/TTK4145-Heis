@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"../elev"
+	"../hw"
 	"../network"
 	"log"
 	"encoding/json"
@@ -17,9 +17,9 @@ type sharedOrder struct {
 	elevatorAddr  string
 }
 
-var localQueue [elev.NumFloors][elev.NumButtons]bool
+var localQueue [hw.NumFloors][hw.NumButtons]bool
 // Internal orders in shared queue are unused, but present for better indexing:
-var sharedQueue [elev.NumFloors][elev.NumButtons]sharedOrder
+var sharedQueue [hw.NumFloors][hw.NumButtons]sharedOrder
 
 // --------------- PUBLIC: ---------------
 
@@ -29,14 +29,14 @@ func Init() {
 	// set laddr variable
 }
 
-func AddOrder(floor int, button elev.ButtonType) {
+func AddOrder(floor int, button hw.ButtonType) {
 	// New AddOrder should:
 		// Send message about new order to all lifts
 		// Another func should receive replies and
 		// assign the order to the lift with the lowest
 		// cost (or lowest ip if several lifts have same cost)
 
-	if button == elev.ButtonCommand {
+	if button == hw.ButtonCommand {
 		localQueue[floor][button] = true
 	} else {
 		// message := message{kind: newOrder, floor: floor, button: button, cost: -1}
@@ -56,53 +56,53 @@ func AddOrder(floor int, button elev.ButtonType) {
 	}
 }
 
-func ChooseDirection(currFloor int, currDir elev.DirnType) elev.DirnType {
+func ChooseDirection(currFloor int, currDir hw.DirnType) hw.DirnType {
 	if !isAnyOrders() {
-		return elev.DirnStop
+		return hw.DirnStop
 	}
 	switch currDir {
-	case elev.DirnDown:
+	case hw.DirnDown:
 		if isOrdersBelow(currFloor) && currFloor > 0 {
-			return elev.DirnDown
+			return hw.DirnDown
 		} else {
-			return elev.DirnUp
+			return hw.DirnUp
 		}
-	case elev.DirnUp:
-		if isOrdersAbove(currFloor) && currFloor < elev.NumFloors-1 {
-			return elev.DirnUp
+	case hw.DirnUp:
+		if isOrdersAbove(currFloor) && currFloor < hw.NumFloors-1 {
+			return hw.DirnUp
 		} else {
-			return elev.DirnDown
+			return hw.DirnDown
 		}
-	case elev.DirnStop:
+	case hw.DirnStop:
 		if isOrdersAbove(currFloor) {
-			return elev.DirnUp
+			return hw.DirnUp
 		} else if isOrdersBelow(currFloor) {
-			return elev.DirnDown
+			return hw.DirnDown
 		} else {
-			return elev.DirnStop
+			return hw.DirnStop
 		}
 	default:
 		log.Printf("localQueue: ChooseDirection called with invalid direction %d!\n", currDir)
-		return elev.DirnStop
+		return hw.DirnStop
 	}
 }
 
-func ShouldStop(floor int, direction elev.DirnType) bool {
+func ShouldStop(floor int, direction hw.DirnType) bool {
 	switch direction {
-	case elev.DirnDown:
-		return localQueue[floor][elev.ButtonCallDown] ||
-			localQueue[floor][elev.ButtonCommand] ||
+	case hw.DirnDown:
+		return localQueue[floor][hw.ButtonCallDown] ||
+			localQueue[floor][hw.ButtonCommand] ||
 			floor == 0 ||
 			!isOrdersBelow(floor)
-	case elev.DirnUp:
-		return localQueue[floor][elev.ButtonCallUp] ||
-			localQueue[floor][elev.ButtonCommand] ||
-			floor == elev.NumFloors-1 ||
+	case hw.DirnUp:
+		return localQueue[floor][hw.ButtonCallUp] ||
+			localQueue[floor][hw.ButtonCommand] ||
+			floor == hw.NumFloors-1 ||
 			!isOrdersAbove(floor)
-	case elev.DirnStop:
-		return localQueue[floor][elev.ButtonCallDown] ||
-			localQueue[floor][elev.ButtonCallUp] ||
-			localQueue[floor][elev.ButtonCommand]
+	case hw.DirnStop:
+		return localQueue[floor][hw.ButtonCallDown] ||
+			localQueue[floor][hw.ButtonCallUp] ||
+			localQueue[floor][hw.ButtonCommand]
 	default:
 		log.Printf("localQueue: ShouldStop called with invalid direction %d!\n", direction)
 		return false
@@ -110,20 +110,20 @@ func ShouldStop(floor int, direction elev.DirnType) bool {
 }
 
 func RemoveOrdersAt(floor int) {
-	for b := 0; b < elev.NumButtons; b++ {
+	for b := 0; b < hw.NumButtons; b++ {
 		localQueue[floor][b] = false
 	}
 }
 
-func IsOrder(floor int, button elev.ButtonType) bool {
+func IsOrder(floor int, button hw.ButtonType) bool {
 	return localQueue[floor][button]
 }
 
 // --------------- PRIVATE: ---------------
 
 func isOrdersAbove(floor int) bool {
-	for f := floor + 1; f < elev.NumFloors; f++ {
-		for b := 0; b < elev.NumButtons; b++ {
+	for f := floor + 1; f < hw.NumFloors; f++ {
+		for b := 0; b < hw.NumButtons; b++ {
 			if localQueue[f][b] {
 				return true
 			}
@@ -134,7 +134,7 @@ func isOrdersAbove(floor int) bool {
 
 func isOrdersBelow(floor int) bool {
 	for f := 0; f < floor; f++ {
-		for b := 0; b < elev.NumButtons; b++ {
+		for b := 0; b < hw.NumButtons; b++ {
 			if localQueue[f][b] {
 				return true
 			}
@@ -144,8 +144,8 @@ func isOrdersBelow(floor int) bool {
 }
 
 func isAnyOrders() bool {
-	for f := 0; f < elev.NumFloors; f++ {
-		for b := 0; b < elev.NumButtons; b++ {
+	for f := 0; f < hw.NumFloors; f++ {
+		for b := 0; b < hw.NumButtons; b++ {
 			if localQueue[f][b] {
 				return true
 			}
@@ -155,10 +155,10 @@ func isAnyOrders() bool {
 }
 
 func updateLocalQueue() {
-	var b elev.ButtonType
-	for f := 0; f < elev.NumFloors; f++ {
-		for b = 0; b < elev.NumButtons; b++ {
-			if b != elev.ButtonCommand &&
+	var b hw.ButtonType
+	for f := 0; f < hw.NumFloors; f++ {
+		for b = 0; b < hw.NumButtons; b++ {
+			if b != hw.ButtonCommand &&
 				sharedQueue[f][b].isOrderActive &&
 				sharedQueue[f][b].elevatorAddr == laddr {
 				localQueue[f][b] = true
@@ -167,8 +167,8 @@ func updateLocalQueue() {
 	}
 }
 
-func RemoveSharedOrder(floor int, button elev.ButtonType) {
-	if button == elev.ButtonCommand {
+func RemoveSharedOrder(floor int, button hw.ButtonType) {
+	if button == hw.ButtonCommand {
 		// error
 		return
 	}
@@ -178,8 +178,8 @@ func RemoveSharedOrder(floor int, button elev.ButtonType) {
 }
 
 func resetLocalQueue() {
-	for f := 0; f < elev.NumFloors; f++ {
-		for b := 0; b < elev.NumButtons; b++ {
+	for f := 0; f < hw.NumFloors; f++ {
+		for b := 0; b < hw.NumButtons; b++ {
 			localQueue[f][b] = false
 		}
 	}
@@ -187,8 +187,8 @@ func resetLocalQueue() {
 
 func resetSharedQueue() {
 	blankOrder := sharedOrder{isOrderActive: false, elevatorAddr: invalidAddr}
-	for f := 0; f < elev.NumFloors; f++ {
-		for b := 0; b < elev.NumButtons; b++ {
+	for f := 0; f < hw.NumFloors; f++ {
+		for b := 0; b < hw.NumButtons; b++ {
 			sharedQueue[f][b] = blankOrder
 		}
 	}
@@ -196,9 +196,9 @@ func resetSharedQueue() {
 
 
 
-/*func updateSharedQueue(floor int, button elev.ButtonType) {
+/*func updateSharedQueue(floor int, button hw.ButtonType) {
 	// If order completed was assigned to this elevator: Remove from shared queue
-	if button == elev.ButtonCommand {
+	if button == hw.ButtonCommand {
 		// error
 		return
 	}

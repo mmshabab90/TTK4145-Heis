@@ -1,7 +1,7 @@
 package poller
 
 import (
-	"../elev"
+	"../hw"
 	"../fsm"
 	"../cost"
 	"../network"
@@ -14,7 +14,7 @@ import (
 var _ = log.Println
 
 type keypress struct {
-	button elev.ButtonType
+	button hw.ButtonType
 	floor  int
 }
 
@@ -41,17 +41,17 @@ func pollButtons() <-chan keypress {
 	c := make(chan keypress)
 
 	go func() {
-		var buttonState [elev.NumFloors][elev.NumButtons]bool
+		var buttonState [hw.NumFloors][hw.NumButtons]bool
 
-		var b elev.ButtonType
+		var b hw.ButtonType
 		for {
-			for f := 0; f < elev.NumFloors; f++ {
-				for b = 0; b < elev.NumButtons; b++ {
-					if (f == 0 && b == elev.ButtonCallDown) ||
-						(f == elev.NumFloors-1 && b == elev.ButtonCallUp) {
+			for f := 0; f < hw.NumFloors; f++ {
+				for b = 0; b < hw.NumButtons; b++ {
+					if (f == 0 && b == hw.ButtonCallDown) ||
+						(f == hw.NumFloors-1 && b == hw.ButtonCallUp) {
 						continue
 					}
-					if elev.GetButton(f, b) {
+					if hw.GetButton(f, b) {
 						if !buttonState[f][b] {
 							c <- keypress{button: b, floor: f}
 						}
@@ -72,10 +72,10 @@ func pollFloors() <-chan int {
 	c := make(chan int)
 
 	go func() {
-		oldFloor := elev.GetFloor()
+		oldFloor := hw.GetFloor()
 
 		for {
-			newFloor := elev.GetFloor()
+			newFloor := hw.GetFloor()
 			if newFloor != oldFloor && newFloor != -1 {
 				c <- newFloor
 			}

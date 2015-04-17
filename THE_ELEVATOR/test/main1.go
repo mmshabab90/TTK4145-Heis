@@ -1,4 +1,4 @@
-//testprogram for elev.go
+//testprogram for hardware.go
 
 package main
 

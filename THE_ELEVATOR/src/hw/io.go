@@ -1,4 +1,4 @@
-package elev
+package hw
 
 /*
 #cgo LDFLAGS: -lcomedi -lm

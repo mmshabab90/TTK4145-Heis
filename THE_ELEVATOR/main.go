@@ -1,26 +1,26 @@
 package main
 
 import (
-	"./src/elev"
+	"./src/hw"
 	"./src/fsm"
 	"./src/poller"
 	"log"
 )
 
 func main() {
-	if !elev.Init() {
+	if !hw.Init() {
 		log.Fatalln("Io_init() failed!")
 	}
 	fsm.Init()
 
 	// Move to defined state:
-	elev.SetMotorDirection(elev.DirnDown)
-	floor := elev.GetFloor()
+	hw.SetMotorDirection(hw.DirnDown)
+	floor := hw.GetFloor()
 	for floor == -1 {
-		floor = elev.GetFloor()
+		floor = hw.GetFloor()
 	}
-	elev.SetFloorIndicator(floor)
-	elev.SetMotorDirection(elev.DirnStop)
+	hw.SetFloorIndicator(floor)
+	hw.SetMotorDirection(hw.DirnStop)
 
 	poller.Run()
 }

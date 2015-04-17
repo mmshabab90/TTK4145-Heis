@@ -1,9 +1,9 @@
 /*
- *  This file is a golang port of elev.c from the hand out driver
+ *  This file is a golang port of hw.c from the hand out driver
  *  https://github.com/TTK4145/Project
  */
 
-package elev
+package hw
 
 import (
 	"log"

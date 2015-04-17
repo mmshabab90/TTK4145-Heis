@@ -3,7 +3,7 @@ package network
 import (
 	"fmt"
 	"time"
-	"../elev"
+	"../hw"
 )
 
 // --------------- PUBLIC: ---------------
@@ -19,7 +19,7 @@ type Message struct {
 	Kind int
 	Addr string `json:"-"` // skal funke
 	Floor int
-	Button elev.ButtonType
+	Button hw.ButtonType
 	Cost int
 }
 
