@@ -13,7 +13,8 @@ type UdpConnection struct { //should this be in udp.go
 //must these be global?
 var Send_ch = make (chan Udp_message)
 var Receive_ch = make (chan Udp_message)
-var ConnectionTimerChan = make(chan UdpConnection)
+//this must be global (i think)
+var ConnectionTimer	 = make(chan UdpConnection)
 
 func Init (){
 	err := Udp_init(20001, 20058, 1024, Send_ch, Receive_ch)	
@@ -32,14 +33,13 @@ func SendMsg(msg string){
 }
 
 func ReceiveMsg(){
-	var connectionMap map[string] UdpConnection
+	connectionMap := make(map[string] UdpConnection)
 	for {
 		rcvMsg := <- Receive_ch
 		fmt.Println("Msg received")
 		Print_udp_message(rcvMsg)
 		
 		//keep track of witch connections that exist
-		//this part still needs testing (it doesn't really work)
 		if connection, exist := connectionMap[rcvMsg.Raddr]; exist {
 			connection.Timer.Reset(1*time.Second)
 			fmt.Println("timer reset for IP: ")
@@ -58,7 +58,7 @@ func connectionTimer(connection *UdpConnection) {
 	for {
 		select {
 		case <- connection.Timer.C:
-			ConnectionTimerChan <- *connection
+			ConnectionTimer <- *connection
 		}
 	}
 }

@@ -2,9 +2,13 @@ package main
 
 import (
 	"./network"
+	"fmt"
 )
 
 func main() {
 	network.Init()
-	network.ReceiveMsg()
+	go network.ReceiveMsg()
+	
+	connection := <- network.ConnectionTimer
+	fmt.Println(connection.Addr, "is dead")
 }
