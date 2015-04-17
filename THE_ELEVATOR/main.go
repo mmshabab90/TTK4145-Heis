@@ -12,10 +12,8 @@ func main() {
 	if !elev.Init() {
 		log.Fatalln("Io_init() failed!")
 	}
-
 	fsm.Init()
 	timer.Init()
-	queue.Init()
 
 	// Move to defined state:
 	elev.SetMotorDirection(elev.DirnDown)
