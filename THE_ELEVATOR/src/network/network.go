@@ -24,11 +24,9 @@ func Init (){
 	}
 }
 
-func SendMsg(msg string){
+func SendMsg(msg []byte){
 	sndMsg := Udp_message{Raddr:"broadcast", Data:msg, Length:len(msg)}
 	Send_ch <- sndMsg
-	fmt.Println("Msg sent")
-	Print_udp_message(sndMsg)
 	time.Sleep(500*time.Millisecond)
 }
 
@@ -37,7 +35,6 @@ func ReceiveMsg(){ //bad abstraction? doesn't just receive msg. GIVE THIS NEW NA
 	for {
 		select{
 		case rcvMsg := <- Receive_ch:
-			fmt.Println("Msg received")
 			Print_udp_message(rcvMsg)
 			
 			//keep track of witch connections that exist
@@ -52,7 +49,7 @@ func ReceiveMsg(){ //bad abstraction? doesn't just receive msg. GIVE THIS NEW NA
 				fmt.Println(rcvMsg.Raddr)
 				go connectionTimer(&newConnection)
 			}
-			//deletes connection when timer goes out
+		//deletes connection when timer goes out
 		case connection := <- ConnectionTimer:
 			fmt.Println(connection.Addr, "is dead")
 			delete(connectionMap, connection.Addr)
