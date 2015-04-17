@@ -3,6 +3,7 @@ package network
 import (
 	"fmt"
 	"time"
+	"../elev"
 )
 
 // --------------- PUBLIC: ---------------
@@ -16,7 +17,7 @@ const (
 
 type Message struct {
 	Kind int
-	Addr string
+	Addr string `json:"-"` // skal funke
 	Floor int
 	Button elev.ButtonType
 	Cost int
@@ -27,7 +28,7 @@ type UdpConnection struct { //should this be in udp.go
 	Timer *time.Timer
 }
 
-// Reconsider visibility of these three:
+// Consider visibility of these three:
 var sendChan = make (chan udpMessage)
 var ReceiveChan = make (chan udpMessage)
 var ConnectionTimer	 = make(chan UdpConnection)
