@@ -167,7 +167,7 @@ func updateLocalQueue() {
 	}
 }
 
-func removeSharedOrder(floor int, button elev.ButtonType) {
+func RemoveSharedOrder(floor int, button elev.ButtonType) {
 	if button == elev.ButtonCommand {
 		// error
 		return

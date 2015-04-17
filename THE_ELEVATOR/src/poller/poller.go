@@ -97,18 +97,20 @@ func parseMessage(udpMessage network.Udp_message) network.Message { // work this
 
 func handleMessage(message network.Message) {
 	switch message.Kind {
-		case queue.Alive:
+		case network.Alive:
 			// reset lift timer (not door timer lol)
-		case queue.NewOrder:
-			costMessage := queue.Message{
-				Kind: queue.Cost,
+		case network.NewOrder:
+			costMessage := network.Message{
+				Kind: network.Cost,
 				Floor: message.Floor,
 				Button: message.Button,
 				Cost: cost.CalculateCost(message.Floor, message.Button)}
-			
-		case queue.CompleteOrder:
+			network.Send(costMessage)
+		case network.CompleteOrder:
 			// remove from queues
-		case queue.Cost:
-			// notify assignment routine
+			queue.RemoveSharedOrder(message.Floor, message.Button)
+			// prob more to do here
+		case network.Cost:
+			// notify lift assignment routine
 	}
 }

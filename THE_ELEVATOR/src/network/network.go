@@ -27,10 +27,9 @@ type UdpConnection struct { //should this be in udp.go
 	Timer *time.Timer
 }
 
-//must these be global?
+// Reconsider visibility of these three:
 var sendChan = make (chan udpMessage)
 var ReceiveChan = make (chan udpMessage)
-//this must be global (i think)
 var ConnectionTimer	 = make(chan UdpConnection)
 
 func Init (){
@@ -52,11 +51,11 @@ func Send(message Message) {
 	}
 }
 
-func SendMsg(msg []byte){ // Replaced by Send(), should be removed sometime
-	sndMsg := udpMessage{raddr:"broadcast", data:msg, length:len(msg)}
-	sendChan <- sndMsg
-	time.Sleep(500*time.Millisecond)
-}
+// func SendMsg(msg []byte){ // Replaced by Send(), should be removed sometime
+// 	sndMsg := udpMessage{raddr:"broadcast", data:msg, length:len(msg)}
+// 	sendChan <- sndMsg
+// 	time.Sleep(500*time.Millisecond)
+// }
 
 func ReceiveMsg(){ // bad abstraction! doesn't just receive msg. GIVE THIS NEW NAME!
 	connectionMap := make(map[string] UdpConnection)
