@@ -53,7 +53,7 @@ func runTimer() {
 	}()
 }
 
-func EventButtonPressed(buttonFloor int, buttonType hw.ButtonType) {
+func EventButtonPressed(buttonFloor int, buttonType int) {
 	fmt.Print("Event button pressed in state ")
 	switch state {
 	case idle:
@@ -137,9 +137,8 @@ func GetFloor() int {
 }
 
 func syncLights() {
-	var b hw.ButtonType
 	for f := 0; f < hw.NumFloors; f++ {
-		for b = 0; b < hw.NumButtons; b++ {
+		for b := 0; b < hw.NumButtons; b++ {
 			if (b == hw.ButtonCallUp && f == hw.NumFloors-1) ||
 				(b == hw.ButtonCallDown && f == 0) {
 				continue

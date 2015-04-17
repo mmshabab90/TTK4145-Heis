@@ -12,17 +12,14 @@ import (
 const NumButtons = 3
 const NumFloors = 4
 
-type ButtonType int
-type DirnType int
-
 const (
-	ButtonCallUp ButtonType = iota
+	ButtonCallUp int = iota
 	ButtonCallDown
 	ButtonCommand
 )
 
 const (
-	DirnDown DirnType = iota - 1
+	DirnDown int = iota - 1
 	DirnStop
 	DirnUp
 )
@@ -140,7 +137,7 @@ func SetFloorIndicator(floor int) {
 	}
 }
 
-func GetButton(floor int, button ButtonType) bool {
+func GetButton(floor int, button int) bool {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return false
@@ -167,7 +164,7 @@ func GetButton(floor int, button ButtonType) bool {
 	}
 }
 
-func SetButtonLamp(floor int, button ButtonType, value bool) {
+func SetButtonLamp(floor int, button int, value bool) {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return

@@ -14,7 +14,7 @@ import (
 var _ = log.Println
 
 type keypress struct {
-	button hw.ButtonType
+	button int
 	floor  int
 }
 
@@ -43,10 +43,9 @@ func pollButtons() <-chan keypress {
 	go func() {
 		var buttonState [hw.NumFloors][hw.NumButtons]bool
 
-		var b hw.ButtonType
 		for {
 			for f := 0; f < hw.NumFloors; f++ {
-				for b = 0; b < hw.NumButtons; b++ {
+				for b := 0; b < hw.NumButtons; b++ {
 					if (f == 0 && b == hw.ButtonCallDown) ||
 						(f == hw.NumFloors-1 && b == hw.ButtonCallUp) {
 						continue
@@ -103,7 +102,7 @@ func handleMessage(message network.Message) {
 				Kind: network.Cost,
 				Floor: message.Floor,
 				Button: message.Button,
-				Cost: cost.CalculateCost(message.Floor, message.Button)}
+				Cost: cost.CalculateCost(message.Floor, message.Button, fsm.GetFloor(), fsm.GetDirection())}
 			network.Send(costMessage)
 		case network.CompleteOrder:
 			// remove from queues

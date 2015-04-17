@@ -5,11 +5,10 @@ package cost
 import (
 	"log"
 	"../hw"
-	"../fsm"
 	"../queue"
 )
 
-func CalculateCost(targetFloor int, targetButton hw.ButtonType) int {
+func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int) int {
 	switch targetButton {
 	case hw.ButtonCallUp:
 	case hw.ButtonCallDown:
@@ -22,21 +21,19 @@ func CalculateCost(targetFloor int, targetButton hw.ButtonType) int {
 	}
 	
 	cost := 0
-	floor := fsm.GetFloor()
-	direction := fsm.GetDirection()
 
 	if hw.GetFloor() == -1 {
 		cost += 1
-		floor = incrementFloor(floor, direction)
+		currentFloor = incrementFloor(currentFloor, currentDirection)
 	}
 
-	for !(floor == targetFloor && queue.ShouldStop(floor, direction)) {
-		log.Printf("Floor: %d, direction: %d\n", floor, direction)
-		if queue.ShouldStop(floor, direction) {
+	for !(currentFloor == targetFloor && queue.ShouldStop(currentFloor, currentDirection)) {
+		log.Printf("Floor: %d, direction: %d\n", currentFloor, currentDirection)
+		if queue.ShouldStop(currentFloor, currentDirection) {
 			cost += 2
 		}
-		direction = queue.ChooseDirection(floor, direction)
-		floor = incrementFloor(floor, direction)
+		currentDirection = queue.ChooseDirection(currentFloor, currentDirection)
+		currentFloor = incrementFloor(currentFloor, currentDirection)
 		cost += 2
 	}
 	

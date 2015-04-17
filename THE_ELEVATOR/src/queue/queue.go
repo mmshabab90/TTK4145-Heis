@@ -29,7 +29,7 @@ func Init() {
 	// set laddr variable
 }
 
-func AddOrder(floor int, button hw.ButtonType) {
+func AddOrder(floor int, button int) {
 	// New AddOrder should:
 		// Send message about new order to all lifts
 		// Another func should receive replies and
@@ -103,7 +103,7 @@ func RemoveOrdersAt(floor int) {
 	}
 }
 
-func IsOrder(floor int, button hw.ButtonType) bool {
+func IsOrder(floor int, button int) bool {
 	return localQueue[floor][button]
 }
 
@@ -143,9 +143,8 @@ func isAnyOrders() bool {
 }
 
 func updateLocalQueue() {
-	var b hw.ButtonType
 	for f := 0; f < hw.NumFloors; f++ {
-		for b = 0; b < hw.NumButtons; b++ {
+		for b := 0; b < hw.NumButtons; b++ {
 			if b != hw.ButtonCommand &&
 				sharedQueue[f][b].isOrderActive &&
 				sharedQueue[f][b].elevatorAddr == laddr {
@@ -155,7 +154,7 @@ func updateLocalQueue() {
 	}
 }
 
-func RemoveSharedOrder(floor int, button hw.ButtonType) {
+func RemoveSharedOrder(floor int, button int) {
 	if button == hw.ButtonCommand {
 		// error
 		return
@@ -182,9 +181,7 @@ func resetSharedQueue() {
 	}
 }
 
-
-
-/*func updateSharedQueue(floor int, button hw.ButtonType) {
+/*func updateSharedQueue(floor int, button int) {
 	// If order completed was assigned to this elevator: Remove from shared queue
 	if button == hw.ButtonCommand {
 		// error
