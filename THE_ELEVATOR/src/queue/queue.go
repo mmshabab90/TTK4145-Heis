@@ -54,7 +54,7 @@ func AddOrder(floor int, button elev.ButtonType) {
 	} else {
 		msg := message{kind: newOrder, floor: floor, button: button, cost: -1}
 		jsonMsg, err := json.Marshal(msg)
-		if err {
+		if err != nil{
 			// worry
 		}
 		network.SendMsg(jsonMsg)
@@ -160,8 +160,9 @@ func isAnyOrders() bool {
 }
 
 func updateLocalQueue() {
+	var b elev.ButtonType
 	for f := 0; f < elev.NumFloors; f++ {
-		for b := 0; b < elev.NumButtons; b++ {
+		for b = 0; b < elev.NumButtons; b++ {
 			if b != elev.ButtonCommand &&
 				sharedQueue[f][b].isOrderActive &&
 				sharedQueue[f][b].elevatorAddr == laddr {

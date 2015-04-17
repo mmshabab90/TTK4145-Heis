@@ -96,7 +96,7 @@ func udp_receive_server(lconn, bconn *net.UDPConn, message_size int, receive_ch 
 			bconn.Close()
 		}
 	}()
-git 
+
 	bconn_rcv_ch := make(chan Udp_message)
 	lconn_rcv_ch := make(chan Udp_message)
 
