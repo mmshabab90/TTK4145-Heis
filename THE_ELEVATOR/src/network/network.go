@@ -14,12 +14,12 @@ type UdpConnection struct { //should this be in udp.go
 
 //must these be global?
 var Send_ch = make (chan Udp_message)
-var Receive_ch = make (chan Udp_message)
+var ReceiveChan = make (chan Udp_message)
 //this must be global (i think)
 var ConnectionTimer	 = make(chan UdpConnection)
 
 func Init (){
-	err := Udp_init(20001, 20058, 1024, Send_ch, Receive_ch)	
+	err := Udp_init(20001, 20058, 1024, Send_ch, ReceiveChan)	
 
 	if (err != nil){
 		fmt.Print("err = %s \n", err)
@@ -36,7 +36,7 @@ func ReceiveMsg(){ //bad abstraction? doesn't just receive msg. GIVE THIS NEW NA
 	connectionMap := make(map[string] UdpConnection)
 	for {
 		select{
-		case rcvMsg := <- Receive_ch:
+		case rcvMsg := <- ReceiveChan:
 			Print_udp_message(rcvMsg)
 			
 			//keep track of witch connections that exist
