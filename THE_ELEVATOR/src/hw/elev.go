@@ -11,27 +11,25 @@ import (
 
 const NumButtons = 3
 const NumFloors = 4
-
 const (
 	ButtonCallUp int = iota
 	ButtonCallDown
 	ButtonCommand
 )
-
 const (
 	DirnDown int = iota - 1
 	DirnStop
 	DirnUp
 )
 
-var lamp_channel_matrix = [NumFloors][NumButtons]int{
+var lampChannelMatrix = [NumFloors][NumButtons]int{
 	{LIGHT_UP1, LIGHT_DOWN1, LIGHT_COMMAND1},
 	{LIGHT_UP2, LIGHT_DOWN2, LIGHT_COMMAND2},
 	{LIGHT_UP3, LIGHT_DOWN3, LIGHT_COMMAND3},
 	{LIGHT_UP4, LIGHT_DOWN4, LIGHT_COMMAND4},
 }
 
-var button_channel_matrix = [NumFloors][NumButtons]int{
+var buttonChannelMatrix = [NumFloors][NumButtons]int{
 	{BUTTON_UP1, BUTTON_DOWN1, BUTTON_COMMAND1},
 	{BUTTON_UP2, BUTTON_DOWN2, BUTTON_COMMAND2},
 	{BUTTON_UP3, BUTTON_DOWN3, BUTTON_COMMAND3},
@@ -157,7 +155,7 @@ func GetButton(floor int, button int) bool {
 		return false
 	}
 
-	if Io_read_bit(button_channel_matrix[floor][button]) {
+	if Io_read_bit(buttonChannelMatrix[floor][button]) {
 		return true
 	} else {
 		return false
@@ -185,8 +183,8 @@ func SetButtonLamp(floor int, button int, value bool) {
 	}
 
 	if value {
-		Io_set_bit(lamp_channel_matrix[floor][button])
+		Io_set_bit(lampChannelMatrix[floor][button])
 	} else {
-		Io_clear_bit(lamp_channel_matrix[floor][button])
+		Io_clear_bit(lampChannelMatrix[floor][button])
 	}
 }
