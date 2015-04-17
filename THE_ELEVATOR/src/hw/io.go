@@ -6,26 +6,26 @@ package hw
 */
 import "C"
 
-func Io_init() bool {
+func ioInit() bool {
 	return int(C.io_init()) != 0
 }
 
-func Io_set_bit(channel int) {
+func ioSetBit(channel int) {
 	C.io_set_bit(C.int(channel))
 }
 
-func Io_clear_bit(channel int) {
+func ioClearBit(channel int) {
 	C.io_clear_bit(C.int(channel))
 }
 
-func Io_write_analog(channel int, value int) {
+func ioWriteAnalog(channel int, value int) {
 	C.io_write_analog(C.int(channel), C.int(value))
 }
 
-func Io_read_bit(channel int) bool {
+func ioReadBit(channel int) bool {
 	return int(C.io_read_bit(C.int(channel))) != 0
 }
 
-func Io_read_analog(channel int) int {
+func ioReadAnalog(channel int) int {
 	return int(C.io_read_analog(C.int(channel)))
 }

@@ -28,7 +28,6 @@ var lampChannelMatrix = [NumFloors][NumButtons]int{
 	{LIGHT_UP3, LIGHT_DOWN3, LIGHT_COMMAND3},
 	{LIGHT_UP4, LIGHT_DOWN4, LIGHT_COMMAND4},
 }
-
 var buttonChannelMatrix = [NumFloors][NumButtons]int{
 	{BUTTON_UP1, BUTTON_DOWN1, BUTTON_COMMAND1},
 	{BUTTON_UP2, BUTTON_DOWN2, BUTTON_COMMAND2},
@@ -38,7 +37,7 @@ var buttonChannelMatrix = [NumFloors][NumButtons]int{
 
 func Init() bool {
 	// Init hardware
-	if !Io_init() {
+	if !ioInit() {
 		return false
 	}
 
@@ -57,7 +56,7 @@ func Init() bool {
 	// and set floor indicator to ground floor.
 	SetStopLamp(false)
 	SetDoorOpenLamp(false)
-	SetFloorIndicator(0)
+	SetFloorLamp(0)
 
 	// Return success.
 	return true
@@ -65,56 +64,39 @@ func Init() bool {
 
 func SetMotorDirection(dirn DirnType) {
 	if dirn == 0 {
-		Io_write_analog(MOTOR, 0)
+		ioWriteAnalog(MOTOR, 0)
 	} else if dirn > 0 {
-		Io_clear_bit(MOTORDIR)
-		Io_write_analog(MOTOR, 2800)
+		ioClearBit(MOTORDIR)
+		ioWriteAnalog(MOTOR, 2800)
 	} else if dirn < 0 {
-		Io_set_bit(MOTORDIR)
-		Io_write_analog(MOTOR, 2800)
+		ioSetBit(MOTORDIR)
+		ioWriteAnalog(MOTOR, 2800)
 	}
 }
 
 func SetDoorOpenLamp(value bool) {
 	if value {
-		Io_set_bit(LIGHT_DOOR_OPEN)
+		ioSetBit(LIGHT_DOOR_OPEN)
 	} else {
-		Io_clear_bit(LIGHT_DOOR_OPEN)
-	}
-}
-
-func GetObstructionSignal() bool {
-	return Io_read_bit(OBSTRUCTION)
-}
-
-func GetStopSignal() bool {
-	return Io_read_bit(STOP)
-}
-
-func SetStopLamp(value bool) {
-	if value {
-		Io_set_bit(LIGHT_STOP)
-	} else {
-		Io_clear_bit(LIGHT_STOP)
+		ioClearBit(LIGHT_DOOR_OPEN)
 	}
 }
 
 func GetFloor() int {
-	if Io_read_bit(SENSOR_FLOOR1) {
+	if ioReadBit(SENSOR_FLOOR1) {
 		return 0
-	} else if Io_read_bit(SENSOR_FLOOR2) {
+	} else if ioReadBit(SENSOR_FLOOR2) {
 		return 1
-	} else if Io_read_bit(SENSOR_FLOOR3) {
+	} else if ioReadBit(SENSOR_FLOOR3) {
 		return 2
-	} else if Io_read_bit(SENSOR_FLOOR4) {
+	} else if ioReadBit(SENSOR_FLOOR4) {
 		return 3
 	} else {
 		return -1
 	}
 }
 
-// Suggestion: Change name to SetFloorLamp
-func SetFloorIndicator(floor int) {
+func SetFloorLamp(floor int) {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		log.Println("No floor indicator will be set.")
@@ -123,21 +105,25 @@ func SetFloorIndicator(floor int) {
 
 	// Binary encoding. One light must always be on.
 	if floor&0x02 > 0 {
-		Io_set_bit(LIGHT_FLOOR_IND1)
+		ioSetBit(LIGHT_FLOOR_IND1)
 	} else {
-		Io_clear_bit(LIGHT_FLOOR_IND1)
+		ioClearBit(LIGHT_FLOOR_IND1)
 	}
 
 	if floor&0x01 > 0 {
-		Io_set_bit(LIGHT_FLOOR_IND2)
+		ioSetBit(LIGHT_FLOOR_IND2)
 	} else {
-		Io_clear_bit(LIGHT_FLOOR_IND2)
+		ioClearBit(LIGHT_FLOOR_IND2)
 	}
 }
 
-func GetButton(floor int, button int) bool {
+func ReadButton(floor int, button int) bool {
 	if floor < 0 || floor >= NumFloors {
 		log.Printf("Error: Floor %d out of range!\n", floor)
+		return false
+	}
+	if button < 0 || button >= NumButtons {
+		log.Printf("Error: Button %d out of range!\n", button)
 		return false
 	}
 	if button == ButtonCallUp && floor == NumFloors-1 {
@@ -148,14 +134,8 @@ func GetButton(floor int, button int) bool {
 		log.Println("Button down from ground floor does not exist!")
 		return false
 	}
-	if button != ButtonCallUp &&
-		button != ButtonCallDown &&
-		button != ButtonCommand {
-		log.Printf("Invalid button %d\n", button)
-		return false
-	}
 
-	if Io_read_bit(buttonChannelMatrix[floor][button]) {
+	if ioReadBit(buttonChannelMatrix[floor][button]) {
 		return true
 	} else {
 		return false
@@ -183,8 +163,24 @@ func SetButtonLamp(floor int, button int, value bool) {
 	}
 
 	if value {
-		Io_set_bit(lampChannelMatrix[floor][button])
+		ioSetBit(lampChannelMatrix[floor][button])
 	} else {
-		Io_clear_bit(lampChannelMatrix[floor][button])
+		ioClearBit(lampChannelMatrix[floor][button])
 	}
+}
+
+func SetStopLamp(value bool) {
+	if value {
+		ioSetBit(LIGHT_STOP)
+	} else {
+		ioClearBit(LIGHT_STOP)
+	}
+}
+
+func GetObstructionSignal() bool {
+	return ioReadBit(OBSTRUCTION)
+}
+
+func GetStopSignal() bool {
+	return ioReadBit(STOP)
 }

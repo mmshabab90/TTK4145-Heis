@@ -11,7 +11,6 @@ func main() {
 	if !hw.Init() {
 		log.Fatalln("Io_init() failed!")
 	}
-	fsm.Init()
 
 	// Move to defined state:
 	hw.SetMotorDirection(hw.DirnDown)
@@ -19,8 +18,9 @@ func main() {
 	for floor == -1 {
 		floor = hw.GetFloor()
 	}
-	hw.SetFloorIndicator(floor)
+	hw.SetFloorLamp(floor)
 	hw.SetMotorDirection(hw.DirnStop)
 
+	fsm.Init()
 	poller.Run()
 }

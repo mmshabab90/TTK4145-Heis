@@ -89,7 +89,7 @@ func EventButtonPressed(buttonFloor int, buttonType int) {
 func EventFloorReached(newFloor int) {
 	fmt.Print("Event floor reached in state ")
 	floor = newFloor
-	hw.SetFloorIndicator(floor)
+	hw.SetFloorLamp(floor)
 	switch state {
 	case moving:
 		fmt.Println("moving")

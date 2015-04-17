@@ -50,7 +50,7 @@ func pollButtons() <-chan keypress {
 						(f == hw.NumFloors-1 && b == hw.ButtonCallUp) {
 						continue
 					}
-					if hw.GetButton(f, b) {
+					if hw.ReadButton(f, b) {
 						if !buttonState[f][b] {
 							c <- keypress{button: b, floor: f}
 						}
