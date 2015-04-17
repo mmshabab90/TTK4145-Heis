@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// --------------- PUBLIC: ---------------
+
 type UdpConnection struct { //should this be in udp.go
 	Addr  string
 	Timer *time.Timer
@@ -59,6 +61,8 @@ func ReceiveMsg(){ //bad abstraction? doesn't just receive msg. GIVE THIS NEW NA
 		}
 	}
 }
+
+// --------------- PRIVATE: ---------------
 
 func connectionTimer(connection *UdpConnection) {
 	for {

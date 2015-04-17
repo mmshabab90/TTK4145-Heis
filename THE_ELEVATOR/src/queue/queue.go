@@ -25,39 +25,19 @@ type sharedOrder struct {
 	elevatorAddr  string
 }
 
-type message struct { // maybe should make this public
+var localQueue [elev.NumFloors][elev.NumButtons]bool
+// Internal orders in shared queue are unused, but present for better indexing:
+var sharedQueue [elev.NumFloors][elev.NumButtons]sharedOrder
+
+// --------------- PUBLIC: ---------------
+
+type Message struct { // maybe should make this public
 	kind messageType
 	floor int
 	button elev.ButtonType
 	cost int
 }
 
-func printMessage(msg message) {
-	fmt.Println("Message")
-	fmt.Println("---------------------------")
-	switch msg.kind {
-	case alive:
-		fmt.Println("I'm alive\n")
-	case newOrder:
-		fmt.Println("New order:")
-		fmt.Printf("Floor: %d\n", msg.floor)
-		fmt.Printf("Button: %d\n\n", msg.button)
-	case completeOrder:
-		fmt.Println("Complete order:")
-		fmt.Printf("Floor: %d\n", msg.floor)
-		fmt.Printf("Button: %d\n\n", msg.button)
-	case cost:
-		fmt.Printf("Cost: %d\n\n", msg.cost)
-	default:
-		log.Println("Invalid message type\n")
-	}
-}
-
-var localQueue [elev.NumFloors][elev.NumButtons]bool
-// Internal orders in shared queue are unused, but present for better indexing:
-var sharedQueue [elev.NumFloors][elev.NumButtons]sharedOrder
-
-// --------------- PUBLIC: ---------------
 func Init() {
 	resetLocalQueue()
 	resetSharedQueue()
@@ -145,6 +125,27 @@ func RemoveOrdersAt(floor int) {
 
 func IsOrder(floor int, button elev.ButtonType) bool {
 	return localQueue[floor][button]
+}
+
+func PrintMessage(msg message) {
+	fmt.Println("Message")
+	fmt.Println("---------------------------")
+	switch msg.kind {
+	case alive:
+		fmt.Println("I'm alive\n")
+	case newOrder:
+		fmt.Println("New order:")
+		fmt.Printf("Floor: %d\n", msg.floor)
+		fmt.Printf("Button: %d\n\n", msg.button)
+	case completeOrder:
+		fmt.Println("Complete order:")
+		fmt.Printf("Floor: %d\n", msg.floor)
+		fmt.Printf("Button: %d\n\n", msg.button)
+	case cost:
+		fmt.Printf("Cost: %d\n\n", msg.cost)
+	default:
+		log.Println("Invalid message type\n")
+	}
 }
 
 // --------------- PRIVATE: ---------------
