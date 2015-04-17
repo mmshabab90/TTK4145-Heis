@@ -15,6 +15,7 @@ func main() {
 
 	fsm.Init()
 	timer.Init()
+	queue.Init()
 
 	// Move to defined state:
 	elev.SetMotorDirection(elev.DirnDown)
