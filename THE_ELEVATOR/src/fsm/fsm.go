@@ -22,12 +22,12 @@ var floor int
 var departDirection elev.DirnType
 
 func Init() {
-	log.Println("Init")
+	log.Println("FSM Init")
+	queue.Init()
 	state = idle
 	direction = elev.DirnStop
 	floor = elev.GetFloor()
 	departDirection = elev.DirnDown
-	queue.RemoveAll()
 	syncLights()
 }
 
