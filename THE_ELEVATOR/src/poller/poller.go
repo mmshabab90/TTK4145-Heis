@@ -3,7 +3,6 @@ package poller
 import (
 	"../elev"
 	"../fsm"
-	"../timer"
 	"../cost"
 	"../network"
 	"log"
@@ -30,7 +29,7 @@ func Run() {
 			fmt.Printf("Cost: %d\n", cost.CalculateCost(keypress.floor, keypress.button))
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
-		case <-timer.TimerOut:
+		case <-fsm.DoorTimeout:
 			fsm.EventTimerOut()
 		case udpMessage := <-network.ReceiveChan:
 			handleMessage(parseMessage(udpMessage))

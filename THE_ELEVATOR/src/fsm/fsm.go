@@ -3,13 +3,13 @@ package fsm
 import (
 	"../elev"
 	"../queue"
-	"../timer"
 	"../network"
 	"fmt"
 	"log"
+	"time"
 )
 
-type stateType int // Does this have scope?
+type stateType int
 const (
 	idle stateType = iota
 	moving
@@ -21,15 +21,38 @@ var floor int
 var direction elev.DirnType
 var departDirection elev.DirnType
 
+var DoorTimeout = make(chan bool)
+var doorReset = make(chan bool)
+const doorOpenTime = 3 * time.Second
+
 func Init() {
 	log.Println("FSM Init")
 	queue.Init()
+	runTimer()
 	state = idle
 	direction = elev.DirnStop
 	floor = elev.GetFloor()
 	departDirection = elev.DirnDown
 	syncLights()
 }
+
+func runTimer() {
+	timer := time.NewTimer(0)
+	timer.Stop()
+
+	go func() {
+		for {
+			select {
+			case <-doorReset:
+				timer.Reset(doorOpenTime)
+			case <-timer.C:
+				DoorTimeout <- true
+				timer.Stop()
+			}
+		}
+	}()
+}
+
 
 func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 	fmt.Print("Event button pressed in state ")
@@ -41,7 +64,7 @@ func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 		if direction == elev.DirnStop {
 			elev.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
-			timer.ResetTimer <- true
+			doorReset <- true
 			state = doorOpen
 		} else {
 			elev.SetMotorDirection(direction)
@@ -51,7 +74,7 @@ func EventButtonPressed(buttonFloor int, buttonType elev.ButtonType) {
 	case doorOpen:
 		fmt.Println("door open")
 		if floor == buttonFloor {
-			timer.ResetTimer <- true
+			doorReset <- true
 		} else {
 			queue.AddOrder(buttonFloor, buttonType)
 		}
@@ -75,7 +98,7 @@ func EventFloorReached(newFloor int) {
 			elev.SetMotorDirection(elev.DirnStop)
 			elev.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
-			timer.ResetTimer <- true
+			doorReset <- true
 			state = doorOpen
 		} else {
 			departDirection = direction

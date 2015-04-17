@@ -4,7 +4,6 @@ import (
 	"./src/elev"
 	"./src/fsm"
 	"./src/poller"
-	"./src/timer"
 	"log"
 )
 
@@ -13,7 +12,6 @@ func main() {
 		log.Fatalln("Io_init() failed!")
 	}
 	fsm.Init()
-	timer.Init()
 
 	// Move to defined state:
 	elev.SetMotorDirection(elev.DirnDown)
