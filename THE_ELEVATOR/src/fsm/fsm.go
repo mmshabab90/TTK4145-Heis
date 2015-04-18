@@ -18,7 +18,7 @@ func Init() {
 	runTimer()
 	state = idle
 	direction = defs.DirnStop
-	floor = hw.GetFloor()
+	floor = hw.Floor()
 	if floor == -1 {
 		floor = hw.MoveToDefinedState()
 	}
@@ -27,7 +27,7 @@ func Init() {
 }
 
 func EventButtonPressed(buttonFloor int, buttonType int) {
-	fmt.Printf("Event button pressed in state %s\n", getStateName(state))
+	fmt.Printf("Event button pressed in state %s\n", stateName(state))
 	switch state {
 	case idle:
 		queue.AddOrder(buttonFloor, buttonType)
@@ -57,7 +57,7 @@ func EventButtonPressed(buttonFloor int, buttonType int) {
 }
 
 func EventFloorReached(newFloor int) {
-	fmt.Printf("Event button pressed in state %s\n", getStateName(state))
+	fmt.Printf("Event button pressed in state %s\n", stateName(state))
 	floor = newFloor
 	hw.SetFloorLamp(floor)
 	switch state {
@@ -80,7 +80,7 @@ func EventFloorReached(newFloor int) {
 }
 
 func EventDoorTimeout() {
-	fmt.Printf("Event button pressed in state %s\n", getStateName(state))
+	fmt.Printf("Event button pressed in state %s\n", stateName(state))
 	switch state {
 	case doorOpen:
 		direction = queue.ChooseDirection(floor, direction)
@@ -98,11 +98,11 @@ func EventDoorTimeout() {
 	syncLights()
 }
 
-func GetDirection() int {
+func Direction() int {
 	return direction
 }
 
-func GetFloor() int {
+func Floor() int {
 	return floor
 }
 
@@ -155,7 +155,7 @@ func syncLights() {
 	}
 }
 
-func getStateName(state stateType) string {
+func stateName(state stateType) string {
 	switch state {
 	case idle:
 		return "idle"

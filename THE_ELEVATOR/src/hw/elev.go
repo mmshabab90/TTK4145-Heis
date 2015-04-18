@@ -69,7 +69,7 @@ func SetDoorOpenLamp(value bool) {
 	}
 }
 
-func GetFloor() int {
+func Floor() int {
 	if ioReadBit(SENSOR_FLOOR1) {
 		return 0
 	} else if ioReadBit(SENSOR_FLOOR2) {
@@ -158,9 +158,9 @@ func SetButtonLamp(floor int, button int, value bool) {
 
 func MoveToDefinedState() int {
 	SetMotorDirection(defs.DirnDown)
-	floor := GetFloor()
+	floor := Floor()
 	for floor == -1 {
-		floor = GetFloor()
+		floor = Floor()
 	}
 	SetMotorDirection(defs.DirnStop)
 	SetFloorLamp(floor)
