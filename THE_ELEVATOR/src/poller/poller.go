@@ -38,6 +38,7 @@ func Run() {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <- connectionTimerChan:
 			delete(connectionMap, connection.Addr) //delete dead connection from map
+			fmt.Printf("Connection with IP %s is dead\n", connection.Addr)
 			//for key, _ := range connectionMap {fmt.Println(key)}
 		}
 	}
