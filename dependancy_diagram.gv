@@ -6,6 +6,5 @@ digraph G {
 	main -> network;
 	fsm -> hw;
 	fsm -> queue;
-	queue -> network;
 	cost -> queue;
 }
