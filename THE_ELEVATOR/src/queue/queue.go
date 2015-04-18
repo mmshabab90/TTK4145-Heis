@@ -16,10 +16,10 @@ func Init() {
 
 func AddOrder(floor int, button int) {
 	// New AddOrder should:
-		// Send message about new order to all lifts
-		// Another func should receive replies and
-		// assign the order to the lift with the lowest
-		// cost (or lowest ip if several lifts have same cost)
+	// Send message about new order to all lifts
+	// Another func should receive replies and
+	// assign the order to the lift with the lowest
+	// cost (or lowest ip if several lifts have same cost)
 
 	if button == defs.ButtonCommand {
 		localQueue[floor][button] = true
@@ -100,10 +100,10 @@ func ReassignOrders(deadAddr string) { // better name plz
 		for b := 0; b < defs.NumButtons; b++ {
 			if sharedQueue[f][b].assignedLiftAddr == deadAddr {
 				sharedQueue[f][b] = blankOrder
-                reassignMessage := &network.Message{
-                	Kind: network.NewOrder,
-                	Floor: f,
-                	Button: b}
+				reassignMessage := &network.Message{
+					Kind:   network.NewOrder,
+					Floor:  f,
+					Button: b}
 				network.Send(reassignMessage)
 			}
 		}
@@ -117,15 +117,15 @@ func SendOrderCompleteMessage(floor int) {
 
 // --------------- PRIVATE: ---------------
 
-
 var blankOrder = sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
 
 type sharedOrder struct {
-	isOrderActive bool
-	assignedLiftAddr  string
+	isOrderActive    bool
+	assignedLiftAddr string
 }
 
 var localQueue [defs.NumFloors][defs.NumButtons]bool
+
 // Internal orders in shared queue are unused, but present for better indexing:
 var sharedQueue [defs.NumFloors][defs.NumButtons]sharedOrder
 

@@ -10,7 +10,7 @@ import (
 
 var Laddr *net.UDPAddr //Local address
 
-func Print_udp_message(msg udpMessage){ //should this be private?
+func Print_udp_message(msg udpMessage) { //should this be private?
 	fmt.Printf("msg:  \n \t raddr = %s \n \t data = %s \n \t length = %v \n", msg.raddr, msg.data, msg.length)
 }
 
@@ -19,7 +19,7 @@ func Udp_init(localListenPort, broadcastListenPort, message_size int, send_ch, r
 	baddr, err = net.ResolveUDPAddr("udp4", "255.255.255.255:"+strconv.Itoa(broadcastListenPort))
 	if err != nil {
 		return err
-	}	
+	}
 
 	//Generating localaddress
 	tempConn, err := net.DialUDP("udp4", nil, baddr)
@@ -55,8 +55,8 @@ var baddr *net.UDPAddr //Broadcast address
 
 type udpMessage struct {
 	raddr  string //if receiving raddr=senders address, if sending raddr should be set to "broadcast" or an ip:port
-	data   []byte 
-	length int    //length of received data, in #bytes // N/A for sending
+	data   []byte
+	length int //length of received data, in #bytes // N/A for sending
 }
 
 func udp_transmit_server(lconn, bconn *net.UDPConn, send_ch chan udpMessage) {

@@ -1,13 +1,11 @@
 package cost
 
-// Consider moving this into queue package.
-
 import (
-	"log"
-	"fmt"
-	"errors"
-	"../queue"
 	"../defs"
+	"../queue"
+	"errors"
+	"fmt"
+	"log"
 )
 
 // --------------- PUBLIC: ---------------
@@ -21,7 +19,7 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 	default:
 		return 0, fmt.Errorf("CalculateCost() called with invalid order: %d\n", targetButton)
 	}
-	
+
 	cost := 0
 
 	if currFloor == -1 {
@@ -32,13 +30,13 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 	for !(fsmFloor == targetFloor && queue.ShouldStop(fsmFloor, fsmDir)) {
 		log.Printf("Floor: %d, direction: %d\n", fsmFloor, fsmDir)
 		if queue.ShouldStop(fsmFloor, fsmDir) {
-			cost += 2	
+			cost += 2
 		}
 		fsmDir = queue.ChooseDirection(fsmFloor, fsmDir)
 		fsmFloor = incrementFloor(fsmFloor, fsmDir)
 		cost += 2
 	}
-	
+
 	return cost, nil
 }
 

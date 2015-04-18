@@ -6,9 +6,9 @@
 package hw
 
 import (
-	"log"
-	"errors"
 	"../defs"
+	"errors"
+	"log"
 )
 
 var lampChannelMatrix = [defs.NumFloors][defs.NumButtons]int{

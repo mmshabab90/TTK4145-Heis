@@ -1,9 +1,9 @@
 package network
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
-	"encoding/json"
 )
 
 // --------------- PUBLIC: ---------------
@@ -16,11 +16,11 @@ const (
 )
 
 type Message struct {
-	Kind int
-	Addr string `json:"-"` // skal funke
-	Floor int
+	Kind   int
+	Addr   string `json:"-"` // skal funke
+	Floor  int
 	Button int
-	Cost int
+	Cost   int
 }
 
 type UdpConnection struct { //should this be in udp.go? or in poller.go?
@@ -28,19 +28,18 @@ type UdpConnection struct { //should this be in udp.go? or in poller.go?
 	Timer *time.Timer
 }
 
-var ReceiveChan = make (chan udpMessage, 10) //this is now buffered with 10 slots, does this lead to fuckup?
+var ReceiveChan = make(chan udpMessage, 10) //this is now buffered with 10 slots, does this lead to fuckup?
 
-
-func Init (){
+func Init() {
 	const localListenPort = 20001
 	const broadcastListenPort = 20058
 	const messageSize = 1024
-	err := Udp_init(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)		
+	err := Udp_init(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
 
-	if (err != nil){
+	if err != nil {
 		fmt.Print("err = %s \n", err)
 	}
-	
+
 	go aliveSpammer()
 }
 
@@ -66,10 +65,10 @@ func ParseMessage(udpMessage udpMessage) Message {
 
 // --------------- PRIVATE: ---------------
 
-var sendChan = make (chan udpMessage)
+var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	const spamInterval = 500*time.Millisecond
+	const spamInterval = 500 * time.Millisecond
 	message := &Message{Kind: Alive}
 	for {
 		Send(message)
@@ -97,5 +96,3 @@ func printMessage(msg Message) {
 		fmt.Println("Invalid message type!\n")
 	}
 }
-
-

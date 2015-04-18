@@ -1,12 +1,12 @@
 package fsm
 
 import (
+	"../defs"
 	"../hw"
 	"../queue"
 	"fmt"
 	"log"
 	"time"
-	"../defs"
 )
 
 // --------------- PUBLIC: ---------------
@@ -110,6 +110,7 @@ func GetFloor() int {
 // --------------- PRIVATE: ---------------
 
 type stateType int
+
 const (
 	idle stateType = iota
 	moving
