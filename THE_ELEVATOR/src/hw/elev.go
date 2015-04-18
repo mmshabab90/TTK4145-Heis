@@ -7,6 +7,7 @@ package hw
 
 import (
 	"log"
+	"errors"
 )
 
 const NumButtons = 3
@@ -38,7 +39,7 @@ var buttonChannelMatrix = [NumFloors][NumButtons]int{
 func Init() error {
 	// Init hardware
 	if !ioInit() {
-		return errors.new("Hardware driver: ioInit() failed!")
+		return errors.New("Hardware driver: ioInit() failed!")
 	}
 
 	// Zero all floor button lamps
@@ -57,7 +58,10 @@ func Init() error {
 
 	// Move to defined state:
 	SetMotorDirection(DirnDown)
-	for floor := GetFloor(); floor == -1; floor = GetFloor() {}
+	floor := GetFloor()
+	for floor == -1 {
+		floor = GetFloor()
+	}
 	SetMotorDirection(DirnStop)
 	SetFloorLamp(floor)
 
