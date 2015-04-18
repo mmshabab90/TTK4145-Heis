@@ -8,7 +8,7 @@ import (
 
 // --------------- PUBLIC: ---------------
 
-const spamTime = 500*time.Millisecond
+const spamInterval = 500*time.Millisecond
 
 const (
 	Alive int = iota
@@ -71,7 +71,7 @@ func aliveSpammer() {
 	message := Message{Kind: Alive}
 	for {
 		Send(message)
-		time.Sleep(spamTime)
+		time.Sleep(spamInterval)
 	}
 }
 
