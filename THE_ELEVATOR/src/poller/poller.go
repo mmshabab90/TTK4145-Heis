@@ -9,6 +9,7 @@ import (
 	"time"
 	"fmt"
 	"../queue"
+	"../defs"
 )
 
 var _ = log.Println
@@ -45,6 +46,7 @@ func liftAssigner() {
 
 	go func() {
 		assignmentQueue := make(map[order][]cost)
+		//assignmentQueue := 
 		for {
 			select {
 			case message := <- costChan:

@@ -10,21 +10,6 @@ import (
 	"errors"
 )
 
-// --------------- PUBLIC: ---------------
-
-const NumButtons = 3
-const NumFloors = 4
-const (
-	ButtonCallUp int = iota
-	ButtonCallDown
-	ButtonCommand
-)
-const (
-	DirnDown int = iota - 1
-	DirnStop
-	DirnUp
-)
-
 var lampChannelMatrix = [NumFloors][NumButtons]int{
 	{LIGHT_UP1, LIGHT_DOWN1, LIGHT_COMMAND1},
 	{LIGHT_UP2, LIGHT_DOWN2, LIGHT_COMMAND2},

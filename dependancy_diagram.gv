@@ -8,7 +8,7 @@ digraph G {
 	fsm -> hw;
 	fsm -> queue;
 	fsm -> network;
-	queue -> hw;
+	queue -> defs;
 	queue -> network;
 	cost -> queue;
 	cost -> hw;

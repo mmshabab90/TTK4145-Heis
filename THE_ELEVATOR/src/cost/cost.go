@@ -8,6 +8,7 @@ import (
 	"errors"
 	"../hw"
 	"../queue"
+	"../defs"
 )
 
 // --------------- PUBLIC: ---------------

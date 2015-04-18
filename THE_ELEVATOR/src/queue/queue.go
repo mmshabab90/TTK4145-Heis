@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"../hw"
+	"../defs"
 	"../network"
 	"log"
 )

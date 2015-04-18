@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"../defs"
 )
 
 // --------------- PUBLIC: ---------------
