@@ -6,6 +6,8 @@ import (
 	"log"
 )
 
+blankOrder := sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
+
 type sharedOrder struct {
 	isOrderActive bool
 	assignedLiftAddr  string
@@ -108,9 +110,7 @@ func ReassignOrders(deadAddr string) { // better name plz
 	for f := 0; f < hw.NumFloors; f++ {
 		for b := 0; b < hw.NumButtons; b++ {
 			if sharedQueue[f][b].assignedLiftAddr == deadAddr {
-				sharedQueue[f][b].isOrderActive = false
-				sharedQueue[f][b].assignedLiftAddr = ""
-
+				sharedQueue[f][b] = blankOrder
                 reassignMessage := network.Message{
                 	Kind: network.NewOrder,
                 	Floor: f,
@@ -181,8 +181,7 @@ func RemoveSharedOrder(floor int, button int) {
 		return
 	}
 
-	sharedQueue[floor][button].isOrderActive = false
-	sharedQueue[floor][button].assignedLiftAddr = ""
+	sharedQueue[floor][button] = blankOrder
 }
 
 func resetLocalQueue() {
@@ -194,7 +193,6 @@ func resetLocalQueue() {
 }
 
 func resetSharedQueue() {
-	blankOrder := sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
 	for f := 0; f < hw.NumFloors; f++ {
 		for b := 0; b < hw.NumButtons; b++ {
 			sharedQueue[f][b] = blankOrder
