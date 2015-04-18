@@ -29,10 +29,10 @@ type cost struct {
 	cost int
 	lift string
 }
-
 type order struct {
 	floor int
 	button int
+	costs []cost
 }
 
 func liftAssigner() {
@@ -45,14 +45,13 @@ func liftAssigner() {
 	// spawn a goroutine for each order to be assigned?
 
 	go func() {
-		assignmentQueue := make(map[order][]cost)
-		//assignmentQueue := 
+		//assignmentQueue := make(map[order][]cost)
+		assignmentQueue := make([]order)
 		for {
 			select {
 			case message := <- costChan:
-				index := order{floor:message.Floor, button:message.Button}
-				// add cost data to ass que if not already there
-				if 
+				// check if message data already in assQue
+				// add the data if it's not there
 				// then check if all lifts are present
 				// if yes, decide on a lift
 				// and update local sharedqueue
@@ -62,7 +61,10 @@ func liftAssigner() {
 			}
 		}
 	}()
+}
 
+func orderExistInAssQue(que []order) bool {
+	
 }
 
 func Init() {
@@ -102,13 +104,13 @@ func pollButtons() <-chan keypress {
 	c := make(chan keypress)
 
 	go func() {
-		var buttonState [hw.NumFloors][hw.NumButtons]bool
+		var buttonState [defs.NumFloors][defs.NumButtons]bool
 
 		for {
-			for f := 0; f < hw.NumFloors; f++ {
-				for b := 0; b < hw.NumButtons; b++ {
-					if (f == 0 && b == hw.ButtonCallDown) ||
-						(f == hw.NumFloors-1 && b == hw.ButtonCallUp) {
+			for f := 0; f < defs.NumFloors; f++ {
+				for b := 0; b < defs.NumButtons; b++ {
+					if (f == 0 && b == defs.ButtonCallDown) ||
+						(f == defs.NumFloors-1 && b == defs.ButtonCallUp) {
 						continue
 					}
 					if hw.ReadButton(f, b) {
