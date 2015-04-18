@@ -7,7 +7,7 @@ import (
 	"../network"
 	"log"
 	"time"
-	//"fmt"
+	"fmt"
 	"../queue"
 )
 
@@ -17,6 +17,9 @@ type keypress struct {
 	button int
 	floor  int
 }
+
+var connectionMap = make(map[string] network.UdpConnection)
+var connectionTimerChan	 = make(chan network.UdpConnection)
 
 func Run() {
 	buttonChan := pollButtons()
@@ -33,6 +36,9 @@ func Run() {
 			fsm.EventTimerOut()
 		case udpMessage := <-network.ReceiveChan:
 			handleMessage(network.ParseMessage(udpMessage))
+		case connection := <- connectionTimerChan:
+			delete(connectionMap, connection.Addr) //delete dead connection from map
+			//for key, _ := range connectionMap {fmt.Println(key)}
 		}
 	}
 }
@@ -89,7 +95,17 @@ func pollFloors() <-chan int {
 func handleMessage(message network.Message) {
 	switch message.Kind {
 		case network.Alive:
-			// reset lift timer (not door timer lol)
+			if connection, exist := connectionMap[message.Addr]; exist {
+				connection.Timer.Reset(1*time.Second)
+				fmt.Println("timer reset for IP: ")
+				fmt.Println(message.Addr)
+			} else {
+				newConnection := network.UdpConnection{message.Addr, time.NewTimer(1*time.Second)}
+				connectionMap[message.Addr] = newConnection
+				fmt.Println("New connection, with IP: ")
+				fmt.Println(message.Addr)
+				go connectionTimer(&newConnection)
+			}
 		case network.NewOrder:
 			costMessage := network.Message{
 				Kind: network.Cost,
@@ -103,5 +119,12 @@ func handleMessage(message network.Message) {
 			// prob more to do here
 		case network.Cost:
 			// notify lift assignment routine
+	}
+}
+
+func connectionTimer(connection *network.UdpConnection) {
+	for {
+		<- connection.Timer.C
+		connectionTimerChan <- *connection
 	}
 }

@@ -31,7 +31,7 @@ type UdpConnection struct { //should this be in udp.go?
 // Consider visibility of these three:
 var sendChan = make (chan udpMessage)
 var ReceiveChan = make (chan udpMessage)
-var ConnectionTimer	 = make(chan UdpConnection)
+
 
 func Init (){
 	err := Udp_init(20001, 20058, 1024, sendChan, ReceiveChan)	
@@ -48,37 +48,7 @@ func Send(message Message) {
 		// worry
 	} else {
 		sendChan <- udpMessage{raddr: "broadcast", data: jsonMessage, length: len(jsonMessage)}
-		time.Sleep(500*time.Millisecond)	// What's this for?
-	}
-}
-
-func ReceiveMsg(){ // bad abstraction! doesn't just receive msg. GIVE THIS NEW NAME!
-	connectionMap := make(map[string] UdpConnection)
-	for {
-		select{
-		case rcvMsg := <- ReceiveChan:
-			Print_udp_message(rcvMsg)
-			
-			//keep track of witch connections that exist
-			if connection, exist := connectionMap[rcvMsg.raddr]; exist {
-				connection.Timer.Reset(1*time.Second)
-				fmt.Println("timer reset for IP: ")
-				fmt.Println(rcvMsg.raddr)
-			} else {
-				newConnection := UdpConnection{rcvMsg.raddr, time.NewTimer(1*time.Second)}
-				connectionMap[rcvMsg.raddr] = newConnection
-				fmt.Println("New connection, with IP: ")
-				fmt.Println(rcvMsg.raddr)
-				go connectionTimer(&newConnection)
-			}
-		//deletes connection when timer goes out
-		case connection := <- ConnectionTimer:
-			fmt.Println(connection.Addr, "is dead")
-			delete(connectionMap, connection.Addr)
-			for key, _ := range connectionMap {
-				fmt.Println(key)
-			}
-		}
+		time.Sleep(500*time.Millisecond)	//put this sleep in imAlive-function
 	}
 }
 
@@ -91,6 +61,8 @@ func ParseMessage(udpMessage udpMessage) Message { // work this into network pac
 	message.Addr = udpMessage.raddr
 	return message
 }
+
+// --------------- PRIVATE: ---------------
 
 func printMessage(msg Message) {
 	fmt.Println("Message")
@@ -113,11 +85,4 @@ func printMessage(msg Message) {
 	}
 }
 
-// --------------- PRIVATE: ---------------
 
-func connectionTimer(connection *UdpConnection) {
-	for {
-		<- connection.Timer.C
-		ConnectionTimer <- *connection
-	}
-}
