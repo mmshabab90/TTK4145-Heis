@@ -15,9 +15,9 @@ import (
 
 func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int) (int, error) {
 	switch targetButton {
-	case hw.ButtonCallUp:
-	case hw.ButtonCallDown:
-	case hw.ButtonCommand:
+	case defs.ButtonCallUp:
+	case defs.ButtonCallDown:
+	case defs.ButtonCommand:
 		return 0, errors.New("CalculateCost() called with internal order!")
 	default:
 		return 0, fmt.Errorf("CalculateCost() called with invalid order: %d\n", targetButton)
@@ -47,9 +47,9 @@ func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int
 
 func incrementFloor(floor int, direction int) int {
 	switch direction {
-	case hw.DirnDown:
+	case defs.DirnDown:
 		floor--
-	case hw.DirnUp:
+	case defs.DirnUp:
 		floor++
 	default:
 		log.Println("Error: Invalid direction, floor not incremented.")
