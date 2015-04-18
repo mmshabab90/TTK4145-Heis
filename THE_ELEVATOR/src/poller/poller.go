@@ -28,6 +28,7 @@ type cost struct {
 	cost int
 	lift string
 }
+
 type order struct {
 	floor int
 	button int
@@ -149,7 +150,7 @@ func handleMessage(message network.Message) {
 			if err != nil {
 				log.Println(err)
 			}
-			costMessage := network.Message{
+			costMessage := &network.Message{
 				Kind: network.Cost,
 				Floor: message.Floor,
 				Button: message.Button,
