@@ -8,6 +8,7 @@ package hw
 import (
 	"log"
 	"errors"
+	"../defs"
 )
 
 var lampChannelMatrix = [NumFloors][NumButtons]int{
