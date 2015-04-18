@@ -4,20 +4,21 @@ package cost
 
 import (
 	"log"
+	"fmt"
+	"errors"
 	"../hw"
 	"../queue"
 )
 
-func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int) int {
+func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int) int, error {
 	switch targetButton {
 	case hw.ButtonCallUp:
 	case hw.ButtonCallDown:
 	case hw.ButtonCommand:
-		log.Println("CalculateCost() called with internal order!")
-		return -1 // return something else
+		return errors.New("CalculateCost() called with internal order!")
 	default:
 		log.Printf("CalculateCost() called with invalid order: %d\n", targetButton)
-		return -1 // Ditto
+		return errors.New("CalculateCost() called with invalid order!")
 	}
 	
 	cost := 0
@@ -37,7 +38,7 @@ func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int
 		cost += 2
 	}
 	
-	return cost
+	return cost, nil
 }
 
 func incrementFloor(floor int, direction int) int {

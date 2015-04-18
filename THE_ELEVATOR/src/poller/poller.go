@@ -12,6 +12,7 @@ import (
 )
 
 var _ = log.Println
+var _ = fmt.Println
 
 type keypress struct {
 	button int
@@ -29,7 +30,6 @@ func Run() {
 		select {
 		case keypress := <-buttonChan:
 			fsm.EventButtonPressed(keypress.floor, keypress.button)
-			//fmt.Printf("Cost: %d\n", cost.CalculateCost(keypress.floor, keypress.button)
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
 		case <-fsm.DoorTimeout:
@@ -107,11 +107,15 @@ func handleMessage(message network.Message) {
 				go connectionTimer(&newConnection)
 			}
 		case network.NewOrder:
+			cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.GetFloor(), fsm.GetDirection())
+			if err != nil {
+				log.Println(err)
+			}
 			costMessage := network.Message{
 				Kind: network.Cost,
 				Floor: message.Floor,
 				Button: message.Button,
-				Cost: cost.CalculateCost(message.Floor, message.Button, fsm.GetFloor(), fsm.GetDirection())}
+				Cost: cost
 			network.Send(costMessage)
 		case network.CompleteOrder:
 			// remove from queues
