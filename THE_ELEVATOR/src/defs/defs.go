@@ -1,5 +1,7 @@
 package defs
 
+import "net"
+
 const NumButtons = 3
 const NumFloors = 4
 const (
@@ -11,6 +13,12 @@ const (
 	DirnDown int = iota - 1
 	DirnStop
 	DirnUp
+)
+const (
+	Alive int = iota
+	NewOrder
+	CompleteOrder
+	Cost
 )
 
 type Message struct {

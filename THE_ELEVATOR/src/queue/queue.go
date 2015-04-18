@@ -2,7 +2,6 @@ package queue
 
 import (
 	"../defs"
-	"../network"
 	"log"
 )
 
@@ -24,8 +23,8 @@ func AddOrder(floor int, button int) {
 	if button == defs.ButtonCommand {
 		localQueue[floor][button] = true
 	} else {
-		message := &defs.Message{Kind: network.NewOrder, Floor: floor, Button: button}
-		defs.MessageChan <- message
+		message := &defs.Message{Kind: defs.NewOrder, Floor: floor, Button: button}
+		defs.MessageChan <- *message
 		//network.Send(message)
 	}
 }
@@ -102,20 +101,20 @@ func ReassignOrders(deadAddr string) { // better name plz
 			if sharedQueue[f][b].assignedLiftAddr == deadAddr {
 				sharedQueue[f][b] = blankOrder
 				reassignMessage := &defs.Message{
-					Kind:   network.NewOrder,
+					Kind:   defs.NewOrder,
 					Floor:  f,
 					Button: b}
 				//network.Send(reassignMessage)
-				defs.MessageChan <- reassignMessage
+				defs.MessageChan <- *reassignMessage
 			}
 		}
 	}
 }
 
 func SendOrderCompleteMessage(floor int) {
-	message := &defs.Message{Kind: network.CompleteOrder, Floor: floor}
+	message := &defs.Message{Kind: defs.CompleteOrder, Floor: floor}
 	//network.Send(message)
-	defs.MessageChan <- message
+	defs.MessageChan <- *message
 }
 
 // --------------- PRIVATE: ---------------

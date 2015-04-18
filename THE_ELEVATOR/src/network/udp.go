@@ -1,6 +1,7 @@
 package network
 
 import (
+	"../defs"
 	"fmt"
 	"net"
 	"strconv"

@@ -123,7 +123,7 @@ func pollFloors() <-chan int {
 
 func handleMessage(message defs.Message) {
 	switch message.Kind {
-		case network.Alive:
+		case defs.Alive:
 			if connection, exist := connectionMap[message.Addr]; exist {
 				connection.Timer.Reset(resetTime)
 				if debugPrint {
@@ -137,22 +137,22 @@ func handleMessage(message defs.Message) {
 				}
 				go connectionTimer(&newConnection)
 			}
-		case network.NewOrder:
+		case defs.NewOrder:
 			cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.GetFloor(), fsm.GetDirection(), hw.GetFloor())
 			if err != nil {
 				log.Println(err)
 			}
 			costMessage := &defs.Message{
-				Kind: network.Cost,
+				Kind: defs.Cost,
 				Floor: message.Floor,
 				Button: message.Button,
 				Cost: cost}
 			network.Send(costMessage)
-		case network.CompleteOrder:
+		case defs.CompleteOrder:
 			// remove from queues
 			queue.RemoveSharedOrder(message.Floor, message.Button)
 			// prob more to do here
-		case network.Cost:
+		case defs.Cost:
 			costChan <- message
 	}
 }

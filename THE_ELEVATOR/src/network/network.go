@@ -9,13 +9,6 @@ import (
 
 // --------------- PUBLIC: ---------------
 
-const (
-	Alive int = iota
-	NewOrder
-	CompleteOrder
-	Cost
-)
-
 type UdpConnection struct { //should this be in udp.go? or in poller.go?
 	Addr  string
 	Timer *time.Timer
@@ -41,10 +34,10 @@ func pollMessages() {
 		var msg defs.Message
 		for {
 			msg = <- defs.MessageChan
-			Send(msg)
+			Send(&msg)
 			time.Sleep(time.Millisecond)
 		}
-	}
+	}()
 }
 
 func Send(message *defs.Message) { //now takes a pointer, does it still work over the network?
@@ -73,7 +66,7 @@ var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
 	const spamInterval = 500 * time.Millisecond
-	message := &defs.Message{Kind: Alive}
+	message := &defs.Message{Kind: defs.Alive}
 	for {
 		Send(message)
 		time.Sleep(spamInterval)
@@ -84,17 +77,17 @@ func printMessage(msg defs.Message) {
 	fmt.Println("Message")
 	fmt.Println("---------------------------")
 	switch msg.Kind {
-	case Alive:
+	case defs.Alive:
 		fmt.Println("I'm alive\n")
-	case NewOrder:
+	case defs.NewOrder:
 		fmt.Println("New order:")
 		fmt.Printf("Floor: %d\n", msg.Floor)
 		fmt.Printf("Button: %d\n\n", msg.Button)
-	case CompleteOrder:
+	case defs.CompleteOrder:
 		fmt.Println("Complete order:")
 		fmt.Printf("Floor: %d\n", msg.Floor)
 		fmt.Printf("Button: %d\n\n", msg.Button)
-	case Cost:
+	case defs.Cost:
 		fmt.Printf("Cost: %d\n\n", msg.Cost)
 	default:
 		fmt.Println("Invalid message type!\n")
