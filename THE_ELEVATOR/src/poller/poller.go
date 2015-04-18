@@ -205,4 +205,3 @@ func liftAssigner() {
 func parse(m network.Message) (order, reply) {
 	return order{floor:m.Floor, button:m.Button}, reply{cost:m.Cost, lift:m.Addr}
 }
-
