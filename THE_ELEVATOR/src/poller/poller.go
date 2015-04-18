@@ -48,8 +48,13 @@ func liftAssigner() {
 		for {
 			select {
 			case message := <- costChan:
-				assQueue[order{message.Floor,message.Button}] = cost{message.Cost,message.Addr}
-
+				index := order{floor:message.Floor, button:message.Button}
+				// add cost data to ass que if not already there
+				if 
+				// then check if all lifts are present
+				// if yes, decide on a lift
+				// and update local sharedqueue
+				// and maybe notify everyone else
 			default:
 				// do nothing
 			}
@@ -58,7 +63,17 @@ func liftAssigner() {
 
 }
 
-func Run() {
+func Init() {
+	if err := hw.Init(); err != nil {
+		log.Fatal(err)
+	}
+	fsm.Init()
+	network.Init()
+
+	run()
+}
+
+func run() {
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
 

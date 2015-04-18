@@ -1,0 +1,14 @@
+digraph G {
+	main -> poller;
+	poller -> fsm;
+	poller -> queue;
+	poller -> network;
+	poller -> cost;
+	fsm -> hw;
+	fsm -> queue;
+	fsm -> network;
+	queue -> hw;
+	queue -> network;
+	cost -> queue;
+	cost -> hw;
+}
