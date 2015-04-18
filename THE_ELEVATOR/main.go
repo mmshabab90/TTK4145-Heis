@@ -1,22 +1,21 @@
 package main
 
 import (
-	"./src/hw"
-	"./src/fsm"
 	"./src/cost"
-	"./src/network"
-	"log"
-	"time"
-	"fmt"
-	"./src/queue"
 	"./src/defs"
+	"./src/fsm"
+	"./src/hw"
+	"./src/network"
+	"./src/queue"
 	"errors"
+	"fmt"
+	"log"
 	"math"
+	"time"
 )
 
-// Init noen kanaler her som sendes hit og dit for communication puposes?
-
 const debugPrint = false
+const resetTime = 1 * time.Second
 
 var _ = log.Println
 var _ = fmt.Println
@@ -27,17 +26,17 @@ type keypress struct {
 	floor  int
 }
 
-var connectionMap = make(map[string] network.UdpConnection)
-var connectionDeadChan	 = make(chan network.UdpConnection)
-const resetTime = 1*time.Second
+var onlineLifts = make(map[string]network.UdpConnection)
 
+var deadChan = make(chan network.UdpConnection)
 var costChan = make(chan defs.Message)
+
 type reply struct {
 	cost int
 	lift string
 }
 type order struct {
-	floor int
+	floor  int
 	button int
 }
 
@@ -49,7 +48,7 @@ func main() {
 	fsm.Init()
 	network.Init()
 
-	go run() // main.go
+	go run()
 }
 
 func run() {
@@ -62,15 +61,10 @@ func run() {
 			fsm.EventButtonPressed(keypress.floor, keypress.button)
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
-		case <-fsm.DoorTimeoutChan:
-			fsm.EventDoorTimeout()
 		case udpMessage := <-network.ReceiveChan:
 			handleMessage(network.ParseMessage(udpMessage))
-		case connection := <- connectionDeadChan:
-			fmt.Printf("Connection with IP %s is dead\n", connection.Addr)
-			delete(connectionMap, connection.Addr) //delete dead connection from map
-			queue.ReassignOrders(connection.Addr)
-			//for key, _ := range connectionMap {fmt.Println(key)}
+		case connection := <-deadChan:
+			handleDeadLift(connection.Addr)
 		}
 	}
 }
@@ -126,44 +120,50 @@ func pollFloors() <-chan int {
 
 func handleMessage(message defs.Message) {
 	switch message.Kind {
-		case defs.Alive:
-			if connection, exist := connectionMap[message.Addr]; exist {
-				connection.Timer.Reset(resetTime)
-				if debugPrint {
-					fmt.Printf("Timer reset for IP %s\n", message.Addr)
-				}
-			} else {
-				newConnection := network.UdpConnection{message.Addr, time.NewTimer(resetTime)}
-				connectionMap[message.Addr] = newConnection
-				if debugPrint {
-					fmt.Printf("New connection with IP %s\n", message.Addr)
-				}
-				go connectionTimer(&newConnection)
+	case defs.Alive:
+		if connection, exist := onlineLifts[message.Addr]; exist {
+			connection.Timer.Reset(resetTime)
+			if debugPrint {
+				fmt.Printf("Timer reset for IP %s\n", message.Addr)
 			}
-		case defs.NewOrder:
-			cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.GetFloor(), fsm.GetDirection(), hw.GetFloor())
-			if err != nil {
-				log.Println(err)
+		} else {
+			newConnection := network.UdpConnection{message.Addr, time.NewTimer(resetTime)}
+			onlineLifts[message.Addr] = newConnection
+			if debugPrint {
+				fmt.Printf("New connection with IP %s\n", message.Addr)
 			}
-			costMessage := &defs.Message{
-				Kind: defs.Cost,
-				Floor: message.Floor,
-				Button: message.Button,
-				Cost: cost}
-			network.Send(costMessage)
-		case defs.CompleteOrder:
-			// remove from queues
-			queue.RemoveSharedOrder(message.Floor, message.Button)
-			// prob more to do here
-		case defs.Cost:
-			costChan <- message
+			go connectionTimer(&newConnection)
+		}
+	case defs.NewOrder:
+		cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.GetFloor(), fsm.GetDirection(), hw.GetFloor())
+		if err != nil {
+			log.Println(err)
+		}
+		costMessage := &defs.Message{
+			Kind:   defs.Cost,
+			Floor:  message.Floor,
+			Button: message.Button,
+			Cost:   cost}
+		network.Send(costMessage)
+	case defs.CompleteOrder:
+		// remove from queues
+		queue.RemoveSharedOrder(message.Floor, message.Button)
+		// prob more to do here
+	case defs.Cost:
+		costChan <- message
 	}
+}
+
+func handleDeadLift(deadAddr string) {
+	fmt.Printf("Connection to IP %s is dead!\n", deadAddr)
+	delete(onlineLifts, deadAddr)
+	queue.ReassignOrders(deadAddr)
 }
 
 func connectionTimer(connection *network.UdpConnection) {
 	for {
-		<- connection.Timer.C
-		connectionDeadChan <- *connection
+		<-connection.Timer.C
+		deadChan <- *connection
 	}
 }
 
@@ -173,13 +173,11 @@ func liftAssigner() {
 	// in alive-list have answered or after a timeout
 	// either send the decision on network or pray that all
 	// lifts make the same choice every time
-
-	// spawn a goroutine for each order to be assigned?
 	go func() {
 		assignmentQueue := make(map[order][]reply)
 		for {
 			select {
-			case message := <- costChan:
+			case message := <-costChan:
 				newOrder, newReply := split(message)
 				// Check if order in queue
 				if value, exist := assignmentQueue[newOrder]; exist {
@@ -198,34 +196,39 @@ func liftAssigner() {
 					// If order not in queue at all, init order list with it
 					assignmentQueue[newOrder] = []reply{newReply}
 				}
-				// check if any lists are ready for evaluation
+				evaluateLists(assignmentQueue)
 			default:
-				// do nothing
+				// worry
 			}
 		}
 	}()
 }
 
 func split(m defs.Message) (order, reply) {
-	return order{floor:m.Floor, button:m.Button}, reply{cost:m.Cost, lift:m.Addr}
+	return order{floor: m.Floor, button: m.Button}, reply{cost: m.Cost, lift: m.Addr}
 }
 
+// This is very cryptic and ungood.
 func evaluateLists(queue map[order][]reply) {
-
 	// Loop thru all lists
 	for key, replyList := range queue {
 		// Check if the list is complete
-		if len(replyList) == len(connectionMap) {
+		if len(replyList) == len(onlineLifts) {
+			var (
+				lowKey  int
+				lowCost = math.Inf(1)
+				lowAddr
+			)
 			// Loop thru costs in each complete list
-			var lowKey int
-			lowCost := math.Inf(1)
 			for i, reply := range replyList {
 				if reply.cost < lowCost {
 					lowCost = reply.cost
 					lowKey = i
+					lowAddr = reply.lift
 				}
 			}
-			// Assign order key to lift 
+			// Assign order key to lift
+			queue.AddSharedOrder(lowKey.floor, lowKey.button, lowAddr)
 		}
 	}
 }
