@@ -56,14 +56,7 @@ func Init() error {
 	SetStopLamp(false)
 	SetDoorOpenLamp(false)
 
-	// Move to defined state:
-	SetMotorDirection(DirnDown)
-	floor := GetFloor()
-	for floor == -1 {
-		floor = GetFloor()
-	}
-	SetMotorDirection(DirnStop)
-	SetFloorLamp(floor)
+	_ := MoveToDefinedState()
 
 	return nil
 }
@@ -174,6 +167,19 @@ func SetButtonLamp(floor int, button int, value bool) {
 		ioClearBit(lampChannelMatrix[floor][button])
 	}
 }
+
+func MoveToDefinedState() int {
+	SetMotorDirection(DirnDown)
+	floor := GetFloor()
+	for floor == -1 {
+		floor = GetFloor()
+	}
+	SetMotorDirection(DirnStop)
+	SetFloorLamp(floor)
+	return floor
+}
+
+// Not used:
 
 func SetStopLamp(value bool) {
 	if value {
