@@ -1,6 +1,7 @@
 package network
 
 import (
+	"../defs"
 	"encoding/json"
 	"fmt"
 	"time"

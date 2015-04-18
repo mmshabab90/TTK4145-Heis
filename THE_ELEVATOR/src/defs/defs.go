@@ -21,4 +21,4 @@ type Message struct {
 	Addr   string `json:"-"`
 }
 
-chan MessageChan Message
+var MessageChan = make(chan Message)
