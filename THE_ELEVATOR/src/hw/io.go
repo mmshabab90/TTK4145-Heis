@@ -6,6 +6,8 @@ package hw
 */
 import "C"
 
+// --------------- PRIVATE: ---------------
+
 func ioInit() bool {
 	return int(C.io_init()) != 0
 }
