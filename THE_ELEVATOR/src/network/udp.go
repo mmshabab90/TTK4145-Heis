@@ -8,7 +8,7 @@ import (
 
 // --------------- PUBLIC: ---------------
 
-var laddr *net.UDPAddr //Local address
+var Laddr *net.UDPAddr //Local address
 var baddr *net.UDPAddr //Broadcast address
 
 type udpMessage struct {
@@ -32,11 +32,11 @@ func Udp_init(localListenPort, broadcastListenPort, message_size int, send_ch, r
 	tempConn, err := net.DialUDP("udp4", nil, baddr)
 	defer tempConn.Close()
 	tempAddr := tempConn.LocalAddr()
-	laddr, err = net.ResolveUDPAddr("udp4", tempAddr.String())
-	laddr.Port = localListenPort
+	Laddr, err = net.ResolveUDPAddr("udp4", tempAddr.String())
+	Laddr.Port = localListenPort
 
 	//Creating local listening connections
-	localListenConn, err := net.ListenUDP("udp4", laddr)
+	localListenConn, err := net.ListenUDP("udp4", Laddr)
 	if err != nil {
 		return err
 	}

@@ -40,7 +40,7 @@ func Init (){
 		fmt.Print("err = %s \n", err)
 	}
 	
-	//go aliveSpammer()
+	go aliveSpammer()
 }
 
 func Send(message Message) {
