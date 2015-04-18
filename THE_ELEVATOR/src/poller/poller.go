@@ -33,14 +33,13 @@ func Run() {
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
 		case <-fsm.DoorTimeout:
-			fsm.EventTimerOut()
+			fsm.EventDoorTimeout()
 		case udpMessage := <-network.ReceiveChan:
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <- connectionDeadChan:
-			delete(connectionMap, connection.Addr) //delete dead connection from map
-			// Re-assign everything assigned to dead lift:
-			queue.ReassignOrders(connection.Addr)
 			fmt.Printf("Connection with IP %s is dead\n", connection.Addr)
+			delete(connectionMap, connection.Addr) //delete dead connection from map
+			queue.ReassignOrders(connection.Addr)
 			//for key, _ := range connectionMap {fmt.Println(key)}
 		}
 	}

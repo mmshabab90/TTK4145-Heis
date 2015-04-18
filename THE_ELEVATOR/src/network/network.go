@@ -43,7 +43,7 @@ func Init (){
 	go aliveSpammer()
 }
 
-func Send(message Message) {
+func Send(message Message) { // should take a pointer instead
 	printMessage(message)
 	jsonMessage, err := json.Marshal(message)
 	if err != nil {
