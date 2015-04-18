@@ -11,6 +11,8 @@ import (
 
 // --------------- PUBLIC: ---------------
 
+var DoorTimeoutChan = make(chan bool)
+
 func Init() {
 	log.Println("FSM Init")
 	queue.Init()
@@ -120,7 +122,6 @@ var direction int
 var departDirection int
 
 var doorReset = make(chan bool)
-var doorTimeout = make(chan bool)
 
 const doorOpenTime = 3 * time.Second
 
@@ -134,7 +135,7 @@ func runTimer() {
 			case <-doorReset:
 				timer.Reset(doorOpenTime)
 			case <-timer.C:
-				doorTimeout <- true
+				DoorTimeoutChan <- true
 				timer.Stop()
 			}
 		}
