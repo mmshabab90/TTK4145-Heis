@@ -6,17 +6,6 @@ import (
 	"log"
 )
 
-var blankOrder = sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
-
-type sharedOrder struct {
-	isOrderActive bool
-	assignedLiftAddr  string
-}
-
-var localQueue [hw.NumFloors][hw.NumButtons]bool
-// Internal orders in shared queue are unused, but present for better indexing:
-var sharedQueue [hw.NumFloors][hw.NumButtons]sharedOrder
-
 // --------------- PUBLIC: ---------------
 
 func Init() {
@@ -127,6 +116,18 @@ func SendOrderCompleteMessage(floor int) {
 }
 
 // --------------- PRIVATE: ---------------
+
+
+var blankOrder = sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
+
+type sharedOrder struct {
+	isOrderActive bool
+	assignedLiftAddr  string
+}
+
+var localQueue [hw.NumFloors][hw.NumButtons]bool
+// Internal orders in shared queue are unused, but present for better indexing:
+var sharedQueue [hw.NumFloors][hw.NumButtons]sharedOrder
 
 func isOrdersAbove(floor int) bool {
 	for f := floor + 1; f < hw.NumFloors; f++ {

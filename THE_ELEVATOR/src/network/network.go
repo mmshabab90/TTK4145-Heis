@@ -28,8 +28,6 @@ type UdpConnection struct { //should this be in udp.go? or in poller.go?
 	Timer *time.Timer
 }
 
-// Consider visibility of these three:
-var sendChan = make (chan udpMessage)
 var ReceiveChan = make (chan udpMessage)
 
 
@@ -46,9 +44,9 @@ func Init (){
 	go aliveSpammer()
 }
 
-func Send(message *Message) { // should take a pointer instead
+func Send(message *Message) { //now takes a pointer, does it still work over the network?
 	printMessage(*message)
-	jsonMessage, err := json.Marshal(message)
+	jsonMessage, err := json.Marshal(message) //is json good? can it take a pointer?
 	if err != nil {
 		// worry
 	} else {
@@ -67,6 +65,8 @@ func ParseMessage(udpMessage udpMessage) Message {
 }
 
 // --------------- PRIVATE: ---------------
+
+var sendChan = make (chan udpMessage)
 
 func aliveSpammer() {
 	const spamInterval = 500*time.Millisecond

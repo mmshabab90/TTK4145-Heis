@@ -8,21 +8,7 @@ import (
 	"time"
 )
 
-type stateType int
-const (
-	idle stateType = iota
-	moving
-	doorOpen
-)
-
-var state stateType
-var floor int
-var direction int
-var departDirection int
-
-var DoorTimeout = make(chan bool)
-var doorReset = make(chan bool)
-const doorOpenTime = 3 * time.Second
+// --------------- PUBLIC: ---------------
 
 func Init() {
 	log.Println("FSM Init")
@@ -36,23 +22,6 @@ func Init() {
 	}
 	departDirection = hw.DirnDown
 	syncLights()
-}
-
-func runTimer() {
-	timer := time.NewTimer(0)
-	timer.Stop()
-
-	go func() {
-		for {
-			select {
-			case <-doorReset:
-				timer.Reset(doorOpenTime)
-			case <-timer.C:
-				DoorTimeout <- true
-				timer.Stop()
-			}
-		}
-	}()
 }
 
 func EventButtonPressed(buttonFloor int, buttonType int) {
@@ -133,6 +102,42 @@ func GetDirection() int {
 
 func GetFloor() int {
 	return floor
+}
+
+// --------------- PRIVATE: ---------------
+
+type stateType int
+const (
+	idle stateType = iota
+	moving
+	doorOpen
+)
+
+var state stateType
+var floor int
+var direction int
+var departDirection int
+
+var doorReset = make(chan bool)
+var doorTimeout = make(chan bool)
+
+const doorOpenTime = 3 * time.Second
+
+func runTimer() {
+	timer := time.NewTimer(0)
+	timer.Stop()
+
+	go func() {
+		for {
+			select {
+			case <-doorReset:
+				timer.Reset(doorOpenTime)
+			case <-timer.C:
+				doorTimeout <- true
+				timer.Stop()
+			}
+		}
+	}()
 }
 
 func syncLights() {

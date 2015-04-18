@@ -10,6 +10,8 @@ import (
 	"../queue"
 )
 
+// --------------- PUBLIC: ---------------
+
 func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int) (int, error) {
 	switch targetButton {
 	case hw.ButtonCallUp:
@@ -39,6 +41,8 @@ func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int
 	
 	return cost, nil
 }
+
+// --------------- PRIVATE: ---------------
 
 func incrementFloor(floor int, direction int) int {
 	switch direction {
