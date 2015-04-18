@@ -8,8 +8,6 @@ import (
 
 // --------------- PUBLIC: ---------------
 
-var Laddr *net.UDPAddr //Local address
-
 func Print_udp_message(msg udpMessage) { //should this be private?
 	fmt.Printf("msg:  \n \t raddr = %s \n \t data = %s \n \t length = %v \n", msg.raddr, msg.data, msg.length)
 }
@@ -25,11 +23,11 @@ func Udp_init(localListenPort, broadcastListenPort, message_size int, send_ch, r
 	tempConn, err := net.DialUDP("udp4", nil, baddr)
 	defer tempConn.Close()
 	tempAddr := tempConn.LocalAddr()
-	Laddr, err = net.ResolveUDPAddr("udp4", tempAddr.String())
-	Laddr.Port = localListenPort
+	defs.Laddr, err = net.ResolveUDPAddr("udp4", tempAddr.String())
+	defs.Laddr.Port = localListenPort
 
 	//Creating local listening connections
-	localListenConn, err := net.ListenUDP("udp4", Laddr)
+	localListenConn, err := net.ListenUDP("udp4", defs.Laddr)
 	if err != nil {
 		return err
 	}

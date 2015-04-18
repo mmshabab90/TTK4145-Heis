@@ -25,7 +25,8 @@ func AddOrder(floor int, button int) {
 		localQueue[floor][button] = true
 	} else {
 		message := &defs.Message{Kind: network.NewOrder, Floor: floor, Button: button}
-		network.Send(message)
+		defs.MessageChan <- message
+		//network.Send(message)
 	}
 }
 
@@ -104,7 +105,8 @@ func ReassignOrders(deadAddr string) { // better name plz
 					Kind:   network.NewOrder,
 					Floor:  f,
 					Button: b}
-				network.Send(reassignMessage)
+				//network.Send(reassignMessage)
+				defs.MessageChan <- reassignMessage
 			}
 		}
 	}
@@ -112,7 +114,8 @@ func ReassignOrders(deadAddr string) { // better name plz
 
 func SendOrderCompleteMessage(floor int) {
 	message := &defs.Message{Kind: network.CompleteOrder, Floor: floor}
-	network.Send(message)
+	//network.Send(message)
+	defs.MessageChan <- message
 }
 
 // --------------- PRIVATE: ---------------
@@ -167,7 +170,7 @@ func updateLocalQueue() {
 		for b := 0; b < defs.NumButtons; b++ {
 			if b != defs.ButtonCommand &&
 				sharedQueue[f][b].isOrderActive &&
-				sharedQueue[f][b].assignedLiftAddr == network.Laddr.String() {
+				sharedQueue[f][b].assignedLiftAddr == defs.Laddr.String() {
 				localQueue[f][b] = true
 			}
 		}

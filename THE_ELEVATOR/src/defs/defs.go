@@ -22,3 +22,5 @@ type Message struct {
 }
 
 var MessageChan = make(chan Message)
+
+var Laddr *net.UDPAddr //Local address
