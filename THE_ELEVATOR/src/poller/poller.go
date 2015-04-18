@@ -13,8 +13,11 @@ import (
 	"errors"
 )
 
+const printCrap = false
+
 var _ = log.Println
 var _ = fmt.Println
+var _ = errors.New
 
 type keypress struct {
 	button int
@@ -34,89 +37,6 @@ type order struct {
 	floor int
 	button int
 }
-
-func liftAssigner() {
-	// collect cost values from all lifts
-	// decide which lift gets the order when all lifts
-	// in alive-list have answered or after a timeout
-	// either send the decision on network or pray that all
-	// lifts make the same choice every time
-
-	// spawn a goroutine for each order to be assigned?
-	go func() {
-		assignmentQueue := make(map[order][]reply)
-		// assignmentQueue := make([]order)
-		// assignmentQueue := [defs.NumFloors][defs.NumButtons][]reply
-		for {
-			select {
-			case message := <- costChan:
-				order, reply = parse(message)
-				if value, exist := assignmentQueue[order]; exist {
-					// sjekk om val fins i listen
-					// append om ikke
-					found := false
-					for _, e := range value {
-						if e == reply {
-							found = true
-						}
-					}
-					if !found {
-						assignmentQueue[order] = append(assignmentQueue[order], reply)
-					}
-				} else {
-					assignmentQueue[order] = []reply{reply}
-				}
-
-
-
-
-
-
-				if !isOrderInAss(assignmentQueue, message) {
-					// add message to assQue:
-					newOrder := order{floor:message.floor, button:message.button}
-					assignmentQueue = append(assignmentQueue, newOrder)
-					index := findIndexInAss(assignmentQueue, newOrder)
-					go waitForCosts(*assignmentQueue[index])
-				}
-				index := findIndexInAss(assignmentQueue, newOrder)
-			default:
-				// do nothing
-			}
-		}
-	}()
-}
-
-func parse(m network.Message) order, reply {
-	return order{floor:m.Floor, button:m.Button}, reply{cost:m.Cost, lift:m.Addr}
-}
-
-func isOrderInAss(que []order, message network.Message) bool {
-	for _, e := range que {
-        if e.floor == message.floor && e.button == message.button {
-        	return true
-        }
-    }
-    return false
-}
-
-func findIndexInAss(que []order, ord order) int {
-	for i, e := range que {
-		if e == ord {
-			return i
-		}
-	}
-	return -1
-}
-
-func waitForCosts(ord *order) {
-
-}
-
-
-
-
-
 
 func Init() {
 	if err := hw.Init(); err != nil {
@@ -205,13 +125,15 @@ func handleMessage(message network.Message) {
 		case network.Alive:
 			if connection, exist := connectionMap[message.Addr]; exist {
 				connection.Timer.Reset(resetTime)
-				fmt.Println("timer reset for IP: ")
-				fmt.Println(message.Addr)
+				if printCrap {
+					fmt.Printf("Timer reset for IP %s\n", message.Addr)
+				}
 			} else {
 				newConnection := network.UdpConnection{message.Addr, time.NewTimer(resetTime)}
 				connectionMap[message.Addr] = newConnection
-				fmt.Println("New connection, with IP: ")
-				fmt.Println(message.Addr)
+				if printCrap {
+					fmt.Printf("New connection with IP %s\n", message.Addr)
+				}
 				go connectionTimer(&newConnection)
 			}
 		case network.NewOrder:
@@ -240,3 +162,47 @@ func connectionTimer(connection *network.UdpConnection) {
 		connectionDeadChan <- *connection
 	}
 }
+
+func liftAssigner() {
+	// collect cost values from all lifts
+	// decide which lift gets the order when all lifts
+	// in alive-list have answered or after a timeout
+	// either send the decision on network or pray that all
+	// lifts make the same choice every time
+
+	// spawn a goroutine for each order to be assigned?
+	go func() {
+		assignmentQueue := make(map[order][]reply)
+		for {
+			select {
+			case message := <- costChan:
+				newOrder, newReply := parse(message)
+				// Check if order in queue
+				if value, exist := assignmentQueue[newOrder]; exist {
+					// Check if lift in list of that order
+					found := false
+					for _, e := range value {
+						if e == newReply {
+							found = true
+						}
+					}
+					// Add it if not found
+					if !found {
+						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
+					}
+				} else {
+					// If order not in queue at all, init order list with it
+					assignmentQueue[newOrder] = []reply{newReply}
+				}
+				// check if any lists are ready for evaluation
+			default:
+				// do nothing
+			}
+		}
+	}()
+}
+
+func parse(m network.Message) (order, reply) {
+	return order{floor:m.Floor, button:m.Button}, reply{cost:m.Cost, lift:m.Addr}
+}
+

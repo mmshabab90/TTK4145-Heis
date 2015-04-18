@@ -45,7 +45,7 @@ func Init (){
 }
 
 func Send(message *Message) { //now takes a pointer, does it still work over the network?
-	printMessage(*message)
+	//printMessage(*message)
 	jsonMessage, err := json.Marshal(message) //is json good? can it take a pointer?
 	if err != nil {
 		// worry
