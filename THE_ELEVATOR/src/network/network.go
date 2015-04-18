@@ -15,14 +15,6 @@ const (
 	Cost
 )
 
-type Message struct {
-	Kind   int
-	Addr   string `json:"-"` // skal funke
-	Floor  int
-	Button int
-	Cost   int
-}
-
 type UdpConnection struct { //should this be in udp.go? or in poller.go?
 	Addr  string
 	Timer *time.Timer
@@ -43,7 +35,7 @@ func Init() {
 	go aliveSpammer()
 }
 
-func Send(message *Message) { //now takes a pointer, does it still work over the network?
+func Send(message *defs.Message) { //now takes a pointer, does it still work over the network?
 	//printMessage(*message)
 	jsonMessage, err := json.Marshal(message) //is json good? can it take a pointer?
 	if err != nil {
@@ -53,8 +45,8 @@ func Send(message *Message) { //now takes a pointer, does it still work over the
 	}
 }
 
-func ParseMessage(udpMessage udpMessage) Message {
-	var message Message
+func ParseMessage(udpMessage udpMessage) defs.Message {
+	var message defs.Message
 	err := json.Unmarshal(udpMessage.data, &message)
 	if err != nil {
 		// handle
@@ -69,14 +61,14 @@ var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
 	const spamInterval = 500 * time.Millisecond
-	message := &Message{Kind: Alive}
+	message := &defs.Message{Kind: Alive}
 	for {
 		Send(message)
 		time.Sleep(spamInterval)
 	}
 }
 
-func printMessage(msg Message) {
+func printMessage(msg defs.Message) {
 	fmt.Println("Message")
 	fmt.Println("---------------------------")
 	switch msg.Kind {

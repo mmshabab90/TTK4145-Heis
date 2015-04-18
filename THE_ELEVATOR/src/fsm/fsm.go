@@ -15,7 +15,6 @@ var DoorTimeoutChan = make(chan bool)
 
 func Init() {
 	log.Println("FSM Init")
-	queue.Init()
 	runTimer()
 	state = idle
 	direction = defs.DirnStop

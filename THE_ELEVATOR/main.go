@@ -28,7 +28,7 @@ var connectionMap = make(map[string] network.UdpConnection)
 var connectionDeadChan	 = make(chan network.UdpConnection)
 const resetTime = 1*time.Second
 
-var costChan = make(chan network.Message)
+var costChan = make(chan defs.Message)
 type reply struct {
 	cost int
 	lift string
@@ -42,6 +42,7 @@ func main() {
 	if err := hw.Init(); err != nil {
 		log.Fatal(err)
 	}
+	queue.Init()
 	fsm.Init()
 	network.Init()
 
@@ -120,7 +121,7 @@ func pollFloors() <-chan int {
 	return c
 }
 
-func handleMessage(message network.Message) {
+func handleMessage(message defs.Message) {
 	switch message.Kind {
 		case network.Alive:
 			if connection, exist := connectionMap[message.Addr]; exist {
@@ -141,7 +142,7 @@ func handleMessage(message network.Message) {
 			if err != nil {
 				log.Println(err)
 			}
-			costMessage := &network.Message{
+			costMessage := &defs.Message{
 				Kind: network.Cost,
 				Floor: message.Floor,
 				Button: message.Button,
@@ -176,7 +177,7 @@ func liftAssigner() {
 		for {
 			select {
 			case message := <- costChan:
-				newOrder, newReply := parse(message)
+				newOrder, newReply := split(message)
 				// Check if order in queue
 				if value, exist := assignmentQueue[newOrder]; exist {
 					// Check if lift in list of that order
@@ -202,6 +203,10 @@ func liftAssigner() {
 	}()
 }
 
-func parse(m network.Message) (order, reply) {
+func split(m defs.Message) (order, reply) {
 	return order{floor:m.Floor, button:m.Button}, reply{cost:m.Cost, lift:m.Addr}
+}
+
+func evaluateLists(queue map[order][]reply) {
+
 }

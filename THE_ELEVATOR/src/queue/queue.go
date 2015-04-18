@@ -24,7 +24,7 @@ func AddOrder(floor int, button int) {
 	if button == defs.ButtonCommand {
 		localQueue[floor][button] = true
 	} else {
-		message := &network.Message{Kind: network.NewOrder, Floor: floor, Button: button}
+		message := &defs.Message{Kind: network.NewOrder, Floor: floor, Button: button}
 		network.Send(message)
 	}
 }
@@ -100,7 +100,7 @@ func ReassignOrders(deadAddr string) { // better name plz
 		for b := 0; b < defs.NumButtons; b++ {
 			if sharedQueue[f][b].assignedLiftAddr == deadAddr {
 				sharedQueue[f][b] = blankOrder
-				reassignMessage := &network.Message{
+				reassignMessage := &defs.Message{
 					Kind:   network.NewOrder,
 					Floor:  f,
 					Button: b}
@@ -111,7 +111,7 @@ func ReassignOrders(deadAddr string) { // better name plz
 }
 
 func SendOrderCompleteMessage(floor int) {
-	message := &network.Message{Kind: network.CompleteOrder, Floor: floor}
+	message := &defs.Message{Kind: network.CompleteOrder, Floor: floor}
 	network.Send(message)
 }
 
