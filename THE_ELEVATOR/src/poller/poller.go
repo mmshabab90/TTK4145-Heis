@@ -20,7 +20,7 @@ type keypress struct {
 }
 
 var connectionMap = make(map[string] network.UdpConnection)
-var connectionTimerChan	 = make(chan network.UdpConnection)
+var connectionDeadChan	 = make(chan network.UdpConnection)
 
 func Run() {
 	buttonChan := pollButtons()
@@ -36,8 +36,9 @@ func Run() {
 			fsm.EventTimerOut()
 		case udpMessage := <-network.ReceiveChan:
 			handleMessage(network.ParseMessage(udpMessage))
-		case connection := <- connectionTimerChan:
+		case connection := <- connectionDeadChan:
 			delete(connectionMap, connection.Addr) //delete dead connection from map
+			fmt.Printf("Connection with IP %s is dead\n", connection.Addr)
 			//for key, _ := range connectionMap {fmt.Println(key)}
 		}
 	}
@@ -125,6 +126,6 @@ func handleMessage(message network.Message) {
 func connectionTimer(connection *network.UdpConnection) {
 	for {
 		<- connection.Timer.C
-		connectionTimerChan <- *connection
+		connectionDeadChan <- *connection
 	}
 }

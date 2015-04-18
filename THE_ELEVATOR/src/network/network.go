@@ -34,13 +34,13 @@ var ReceiveChan = make (chan udpMessage)
 
 
 func Init (){
-	err := Udp_init(20001, 20058, 1024, sendChan, ReceiveChan)	
+	err := Udp_init(20001, 20058, 1024, sendChan, ReceiveChan)		
 
 	if (err != nil){
 		fmt.Print("err = %s \n", err)
 	}
 	
-	go aliveSpammer()
+	//go aliveSpammer()
 }
 
 func Send(message Message) {
