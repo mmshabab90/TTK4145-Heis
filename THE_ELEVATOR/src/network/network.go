@@ -28,7 +28,7 @@ type UdpConnection struct { //should this be in udp.go? or in poller.go?
 	Timer *time.Timer
 }
 
-var ReceiveChan = make (chan udpMessage)
+var ReceiveChan = make (chan udpMessage, 10) //this is now buffered with 10 slots, does this lead to fuckup?
 
 
 func Init (){
