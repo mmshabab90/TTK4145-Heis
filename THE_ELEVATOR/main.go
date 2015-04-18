@@ -137,7 +137,7 @@ func handleMessage(message network.Message) {
 				go connectionTimer(&newConnection)
 			}
 		case network.NewOrder:
-			cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.GetFloor(), fsm.GetDirection())
+			cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.GetFloor(), fsm.GetDirection(), hw.GetFloor())
 			if err != nil {
 				log.Println(err)
 			}

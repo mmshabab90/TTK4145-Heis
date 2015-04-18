@@ -6,14 +6,13 @@ import (
 	"log"
 	"fmt"
 	"errors"
-	"../hw"
 	"../queue"
 	"../defs"
 )
 
 // --------------- PUBLIC: ---------------
 
-func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int) (int, error) {
+func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (int, error) {
 	switch targetButton {
 	case defs.ButtonCallUp:
 	case defs.ButtonCallDown:
@@ -25,18 +24,18 @@ func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int
 	
 	cost := 0
 
-	if hw.GetFloor() == -1 {
+	if currFloor == -1 {
 		cost += 1
-		currentFloor = incrementFloor(currentFloor, currentDirection)
+		fsmFloor = incrementFloor(fsmFloor, fsmDir)
 	}
 
-	for !(currentFloor == targetFloor && queue.ShouldStop(currentFloor, currentDirection)) {
-		log.Printf("Floor: %d, direction: %d\n", currentFloor, currentDirection)
-		if queue.ShouldStop(currentFloor, currentDirection) {
+	for !(fsmFloor == targetFloor && queue.ShouldStop(fsmFloor, fsmDir)) {
+		log.Printf("Floor: %d, direction: %d\n", fsmFloor, fsmDir)
+		if queue.ShouldStop(fsmFloor, fsmDir) {
 			cost += 2	
 		}
-		currentDirection = queue.ChooseDirection(currentFloor, currentDirection)
-		currentFloor = incrementFloor(currentFloor, currentDirection)
+		fsmDir = queue.ChooseDirection(fsmFloor, fsmDir)
+		fsmFloor = incrementFloor(fsmFloor, fsmDir)
 		cost += 2
 	}
 	
