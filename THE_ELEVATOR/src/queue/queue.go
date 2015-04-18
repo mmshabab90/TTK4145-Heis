@@ -121,6 +121,13 @@ func ReassignOrders(deadAddr string) { // better name plz
 	}
 }
 
+func SendOrderCompleteMessage(floor int) {
+	message := network.Message{
+		Kind = network.CompleteOrder,
+		Floor = floor}
+	network.Send(message)
+}
+
 // --------------- PRIVATE: ---------------
 
 func isOrdersAbove(floor int) bool {
