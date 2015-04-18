@@ -168,7 +168,7 @@ func updateLocalQueue() {
 		for b := 0; b < hw.NumButtons; b++ {
 			if b != hw.ButtonCommand &&
 				sharedQueue[f][b].isOrderActive &&
-				sharedQueue[f][b].assignedLiftAddr == network.Laddr {
+				sharedQueue[f][b].assignedLiftAddr == network.Laddr.String() {
 				localQueue[f][b] = true
 			}
 		}
@@ -182,7 +182,7 @@ func RemoveSharedOrder(floor int, button int) {
 	}
 
 	sharedQueue[floor][button].isOrderActive = false
-	sharedQueue[floor][button].assignedLiftAddr = invalidAddr
+	sharedQueue[floor][button].assignedLiftAddr = ""
 }
 
 func resetLocalQueue() {
@@ -194,7 +194,7 @@ func resetLocalQueue() {
 }
 
 func resetSharedQueue() {
-	blankOrder := sharedOrder{isOrderActive: false, assignedLiftAddr: invalidAddr}
+	blankOrder := sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
 	for f := 0; f < hw.NumFloors; f++ {
 		for b := 0; b < hw.NumButtons; b++ {
 			sharedQueue[f][b] = blankOrder
