@@ -1,17 +1,19 @@
 package main
 
 import (
-	"../hw"
-	"../fsm"
-	"../cost"
-	"../network"
+	"./src/hw"
+	"./src/fsm"
+	"./src/cost"
+	"./src/network"
 	"log"
 	"time"
 	"fmt"
-	"../queue"
-	"../defs"
+	"./src/queue"
+	"./src/defs"
 	"errors"
 )
+
+const debugPrint = false
 
 var _ = log.Println
 var _ = fmt.Println
@@ -123,13 +125,13 @@ func handleMessage(message network.Message) {
 		case network.Alive:
 			if connection, exist := connectionMap[message.Addr]; exist {
 				connection.Timer.Reset(resetTime)
-				if printCrap {
+				if debugPrint {
 					fmt.Printf("Timer reset for IP %s\n", message.Addr)
 				}
 			} else {
 				newConnection := network.UdpConnection{message.Addr, time.NewTimer(resetTime)}
 				connectionMap[message.Addr] = newConnection
-				if printCrap {
+				if debugPrint {
 					fmt.Printf("New connection with IP %s\n", message.Addr)
 				}
 				go connectionTimer(&newConnection)
