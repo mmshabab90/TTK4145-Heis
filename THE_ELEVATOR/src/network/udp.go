@@ -26,7 +26,7 @@ func Udp_init(localListenPort, broadcastListenPort, message_size int, send_ch, r
 	baddr, err = net.ResolveUDPAddr("udp4", "255.255.255.255:"+strconv.Itoa(broadcastListenPort))
 	if err != nil {
 		return err
-	}
+	}	
 
 	//Generating localaddress
 	tempConn, err := net.DialUDP("udp4", nil, baddr)
@@ -74,15 +74,15 @@ func udp_transmit_server(lconn, bconn *net.UDPConn, send_ch chan udpMessage) {
 		//		fmt.Printf("udp_transmit_server: waiting on new value on Global_Send_ch \n")
 		msg := <-send_ch
 		//		fmt.Printf("Writing %s \n", msg.Data)
-		if msg.Raddr == "broadcast" {
-			n, err = lconn.WriteToUDP(msg.Data, baddr)
+		if msg.raddr == "broadcast" {
+			n, err = lconn.WriteToUDP(msg.data, baddr)
 		} else {
-			raddr, err := net.ResolveUDPAddr("udp", msg.Raddr)
+			raddr, err := net.ResolveUDPAddr("udp", msg.raddr)
 			if err != nil {
 				fmt.Printf("Error: udp_transmit_server: could not resolve raddr\n")
 				panic(err)
 			}
-			n, err = lconn.WriteToUDP(msg.Data, raddr)
+			n, err = lconn.WriteToUDP(msg.data, raddr)
 		}
 		if err != nil || n < 0 {
 			fmt.Printf("Error: udp_transmit_server: writing\n")

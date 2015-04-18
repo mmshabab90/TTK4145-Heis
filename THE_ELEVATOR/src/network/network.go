@@ -3,6 +3,7 @@ package network
 import (
 	"fmt"
 	"time"
+	"encoding/json"
 )
 
 // --------------- PUBLIC: ---------------
@@ -22,7 +23,7 @@ type Message struct {
 	Cost int
 }
 
-type UdpConnection struct { //should this be in udp.go
+type UdpConnection struct { //should this be in udp.go?
 	Addr  string
 	Timer *time.Timer
 }
@@ -46,7 +47,7 @@ func Send(message Message) {
 	if err != nil {
 		// worry
 	} else {
-		sendChan <- udpMessage{raddr: "broadcast", data: msg, length: len(msg)}
+		sendChan <- udpMessage{raddr: "broadcast", data: jsonMessage, length: len(jsonMessage)}
 		time.Sleep(500*time.Millisecond)	// What's this for?
 	}
 }
@@ -81,6 +82,16 @@ func ReceiveMsg(){ // bad abstraction! doesn't just receive msg. GIVE THIS NEW N
 	}
 }
 
+func ParseMessage(udpMessage udpMessage) Message { // work this into network package!
+	var message Message
+	err := json.Unmarshal(udpMessage.data, &message)
+	if err != nil {
+		// handle
+	}
+	message.Addr = udpMessage.raddr
+	return message
+}
+
 func printMessage(msg Message) {
 	fmt.Println("Message")
 	fmt.Println("---------------------------")
@@ -98,7 +109,7 @@ func printMessage(msg Message) {
 	case Cost:
 		fmt.Printf("Cost: %d\n\n", msg.Cost)
 	default:
-		log.Println("Invalid message type!\n")
+		fmt.Println("Invalid message type!\n")
 	}
 }
 

@@ -40,7 +40,7 @@ func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int
 	return cost
 }
 
-func incrementFloor(floor int, direction hw.DirnType) int {
+func incrementFloor(floor int, direction int) int {
 	switch direction {
 	case hw.DirnDown:
 		floor--

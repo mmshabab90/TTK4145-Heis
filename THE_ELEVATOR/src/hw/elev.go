@@ -1,5 +1,5 @@
 /*
- *  This file is a golang port of hw.c from the hand out driver
+ *  This file is a golang port of elev.c from the hand out driver
  *  https://github.com/TTK4145/Project
  */
 
@@ -62,7 +62,7 @@ func Init() bool {
 	return true
 }
 
-func SetMotorDirection(dirn DirnType) {
+func SetMotorDirection(dirn int) {
 	if dirn == 0 {
 		ioWriteAnalog(MOTOR, 0)
 	} else if dirn > 0 {

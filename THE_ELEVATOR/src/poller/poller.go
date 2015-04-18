@@ -7,8 +7,8 @@ import (
 	"../network"
 	"log"
 	"time"
-	"fmt"
-	"encoding/json"
+	//"fmt"
+	"../queue"
 )
 
 var _ = log.Println
@@ -26,13 +26,13 @@ func Run() {
 		select {
 		case keypress := <-buttonChan:
 			fsm.EventButtonPressed(keypress.floor, keypress.button)
-			fmt.Printf("Cost: %d\n", cost.CalculateCost(keypress.floor, keypress.button))
+			//fmt.Printf("Cost: %d\n", cost.CalculateCost(keypress.floor, keypress.button)
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
 		case <-fsm.DoorTimeout:
 			fsm.EventTimerOut()
 		case udpMessage := <-network.ReceiveChan:
-			handleMessage(parseMessage(udpMessage))
+			handleMessage(network.ParseMessage(udpMessage))
 		}
 	}
 }
@@ -84,13 +84,6 @@ func pollFloors() <-chan int {
 	}()
 
 	return c
-}
-
-func parseMessage(udpMessage network.Udp_message) network.Message { // work this into network package!
-	var message network.Message
-	message = json.Unmarshal(udpMessage.Data)
-	message.Addr = udpMessage.Raddr
-	return message
 }
 
 func handleMessage(message network.Message) {

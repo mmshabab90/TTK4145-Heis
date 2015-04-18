@@ -3,7 +3,6 @@ package fsm
 import (
 	"../hw"
 	"../queue"
-	"../network"
 	"fmt"
 	"log"
 	"time"
@@ -18,8 +17,8 @@ const (
 
 var state stateType
 var floor int
-var direction hw.DirnType
-var departDirection hw.DirnType
+var direction int
+var departDirection int
 
 var DoorTimeout = make(chan bool)
 var doorReset = make(chan bool)
@@ -128,7 +127,7 @@ func EventTimerOut() {
 	syncLights()
 }
 
-func GetDirection() hw.DirnType {
+func GetDirection() int {
 	return direction
 }
 

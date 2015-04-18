@@ -4,8 +4,6 @@ import (
 	"../hw"
 	"../network"
 	"log"
-	"encoding/json"
-	"fmt"
 )
 
 var laddr string
@@ -39,12 +37,12 @@ func AddOrder(floor int, button int) {
 	if button == hw.ButtonCommand {
 		localQueue[floor][button] = true
 	} else {
-		message := network.Message{kind: newOrder, floor: floor, button: button}
+		message := network.Message{Kind: network.NewOrder, Floor: floor, Button: button}
 		network.Send(message)
 	}
 }
 
-func ChooseDirection(currFloor int, currDir hw.DirnType) hw.DirnType {
+func ChooseDirection(currFloor int, currDir int) int {
 	if !isAnyOrders() {
 		return hw.DirnStop
 	}
@@ -75,7 +73,7 @@ func ChooseDirection(currFloor int, currDir hw.DirnType) hw.DirnType {
 	}
 }
 
-func ShouldStop(floor int, direction hw.DirnType) bool {
+func ShouldStop(floor int, direction int) bool {
 	switch direction {
 	case hw.DirnDown:
 		return localQueue[floor][hw.ButtonCallDown] ||
