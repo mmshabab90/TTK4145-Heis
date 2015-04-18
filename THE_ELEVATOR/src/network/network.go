@@ -36,7 +36,10 @@ var ReceiveChan = make (chan udpMessage)
 
 
 func Init (){
-	err := Udp_init(20001, 20058, 1024, sendChan, ReceiveChan)		
+	localListenPort := 20001
+	broadcastListenPort := 20058
+	messageSize := 1024
+	err := Udp_init(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)		
 
 	if (err != nil){
 		fmt.Print("err = %s \n", err)

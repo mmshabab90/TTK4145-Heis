@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-blankOrder := sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
+var blankOrder = sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
 
 type sharedOrder struct {
 	isOrderActive bool
@@ -122,9 +122,7 @@ func ReassignOrders(deadAddr string) { // better name plz
 }
 
 func SendOrderCompleteMessage(floor int) {
-	message := network.Message{
-		Kind = network.CompleteOrder,
-		Floor = floor}
+	message := network.Message{Kind: network.CompleteOrder, Floor: floor}
 	network.Send(message)
 }
 

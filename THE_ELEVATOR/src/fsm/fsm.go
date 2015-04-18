@@ -154,7 +154,7 @@ func getStateName(state stateType) string {
 		return "idle"
 	case moving:
 		return "moving"
-	case door:
+	case doorOpen:
 		return "door open"
 	default:
 		return "error: bad state"
