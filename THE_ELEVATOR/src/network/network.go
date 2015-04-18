@@ -23,7 +23,7 @@ type Message struct {
 	Cost int
 }
 
-type UdpConnection struct { //should this be in udp.go?
+type UdpConnection struct { //should this be in udp.go? or in poller.go?
 	Addr  string
 	Timer *time.Timer
 }
@@ -53,7 +53,7 @@ func Send(message Message) {
 	}
 }
 
-func ParseMessage(udpMessage udpMessage) Message { // work this into network package!
+func ParseMessage(udpMessage udpMessage) Message {
 	var message Message
 	err := json.Unmarshal(udpMessage.data, &message)
 	if err != nil {
@@ -66,10 +66,11 @@ func ParseMessage(udpMessage udpMessage) Message { // work this into network pac
 // --------------- PRIVATE: ---------------
 
 func aliveSpammer() {
+	spamTime := 500*time.Millisecond
 	message := Message{Kind: Alive}
 	for {
 		Send(message)
-		time.Sleep(500*time.Millisecond)
+		time.Sleep(spamTime)
 	}
 }
 

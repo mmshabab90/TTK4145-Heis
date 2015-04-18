@@ -21,6 +21,7 @@ type keypress struct {
 
 var connectionMap = make(map[string] network.UdpConnection)
 var connectionDeadChan	 = make(chan network.UdpConnection)
+var resetTime = 1*time.Second
 
 func Run() {
 	buttonChan := pollButtons()
@@ -99,11 +100,11 @@ func handleMessage(message network.Message) {
 	switch message.Kind {
 		case network.Alive:
 			if connection, exist := connectionMap[message.Addr]; exist {
-				connection.Timer.Reset(1*time.Second)
+				connection.Timer.Reset(resetTime)
 				fmt.Println("timer reset for IP: ")
 				fmt.Println(message.Addr)
 			} else {
-				newConnection := network.UdpConnection{message.Addr, time.NewTimer(1*time.Second)}
+				newConnection := network.UdpConnection{message.Addr, time.NewTimer(resetTime)}
 				connectionMap[message.Addr] = newConnection
 				fmt.Println("New connection, with IP: ")
 				fmt.Println(message.Addr)

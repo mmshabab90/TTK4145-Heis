@@ -4,7 +4,7 @@ package cost
 
 import (
 	"log"
-	//"fmt"
+	"fmt"
 	"errors"
 	"../hw"
 	"../queue"
@@ -17,7 +17,7 @@ func CalculateCost(targetFloor, targetButton, currentFloor, currentDirection int
 	case hw.ButtonCommand:
 		return 0, errors.New("CalculateCost() called with internal order!")
 	default:
-		return fmt.Errorf("CalculateCost() called with invalid order: %d\n", targetButton)
+		return 0, fmt.Errorf("CalculateCost() called with invalid order: %d\n", targetButton)
 	}
 	
 	cost := 0
