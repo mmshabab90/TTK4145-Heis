@@ -39,6 +39,8 @@ func Init (){
 	if (err != nil){
 		fmt.Print("err = %s \n", err)
 	}
+	
+	go aliveSpammer()
 }
 
 func Send(message Message) {
@@ -48,7 +50,6 @@ func Send(message Message) {
 		// worry
 	} else {
 		sendChan <- udpMessage{raddr: "broadcast", data: jsonMessage, length: len(jsonMessage)}
-		time.Sleep(500*time.Millisecond)	//put this sleep in imAlive-function
 	}
 }
 
@@ -63,6 +64,14 @@ func ParseMessage(udpMessage udpMessage) Message { // work this into network pac
 }
 
 // --------------- PRIVATE: ---------------
+
+func aliveSpammer() {
+	message := Message{Kind: Alive}
+	for {
+		Send(message)
+		time.Sleep(500*time.Millisecond)
+	}
+}
 
 func printMessage(msg Message) {
 	fmt.Println("Message")

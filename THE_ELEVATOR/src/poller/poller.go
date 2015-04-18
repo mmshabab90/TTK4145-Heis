@@ -111,11 +111,7 @@ func handleMessage(message network.Message) {
 			if err != nil {
 				log.Println(err)
 			}
-			costMessage := network.Message{
-				Kind: network.Cost,
-				Floor: message.Floor,
-				Button: message.Button,
-				Cost: cost
+			costMessage := network.Message{Kind: network.Cost, Floor: message.Floor, Button: message.Button,	Cost: cost}
 			network.Send(costMessage)
 		case network.CompleteOrder:
 			// remove from queues
