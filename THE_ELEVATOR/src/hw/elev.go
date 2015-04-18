@@ -56,7 +56,7 @@ func Init() error {
 	SetStopLamp(false)
 	SetDoorOpenLamp(false)
 
-	_ := MoveToDefinedState()
+	MoveToDefinedState()
 
 	return nil
 }
