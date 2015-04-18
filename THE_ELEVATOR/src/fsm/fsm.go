@@ -16,12 +16,12 @@ func Init() {
 	queue.Init()
 	runTimer()
 	state = idle
-	direction = hw.DirnStop
+	direction = defs.DirnStop
 	floor = hw.GetFloor()
 	if floor == -1 {
 		floor = hw.MoveToDefinedState()
 	}
-	departDirection = hw.DirnDown
+	departDirection = defs.DirnDown
 	syncLights()
 }
 
@@ -31,7 +31,7 @@ func EventButtonPressed(buttonFloor int, buttonType int) {
 	case idle:
 		queue.AddOrder(buttonFloor, buttonType)
 		direction = queue.ChooseDirection(floor, direction)
-		if direction == hw.DirnStop {
+		if direction == defs.DirnStop {
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			doorReset <- true
@@ -62,7 +62,7 @@ func EventFloorReached(newFloor int) {
 	switch state {
 	case moving:
 		if queue.ShouldStop(floor, direction) {
-			hw.SetMotorDirection(hw.DirnStop)
+			hw.SetMotorDirection(defs.DirnStop)
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			// send completed order-message:
@@ -85,7 +85,7 @@ func EventDoorTimeout() {
 		direction = queue.ChooseDirection(floor, direction)
 		hw.SetDoorOpenLamp(false)
 		hw.SetMotorDirection(direction)
-		if direction == hw.DirnStop {
+		if direction == defs.DirnStop {
 			state = idle
 		} else {
 			state = moving
@@ -142,10 +142,10 @@ func runTimer() {
 }
 
 func syncLights() {
-	for f := 0; f < hw.NumFloors; f++ {
-		for b := 0; b < hw.NumButtons; b++ {
-			if (b == hw.ButtonCallUp && f == hw.NumFloors-1) ||
-				(b == hw.ButtonCallDown && f == 0) {
+	for f := 0; f < defs.NumFloors; f++ {
+		for b := 0; b < defs.NumButtons; b++ {
+			if (b == defs.ButtonCallUp && f == defs.NumFloors-1) ||
+				(b == defs.ButtonCallDown && f == 0) {
 				continue
 			} else {
 				hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
