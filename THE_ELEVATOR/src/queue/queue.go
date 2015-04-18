@@ -5,21 +5,27 @@ import (
 	"log"
 )
 
+type sharedOrder struct {
+	isOrderActive    bool
+	assignedLiftAddr string
+}
+var blankOrder = sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
+
+var (
+	localQueue [defs.NumFloors][defs.NumButtons]bool
+	sharedQueue [defs.NumFloors][defs.NumButtons]sharedOrder
+)
+
 // --------------- PUBLIC: ---------------
 
 func Init() {
 	resetLocalQueue()
 	resetSharedQueue()
-	// set laddr variable
 }
 
-func AddOrder(floor int, button int) {
-	// New AddOrder should:
-	// Send message about new order to all lifts
-	// Another func should receive replies and
-	// assign the order to the lift with the lowest
-	// cost (or lowest ip if several lifts have same cost)
-
+// NewOrder adds internal orders to localQueue, and sends external orders out
+// on the network to be considered by all live lifts.
+func NewOrder(floor int, button int) {
 	if button == defs.ButtonCommand {
 		localQueue[floor][button] = true
 	} else {
@@ -29,6 +35,8 @@ func AddOrder(floor int, button int) {
 	}
 }
 
+// ChooseDirection returns the direction the lift should continue after the
+// current floor.
 func ChooseDirection(currFloor int, currDir int) int {
 	if !isAnyOrders() {
 		return defs.DirnStop
@@ -60,6 +68,8 @@ func ChooseDirection(currFloor int, currDir int) int {
 	}
 }
 
+// ShouldStop returns whether the lift should stop at the given floor, if
+// going in the given direction.
 func ShouldStop(floor int, direction int) bool {
 	switch direction {
 	case defs.DirnDown:
@@ -82,6 +92,7 @@ func ShouldStop(floor int, direction int) bool {
 	}
 }
 
+// RemoveOrdersAt removes all orders in the local queue at the given floor.
 func RemoveOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
 		localQueue[floor][b] = false
@@ -92,6 +103,9 @@ func IsOrder(floor int, button int) bool {
 	return localQueue[floor][button]
 }
 
+// ReassignOrders finds all orders assigned to the given dead lift, removes
+// them from the shared queue, and sends them on the network as new, un-
+// assigned orders.
 func ReassignOrders(deadAddr string) { // better name plz
 	// loop thru shared queue
 	// remove all orders assigned to the dead lift
@@ -111,25 +125,20 @@ func ReassignOrders(deadAddr string) { // better name plz
 	}
 }
 
+// SendOrderCompleteMessage communicates to the network that this lift has
+// taken care of orders at the given floor.
 func SendOrderCompleteMessage(floor int) {
 	message := &defs.Message{Kind: defs.CompleteOrder, Floor: floor}
 	//network.Send(message)
 	defs.MessageChan <- *message
 }
 
-// --------------- PRIVATE: ---------------
-
-var blankOrder = sharedOrder{isOrderActive: false, assignedLiftAddr: ""}
-
-type sharedOrder struct {
-	isOrderActive    bool
-	assignedLiftAddr string
+// AddSharedOrder adds the given order to the shared queue.
+func AddSharedOrder(floor, button int, addr string) {
+	sharedQueue[floor][button] = sharedOrder{true, addr}
 }
 
-var localQueue [defs.NumFloors][defs.NumButtons]bool
-
-// Internal orders in shared queue are unused, but present for better indexing:
-var sharedQueue [defs.NumFloors][defs.NumButtons]sharedOrder
+// --------------- PRIVATE: ---------------
 
 func isOrdersAbove(floor int) bool {
 	for f := floor + 1; f < defs.NumFloors; f++ {
@@ -176,6 +185,8 @@ func updateLocalQueue() {
 	}
 }
 
+// RemoveSharedOrder removes the giver order from the shared queue. This is
+// done when an order is completed.
 func RemoveSharedOrder(floor int, button int) {
 	if button == defs.ButtonCommand {
 		// error

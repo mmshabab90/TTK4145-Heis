@@ -12,8 +12,7 @@ import (
 
 func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (int, error) {
 	switch targetButton {
-	case defs.ButtonCallUp:
-	case defs.ButtonCallDown:
+	case defs.ButtonCallUp, defs.ButtonCallDown:
 	case defs.ButtonCommand:
 		return 0, errors.New("CalculateCost() called with internal order!")
 	default:
