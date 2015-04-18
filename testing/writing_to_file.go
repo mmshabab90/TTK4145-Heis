@@ -7,16 +7,16 @@ import (
     "fmt"
     "io/ioutil"
     "encoding/gob"
-    "bytes"
-    "log"
+    "os"
+    "math/rand"
+    "time"
 )
 
 var _ = fmt.Println
 var _ = ioutil.ReadFile
 
-type thing struct {
-    a int
-    b int
+type Thing struct {
+    A int
 }
 
 func check(e error) {
@@ -26,40 +26,61 @@ func check(e error) {
 }
 
 func main() {
-    // data1 := "hello\ngo\n"
+    rand.Seed(time.Now().UTC().UnixNano())
 
-    // err := ioutil.WriteFile("temp", []byte(data1), 0644)
-    // check(err)
+    data := new(Thing)
 
-    // data2, err := ioutil.ReadFile("temp")
-    // check(err)
+    for i := 0; i < 3; i++ {
+        fmt.Println("-----")
 
-    // fmt.Println(string(data2) == data1)
+        if err := data.Load("temp"); err == os.PathError {
+            fmt.Println(err)
+        }
+        if err != nil
 
+        fmt.Printf("loaded value is %v\n", data.A)
 
+        value := rand.Intn(100)
+        fmt.Printf("new value is    %v\n", value)
+        data.A = value
 
-    // data3 := thing{1, 2}
-    // err := ioutil.WriteFile("structfile", []byte(data3), 0644)
-    // check(err)
+        if err := data.Save("temp"); err != nil {
+            fmt.Println("save", err)
+        }
+        time.Sleep(100*time.Millisecond)
+    }
+}
 
-    // data4, err := ioutil.ReadFile("structfile")
-    // check(err)
+func (t *Thing) Load(filename string) error {
 
-    // fmt.Println(thing(data4))
+    fi, err := os.Open(filename)
+    if err !=nil {
+        return err
+    }
+    defer fi.Close()
 
+    decoder := gob.NewDecoder(fi)
+    err = decoder.Decode(&t)
+    if err !=nil {
+        return err
+    }
 
+    return nil
+}
 
-    var network bytes.Buffer // Stand-in for the network.
+func (t *Thing) Save(filename string) error {
 
-    // Create an encoder and send a value.
-    enc := gob.NewEncoder(&network)
-    err := enc.Encode(thing{3, 4})
-    if err != nil {log.Fatal("encode:", err)}
+    fi, err := os.Create(filename)
+    if err !=nil {
+        return err
+    }
+    defer fi.Close()
 
-    // Create a decoder and receive a value.
-    dec := gob.NewDecoder(&network)
-    var v thing
-    err = dec.Decode(&v)
-    if err != nil {log.Fatal("decode:", err)}
-    fmt.Println(v)
+    encoder := gob.NewEncoder(fi)
+    err = encoder.Encode(t)
+    if err !=nil {
+        return err
+    }
+
+    return nil
 }

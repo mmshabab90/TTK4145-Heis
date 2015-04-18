@@ -1,5 +1,6 @@
 digraph G {
 	main -> poller;
+	poller -> hw;
 	poller -> fsm;
 	poller -> queue;
 	poller -> network;

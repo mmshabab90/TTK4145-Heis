@@ -29,3 +29,8 @@ Kostfunksjon
 ------------
 
 Kostnad to for hver etasje heisen må gå og hver etasje heisen skal stoppe i på veien mot målet. Kostnad én for bevegelse fra mellom etasjer til en etasje. Summer kostnader, sammenlikn heiser, velg den beste (mega-duh). Bruk IP eller noe for å velge heis om flere har samme kostnad. Kanskje sjekk hvilken som har færrest ordre totalt?
+
+Antakelser
+----------
+
+- Det er kool om to heiser bestilles til samme etasje for å ekspedere bestillinger i ulike retninger. Den som henter folk som vil opp slukker kun lyset for bestilling opp, og vice versa.
