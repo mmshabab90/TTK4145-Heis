@@ -31,7 +31,6 @@ type cost struct {
 type order struct {
 	floor int
 	button int
-	replies []cost
 }
 
 func liftAssigner() {
@@ -44,7 +43,7 @@ func liftAssigner() {
 	// spawn a goroutine for each order to be assigned?
 
 	go func() {
-		assignmentQueue := make([]order)
+		assignmentQueue := make(map[order][]cost)
 		for {
 			select {
 			case message := <- costChan:
