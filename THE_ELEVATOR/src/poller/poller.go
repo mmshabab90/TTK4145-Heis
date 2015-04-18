@@ -25,14 +25,14 @@ var connectionDeadChan	 = make(chan network.UdpConnection)
 const resetTime = 1*time.Second
 
 var costChan = make(chan network.Message)
-type cost struct {
+type reply struct {
 	cost int
 	lift string
 }
 type order struct {
 	floor int
 	button int
-	costs []cost
+	replies []reply
 }
 
 func liftAssigner() {
@@ -64,7 +64,7 @@ func liftAssigner() {
 }
 
 func orderExistInAssQue(que []order) bool {
-	
+
 }
 
 func Init() {
