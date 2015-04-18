@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"../queue"
 	"../defs"
+	"errors"
 )
 
 var _ = log.Println
@@ -32,7 +33,6 @@ type reply struct {
 type order struct {
 	floor int
 	button int
-	replies []reply
 }
 
 func liftAssigner() {
@@ -43,19 +43,43 @@ func liftAssigner() {
 	// lifts make the same choice every time
 
 	// spawn a goroutine for each order to be assigned?
-
 	go func() {
-		//assignmentQueue := make(map[order][]cost)
-		assignmentQueue := make([]order)
+		assignmentQueue := make(map[order][]reply)
+		// assignmentQueue := make([]order)
+		// assignmentQueue := [defs.NumFloors][defs.NumButtons][]reply
 		for {
 			select {
 			case message := <- costChan:
-				// check if message data already in assQue
-				// add the data if it's not there
-				// then check if all lifts are present
-				// if yes, decide on a lift
-				// and update local sharedqueue
-				// and maybe notify everyone else
+				order, reply = parse(message)
+				if value, exist := assignmentQueue[order]; exist {
+					// sjekk om val fins i listen
+					// append om ikke
+					found := false
+					for _, e := range value {
+						if e == reply {
+							found = true
+						}
+					}
+					if !found {
+						assignmentQueue[order] = append(assignmentQueue[order], reply)
+					}
+				} else {
+					assignmentQueue[order] = []reply{reply}
+				}
+
+
+
+
+
+
+				if !isOrderInAss(assignmentQueue, message) {
+					// add message to assQue:
+					newOrder := order{floor:message.floor, button:message.button}
+					assignmentQueue = append(assignmentQueue, newOrder)
+					index := findIndexInAss(assignmentQueue, newOrder)
+					go waitForCosts(*assignmentQueue[index])
+				}
+				index := findIndexInAss(assignmentQueue, newOrder)
 			default:
 				// do nothing
 			}
@@ -63,9 +87,36 @@ func liftAssigner() {
 	}()
 }
 
-func orderExistInAssQue(que []order) bool {
+func parse(m network.Message) order, reply {
+	return order{floor:m.Floor, button:m.Button}, reply{cost:m.Cost, lift:m.Addr}
+}
+
+func isOrderInAss(que []order, message network.Message) bool {
+	for _, e := range que {
+        if e.floor == message.floor && e.button == message.button {
+        	return true
+        }
+    }
+    return false
+}
+
+func findIndexInAss(que []order, ord order) int {
+	for i, e := range que {
+		if e == ord {
+			return i
+		}
+	}
+	return -1
+}
+
+func waitForCosts(ord *order) {
 
 }
+
+
+
+
+
 
 func Init() {
 	if err := hw.Init(); err != nil {
@@ -87,7 +138,7 @@ func run() {
 			fsm.EventButtonPressed(keypress.floor, keypress.button)
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
-		case <-fsm.DoorTimeout:
+		case <-fsm.DoorTimeoutChan:
 			fsm.EventDoorTimeout()
 		case udpMessage := <-network.ReceiveChan:
 			handleMessage(network.ParseMessage(udpMessage))
