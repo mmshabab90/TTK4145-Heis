@@ -23,6 +23,41 @@ var connectionMap = make(map[string] network.UdpConnection)
 var connectionDeadChan	 = make(chan network.UdpConnection)
 const resetTime = 1*time.Second
 
+var costChan = make(chan network.Message)
+type cost struct {
+	cost int
+	lift string
+}
+type order struct {
+	floor int
+	button int
+	replies []cost
+}
+
+func liftAssigner() {
+	// collect cost values from all lifts
+	// decide which lift gets the order when all lifts
+	// in alive-list have answered or after a timeout
+	// either send the decision on network or pray that all
+	// lifts make the same choice every time
+
+	// spawn a goroutine for each order to be assigned?
+
+	go func() {
+		assignmentQueue := make([]order)
+		for {
+			select {
+			case message := <- costChan:
+				assQueue[order{message.Floor,message.Button}] = cost{message.Cost,message.Addr}
+
+			default:
+				// do nothing
+			}
+		}
+	}()
+
+}
+
 func Run() {
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
@@ -114,14 +149,18 @@ func handleMessage(message network.Message) {
 			if err != nil {
 				log.Println(err)
 			}
-			costMessage := network.Message{Kind: network.Cost, Floor: message.Floor, Button: message.Button,	Cost: cost}
+			costMessage := network.Message{
+				Kind: network.Cost,
+				Floor: message.Floor,
+				Button: message.Button,
+				Cost: cost}
 			network.Send(costMessage)
 		case network.CompleteOrder:
 			// remove from queues
 			queue.RemoveSharedOrder(message.Floor, message.Button)
 			// prob more to do here
 		case network.Cost:
-			// notify lift assignment routine
+			costChan <- message
 	}
 }
 
