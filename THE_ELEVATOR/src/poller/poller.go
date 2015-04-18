@@ -60,7 +60,7 @@ func pollButtons() <-chan keypress {
 					}
 				}
 			}
-			time.Sleep(time.Millisecond * 5)
+			time.Sleep(time.Millisecond)
 		}
 	}()
 
@@ -79,7 +79,7 @@ func pollFloors() <-chan int {
 				c <- newFloor
 			}
 			oldFloor = newFloor
-			time.Sleep(time.Millisecond * 5)
+			time.Sleep(time.Millisecond)
 		}
 	}()
 
