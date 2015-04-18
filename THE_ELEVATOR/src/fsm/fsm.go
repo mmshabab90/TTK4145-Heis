@@ -31,6 +31,9 @@ func Init() {
 	state = idle
 	direction = hw.DirnStop
 	floor = hw.GetFloor()
+	if floor == -1 {
+		floor = hw.MoveToDefinedState()
+	}
 	departDirection = hw.DirnDown
 	syncLights()
 }
@@ -53,10 +56,9 @@ func runTimer() {
 }
 
 func EventButtonPressed(buttonFloor int, buttonType int) {
-	fmt.Print("Event button pressed in state ")
+	fmt.Printf("Event button pressed in state %s\n", getStateName(state))
 	switch state {
 	case idle:
-		fmt.Println("idle")
 		queue.AddOrder(buttonFloor, buttonType)
 		direction = queue.ChooseDirection(floor, direction)
 		if direction == hw.DirnStop {
@@ -70,14 +72,12 @@ func EventButtonPressed(buttonFloor int, buttonType int) {
 			state = moving
 		}
 	case doorOpen:
-		fmt.Println("door open")
 		if floor == buttonFloor {
 			doorReset <- true
 		} else {
 			queue.AddOrder(buttonFloor, buttonType)
 		}
 	case moving:
-		fmt.Println("moving")
 		queue.AddOrder(buttonFloor, buttonType)
 	default:
 		log.Fatalf("State %d is invalid!\n", state)
@@ -86,16 +86,17 @@ func EventButtonPressed(buttonFloor int, buttonType int) {
 }
 
 func EventFloorReached(newFloor int) {
-	fmt.Print("Event floor reached in state ")
+	fmt.Printf("Event button pressed in state %s\n", getStateName(state))
 	floor = newFloor
 	hw.SetFloorLamp(floor)
 	switch state {
 	case moving:
-		fmt.Println("moving")
 		if queue.ShouldStop(floor, direction) {
 			hw.SetMotorDirection(hw.DirnStop)
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
+			// send completed order-message:
+			queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
 			state = doorOpen
 		} else {
@@ -107,11 +108,10 @@ func EventFloorReached(newFloor int) {
 	syncLights()
 }
 
-func EventTimerOut() {
-	fmt.Print("Event timer out in state ")
+func EventDoorTimeout() {
+	fmt.Printf("Event button pressed in state %s\n", getStateName(state))
 	switch state {
 	case doorOpen:
-		fmt.Println("door open")
 		direction = queue.ChooseDirection(floor, direction)
 		hw.SetDoorOpenLamp(false)
 		hw.SetMotorDirection(direction)
@@ -145,5 +145,18 @@ func syncLights() {
 				hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
 			}
 		}
+	}
+}
+
+func getStateName(state stateType) string {
+	switch state {
+	case idle:
+		return "idle"
+	case moving:
+		return "moving"
+	case door:
+		return "door open"
+	default:
+		return "error: bad state"
 	}
 }
