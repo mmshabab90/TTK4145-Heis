@@ -8,6 +8,8 @@ import (
 
 // --------------- PUBLIC: ---------------
 
+const spamTime = 500*time.Millisecond
+
 const (
 	Alive int = iota
 	NewOrder
@@ -66,7 +68,6 @@ func ParseMessage(udpMessage udpMessage) Message {
 // --------------- PRIVATE: ---------------
 
 func aliveSpammer() {
-	spamTime := 500*time.Millisecond
 	message := Message{Kind: Alive}
 	for {
 		Send(message)

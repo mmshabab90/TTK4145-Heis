@@ -21,7 +21,7 @@ type keypress struct {
 
 var connectionMap = make(map[string] network.UdpConnection)
 var connectionDeadChan	 = make(chan network.UdpConnection)
-var resetTime = 1*time.Second
+const resetTime = 1*time.Second
 
 func Run() {
 	buttonChan := pollButtons()
