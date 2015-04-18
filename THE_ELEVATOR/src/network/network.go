@@ -8,8 +8,6 @@ import (
 
 // --------------- PUBLIC: ---------------
 
-const spamInterval = 500*time.Millisecond
-
 const (
 	Alive int = iota
 	NewOrder
@@ -36,9 +34,9 @@ var ReceiveChan = make (chan udpMessage)
 
 
 func Init (){
-	localListenPort := 20001
-	broadcastListenPort := 20058
-	messageSize := 1024
+	const localListenPort = 20001
+	const broadcastListenPort = 20058
+	const messageSize = 1024
 	err := Udp_init(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)		
 
 	if (err != nil){
@@ -48,8 +46,8 @@ func Init (){
 	go aliveSpammer()
 }
 
-func Send(message Message) { // should take a pointer instead
-	printMessage(message)
+func Send(message *Message) { // should take a pointer instead
+	printMessage(*message)
 	jsonMessage, err := json.Marshal(message)
 	if err != nil {
 		// worry
@@ -71,7 +69,8 @@ func ParseMessage(udpMessage udpMessage) Message {
 // --------------- PRIVATE: ---------------
 
 func aliveSpammer() {
-	message := Message{Kind: Alive}
+	const spamInterval = 500*time.Millisecond
+	message := &Message{Kind: Alive}
 	for {
 		Send(message)
 		time.Sleep(spamInterval)
