@@ -11,7 +11,10 @@ import (
 	"./src/queue"
 	"./src/defs"
 	"errors"
+	"math"
 )
+
+// Init noen kanaler her som sendes hit og dit for communication puposes?
 
 const debugPrint = false
 
@@ -46,7 +49,7 @@ func main() {
 	fsm.Init()
 	network.Init()
 
-	run()
+	go run() // main.go
 }
 
 func run() {
@@ -209,4 +212,20 @@ func split(m defs.Message) (order, reply) {
 
 func evaluateLists(queue map[order][]reply) {
 
+	// Loop thru all lists
+	for key, replyList := range queue {
+		// Check if the list is complete
+		if len(replyList) == len(connectionMap) {
+			// Loop thru costs in each complete list
+			var lowKey int
+			lowCost := math.Inf(1)
+			for i, reply := range replyList {
+				if reply.cost < lowCost {
+					lowCost = reply.cost
+					lowKey = i
+				}
+			}
+			// Assign order key to lift 
+		}
+	}
 }
