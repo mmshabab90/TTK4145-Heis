@@ -6,13 +6,9 @@ import (
 	"log"
 )
 
-var laddr string
-
-const invalidAddr = "0.0.0.0"
-
 type sharedOrder struct {
 	isOrderActive bool
-	elevatorAddr  string
+	assignedLiftAddr  string
 }
 
 var localQueue [hw.NumFloors][hw.NumButtons]bool
@@ -105,6 +101,26 @@ func IsOrder(floor int, button int) bool {
 	return localQueue[floor][button]
 }
 
+func ReassignOrders(deadAddr string) { // better name plz
+	// loop thru shared queue
+	// remove all orders assigned to the dead lift
+	// send neworder-message for each removed order
+	for f := 0; f < hw.NumFloors; f++ {
+		for b := 0; b < hw.NumButtons; b++ {
+			if sharedQueue[f][b].assignedLiftAddr == deadAddr {
+				sharedQueue[f][b].isOrderActive = false
+				sharedQueue[f][b].assignedLiftAddr = ""
+
+                reassignMessage := network.Message{
+                	Kind: network.NewOrder,
+                	Floor: f,
+                	Button: b}
+				network.Send(reassignMessage)
+			}
+		}
+	}
+}
+
 // --------------- PRIVATE: ---------------
 
 func isOrdersAbove(floor int) bool {
@@ -145,7 +161,7 @@ func updateLocalQueue() {
 		for b := 0; b < hw.NumButtons; b++ {
 			if b != hw.ButtonCommand &&
 				sharedQueue[f][b].isOrderActive &&
-				sharedQueue[f][b].elevatorAddr == laddr {
+				sharedQueue[f][b].assignedLiftAddr == network.Laddr {
 				localQueue[f][b] = true
 			}
 		}
@@ -159,7 +175,7 @@ func RemoveSharedOrder(floor int, button int) {
 	}
 
 	sharedQueue[floor][button].isOrderActive = false
-	sharedQueue[floor][button].elevatorAddr = invalidAddr
+	sharedQueue[floor][button].assignedLiftAddr = invalidAddr
 }
 
 func resetLocalQueue() {
@@ -171,7 +187,7 @@ func resetLocalQueue() {
 }
 
 func resetSharedQueue() {
-	blankOrder := sharedOrder{isOrderActive: false, elevatorAddr: invalidAddr}
+	blankOrder := sharedOrder{isOrderActive: false, assignedLiftAddr: invalidAddr}
 	for f := 0; f < hw.NumFloors; f++ {
 		for b := 0; b < hw.NumButtons; b++ {
 			sharedQueue[f][b] = blankOrder
@@ -187,8 +203,8 @@ func resetSharedQueue() {
 	}
 
 	if sharedQueue[floor][button].isOrderActive
-	&& sharedQueue[floor][button].elevatorAddr == laddr {
+	&& sharedQueue[floor][button].assignedLiftAddr == laddr {
 		sharedQueue[floor][button].isOrderActive = false
-		sharedQueue[floor][button].elevatorAddr = invalidAddr
+		sharedQueue[floor][button].assignedLiftAddr = invalidAddr
 	}
 }*/

@@ -38,6 +38,8 @@ func Run() {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <- connectionDeadChan:
 			delete(connectionMap, connection.Addr) //delete dead connection from map
+			// Re-assign everything assigned to dead lift:
+			queue.ReassignOrders(connection.Addr)
 			fmt.Printf("Connection with IP %s is dead\n", connection.Addr)
 			//for key, _ := range connectionMap {fmt.Println(key)}
 		}
