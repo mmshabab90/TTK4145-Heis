@@ -1,6 +1,7 @@
 package defs
 
 import "net"
+import "strings"
 
 // Global system constants
 const NumButtons = 3
