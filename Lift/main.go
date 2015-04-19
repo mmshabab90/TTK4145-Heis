@@ -228,7 +228,7 @@ func evaluateLists(que map[order][]reply) {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) {
 			var (
-				lowCost = 50
+				lowCost = 50 //50 = inf
 				lowAddr string
 			)
 			// Loop thru costs in each complete list
