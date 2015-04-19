@@ -130,7 +130,7 @@ func EventFloorReached(newFloor int) {
 			departDirection = direction
 		}
 	default:
-		log.Fatalf("Makes no sense to arrive at a floor in state %d.", stateString(state))
+		log.Printf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
 	}
 	syncLights()
 }
@@ -156,6 +156,10 @@ func EventDoorTimeout() {
 }
 
 func Direction() int {
+	return direction
+}
+
+func DepartDirection() int {
 	return departDirection
 }
 
