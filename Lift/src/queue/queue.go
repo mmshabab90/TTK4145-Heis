@@ -108,6 +108,7 @@ func RemoveOrdersAt(floor int) {
 		localQueue[floor][b] = false
 		sharedQueue[floor][b] = blankOrder
 	}
+	SendOrderCompleteMessage(floor)
 }
 
 // IsOrder returns whether there in an order with the given floor and button
