@@ -1,0 +1,11 @@
+Når vi oppdager ting som må fikses, men er opptatte med å fikse noe annet, skriv det i denne filen:
+
+fiks lys-setting:
+eksternt panel skal være likt for alle heisene
+
+fiks opp/ned knapper for én heis:
+F.eks hvis den er på opp til 4 og får en bestilling ned i 3., skal den først opp til 4. før den går til 3.
+
+kommuniser med driver via kanal
+
+får av og til "Makes no sense to arrive at a floor in state idle", hva skyldes dette?
