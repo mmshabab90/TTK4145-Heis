@@ -22,22 +22,23 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 	cost := 0
 	
 	if currFloor == -1 {
-		fmt.Printf("-%d", currFloor)
+		fmt.Printf(" > %d", currFloor)
 		cost += 1
 		fsmFloor = incrementFloor(fsmFloor, fsmDir)
 	}
 
-	fmt.Printf("-%d", fsmFloor)
+	fmt.Printf(" > %d", fsmFloor)
 	for !(fsmFloor == targetFloor && queue.ShouldStop(fsmFloor, fsmDir)) {
 		if queue.ShouldStop(fsmFloor, fsmDir) {
 			cost += 2
-			fmt.Printf("S")
+			fmt.Printf("(S)")
 		}
 		fsmDir = queue.ChooseDirection(fsmFloor, fsmDir)
 		fsmFloor = incrementFloor(fsmFloor, fsmDir)
 		cost += 2
-		fmt.Printf("-%d", fsmFloor)
+		fmt.Printf(" > %d", fsmFloor)
 	}
+	fmt.Println()
 
 	return cost, nil
 }
