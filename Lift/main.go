@@ -152,7 +152,7 @@ func handleMessage(message defs.Message) {
 
 		queue.AddInternalOrder(message.Floor, message.Button)
 		cost, err := cost.CalculateCost(message.Floor, message.Button,
-			fsm.Floor(), fsm.Direction(), hw.Floor())
+			fsm.Floor(), fsm.DepartDirection(), hw.Floor())
 		queue.RemoveInternalOrder(message.Floor, message.Button)
 
 		if err != nil {
