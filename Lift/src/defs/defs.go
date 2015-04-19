@@ -19,7 +19,7 @@ const ( // Rename to DirDown etc.
 )
 
 const (
-	Alive int = iota +1
+	Alive int = iota + 1
 	NewOrder
 	CompleteOrder
 	Cost
