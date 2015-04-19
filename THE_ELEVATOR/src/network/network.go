@@ -26,21 +26,24 @@ func Init() {
 		fmt.Print("err = %s \n", err)
 	}
 
-	go aliveSpammer()
-	go pollMessages()
+	//go aliveSpammer()
+	//go pollMessages()
 }
 
 func pollMessages() {
 	var msg defs.Message
 	for {
 		msg = <- defs.MessageChan
-		Send(&msg)
+		//PrintMessage(msg)
+		Send(msg)
 		time.Sleep(time.Millisecond)
 	}
 }
 
-func Send(message *defs.Message) { //now takes a pointer, does it still work over the network?
-	//printMessage(*message)
+func Send(message defs.Message) { //now takes a pointer, does it still work over the network?
+	/*fmt.Println("Sending")
+	PrintMessage(message)
+	fmt.Println()*/
 	jsonMessage, err := json.Marshal(message) //is json good? can it take a pointer?
 	if err != nil {
 		// worry
@@ -51,7 +54,10 @@ func Send(message *defs.Message) { //now takes a pointer, does it still work ove
 
 func ParseMessage(udpMessage udpMessage) defs.Message {
 	var message defs.Message
+	fmt.Println("in parsemessage")
+	PrintMessage(message)
 	err := json.Unmarshal(udpMessage.data, &message)
+	PrintMessage(message)
 	if err != nil {
 		// handle
 	}
@@ -64,17 +70,16 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	const spamInterval = 500 * time.Millisecond
-	message := &defs.Message{Kind: defs.Alive}
+	const spamInterval = 5000 * time.Millisecond
+	message := defs.Message{Kind: defs.Alive}
 	for {
 		Send(message)
 		time.Sleep(spamInterval)
 	}
 }
 
-func printMessage(msg defs.Message) {
-	fmt.Println("Message")
-	fmt.Println("---------------------------")
+func PrintMessage(msg defs.Message) {
+	fmt.Printf("\n----------Message start----------\n")
 	switch msg.Kind {
 	case defs.Alive:
 		fmt.Println("I'm alive\n")
@@ -91,4 +96,5 @@ func printMessage(msg defs.Message) {
 	default:
 		fmt.Println("Invalid message type!\n")
 	}
+	fmt.Println("----------Message   end----------")
 }

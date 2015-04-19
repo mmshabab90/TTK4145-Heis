@@ -133,6 +133,7 @@ func SendOrderCompleteMessage(floor int) {
 // AddSharedOrder adds the given order to the shared queue.
 func AddSharedOrder(floor, button int, addr string) {
 	sharedQueue[floor][button] = sharedOrder{true, addr}
+	updateLocalQueue()
 }
 
 // --------------- PRIVATE: ---------------

@@ -63,7 +63,7 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 	switch state {
 	case idle, doorOpen, moving:
 		// send order on network
-		message := &defs.Message{Kind: defs.NewOrder, Floor: floor, Button: button}
+		message := &defs.Message{Kind: defs.NewOrder, Floor: buttonFloor, Button: buttonType}
 		defs.MessageChan <- *message
 	default:
 		//

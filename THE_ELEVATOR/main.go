@@ -14,7 +14,7 @@ import (
 )
 
 const debugPrint = false
-const resetTime = 1 * time.Second
+const resetTime = 10 * time.Second
 
 var _ = log.Println
 var _ = fmt.Println
@@ -126,6 +126,9 @@ func pollFloors() <-chan int {
 }
 
 func handleMessage(message defs.Message) {
+	fmt.Println("Received")
+	network.PrintMessage(message)
+	fmt.Println()
 	switch message.Kind {
 	case defs.Alive:
 		if connection, exist := onlineLifts[message.Addr]; exist {
@@ -142,21 +145,24 @@ func handleMessage(message defs.Message) {
 			go connectionTimer(&newConnection)
 		}
 	case defs.NewOrder:
+		fmt.Println("case: NewOrder in handleMessage")
 		cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.Floor(), fsm.Direction(), hw.Floor())
 		if err != nil {
 			log.Println(err)
 		}
-		costMessage := &defs.Message{
+		costMessage := defs.Message{
 			Kind:   defs.Cost,
 			Floor:  message.Floor,
 			Button: message.Button,
 			Cost:   cost}
 		network.Send(costMessage)
 	case defs.CompleteOrder:
+		fmt.Println("case: CompleteOrder in handleMessage")
 		// remove from queues
 		queue.RemoveSharedOrder(message.Floor, message.Button)
 		// prob more to do here
 	case defs.Cost:
+		fmt.Println("case: Cost in handleMessage")
 		costChan <- message
 	}
 }
@@ -237,3 +243,5 @@ func evaluateLists(que map[order][]reply) {
 		}
 	}
 }
+
+

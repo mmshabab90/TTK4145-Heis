@@ -6,5 +6,8 @@ import (
 
 func main() {
 	network.Init()
-	network.ReceiveMsg()
+	for {
+		message := <- network.ReceiveChan
+		network.PrintMessage(network.ParseMessage(message))
+	}
 }
