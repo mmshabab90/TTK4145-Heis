@@ -41,7 +41,7 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 		cost += 2
 		fsmFloor, err = incrementFloor(fsmFloor, fsmDir)
 		if err != nil {
-			defer log.Println(err)
+			log.Println(err)
 		}
 	}
 
@@ -75,5 +75,10 @@ func incrementFloor(floor int, direction int) (int, error) {
 	default:
 		return floor, errors.New("Error: Invalid direction, floor not incremented.")
 	}
+
+	if (floor < 0) or (floor >= defs.NumFloors) {
+		return floor, fmt.Printf("Error: Floor incremented to invalid floor %d.", floor)
+	}
+
 	return floor, nil
 }
