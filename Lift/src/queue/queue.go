@@ -237,7 +237,7 @@ func PrintQueues() {
 			fmt.Printf(" ")
 		}
 		if localQueue[f][defs.ButtonCommand] {
-			fmt.Printf("◦")
+			fmt.Printf("×")
 		} else {
 			fmt.Printf(" ")
 		}
@@ -248,19 +248,19 @@ func PrintQueues() {
 		}
 		if sharedQueue[f][defs.ButtonCallUp].isOrderActive {
 			fmt.Printf("↑")
-			lifts += "(↑" + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCallUp].assignedLiftAddr) + ")"
+			lifts += "(↑ " + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCallUp].assignedLiftAddr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
 		if sharedQueue[f][defs.ButtonCommand].isOrderActive {
-			fmt.Printf("◦")
-			lifts += "(◦" + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCommand].assignedLiftAddr) + ")"
+			fmt.Printf("×")
+			lifts += "(× " + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCommand].assignedLiftAddr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
 		if sharedQueue[f][defs.ButtonCallDown].isOrderActive {
 			fmt.Printf("↓")
-			lifts += "(↓" + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCallDown].assignedLiftAddr) + ")"
+			lifts += "(↓ " + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCallDown].assignedLiftAddr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
