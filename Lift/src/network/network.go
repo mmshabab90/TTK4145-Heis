@@ -46,7 +46,7 @@ func Send(message defs.Message) { //now takes a pointer, does it still work over
 	fmt.Println()*/
 	jsonMessage, err := json.Marshal(message) //is json good? can it take a pointer?
 	if err != nil {
-		// worry
+		fmt.Printf("json.Unmarshal error: %s\n", err)
 	} else {
 		sendChan <- udpMessage{raddr: "broadcast", data: jsonMessage, length: len(jsonMessage)}
 	}
@@ -56,8 +56,8 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 	var message defs.Message
 	/*fmt.Println("in parsemessage")
 	PrintMessage(message)
-	err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message)
 	PrintMessage(message)*/
+	err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message)
 	if err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
