@@ -68,7 +68,6 @@ func EventFloorReached(newFloor int) {
 			queue.RemoveOrdersAt(floor)
 			// send completed order-message:
 			go queue.SendOrderCompleteMessage(floor)
-			fmt.Println("SendOrderCompleteMessage finished")
 			doorReset <- true
 			state = doorOpen
 		} else {
