@@ -127,9 +127,9 @@ func pollFloors() <-chan int {
 }
 
 func handleMessage(message defs.Message) {
-	fmt.Println("Received")
+	/*fmt.Println("Received")
 	network.PrintMessage(message)
-	fmt.Println()
+	fmt.Println()*/
 	switch message.Kind {
 	case defs.Alive:
 		if connection, exist := onlineLifts[message.Addr]; exist {
@@ -233,6 +233,7 @@ func evaluateLists(que map[order][]reply) {
 	for key, replyList := range que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) {
+			fmt.Println("we have the same number of replies as lifts")
 			var (
 				lowCost = 50 //50 = inf
 				lowAddr string
