@@ -46,6 +46,8 @@ func incrementFloor(floor int, direction int) int {
 		floor--
 	case defs.DirnUp:
 		floor++
+	case defs.DirnStop:
+		log.Println("Error(ish): Direction stop, floor not incremented.")
 	default:
 		log.Println("Error: Invalid direction, floor not incremented.")
 	}
