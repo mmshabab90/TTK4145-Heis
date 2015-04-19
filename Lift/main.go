@@ -242,6 +242,7 @@ func evaluateLists(que map[order][]reply, costTimerOut bool) {
 	for key, replyList := range que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) || costTimerOut {
+			fmt.Printf("Laddr = %v\n", defs.Laddr)
 			var (
 				lowCost = 1000 // Set to maximum integer or something
 				lowAddr string
@@ -265,6 +266,7 @@ func evaluateLists(que map[order][]reply, costTimerOut bool) {
 					}
 				}
 			}
+			fmt.Printf("lowAddr = %s\n", lowAddr)
 			// Assign order key to lift
 			queue.AddSharedOrder(key.floor, key.button, lowAddr)
 			queue.PrintQueues()

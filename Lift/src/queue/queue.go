@@ -106,6 +106,7 @@ func ShouldStop(floor int, direction int) bool {
 func RemoveOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
 		localQueue[floor][b] = false
+		sharedQueue[floor][b] = blankOrder
 	}
 }
 
