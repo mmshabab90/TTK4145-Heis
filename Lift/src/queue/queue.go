@@ -220,6 +220,43 @@ func resetSharedQueue() {
 	}
 }
 
+func printQueues() {
+	fmt.Println("Local:    Shared:")
+	for f := NumFloors; f > 0; f-- {
+		if localQueue[f][defs.ButtonCallUp] {
+			fmt.Printf("↑")
+		} else {
+			fmt.Printf(" ")
+		}
+		if localQueue[f][defs.ButtonCallDown] {
+			fmt.Printf("↓")
+		} else {
+			fmt.Printf(" ")
+		}
+		if localQueue[f][defs.ButtonCallCommand] {
+			fmt.Printf("×      ")
+		} else {
+			fmt.Printf("       ")
+		}
+
+		if sharedQueue[f][defs.ButtonCallUp] {
+			fmt.Printf("↑")
+		} else {
+			fmt.Printf(" ")
+		}
+		if sharedQueue[f][defs.ButtonCallDown] {
+			fmt.Printf("↓")
+		} else {
+			fmt.Printf(" ")
+		}
+		if sharedQueue[f][defs.ButtonCallCommand] {
+			fmt.Printf("×")
+		} else {
+			fmt.Printf(" ")
+		}
+	}
+}
+
 /*func updateSharedQueue(floor int, button int) {
 	// If order completed was assigned to this elevator: Remove from shared queue
 	if button == defs.ButtonCommand {
