@@ -33,7 +33,7 @@ func AddInternalOrder(floor int, button int) {
 }
 
 // RemoveInternalOrder adds internal orders to the local queue.
-func RemovoInternalOrder(floor int, button int) {
+func RemoveInternalOrder(floor int, button int) {
 	if button != defs.ButtonCommand {
 		// error!
 		return
