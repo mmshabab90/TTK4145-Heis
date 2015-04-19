@@ -7,4 +7,5 @@ digraph G {
 	fsm -> hw;
 	fsm -> queue;
 	cost -> queue;
+	defs;
 }
