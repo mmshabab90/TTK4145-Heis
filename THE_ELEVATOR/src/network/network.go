@@ -54,10 +54,10 @@ func Send(message defs.Message) { //now takes a pointer, does it still work over
 
 func ParseMessage(udpMessage udpMessage) defs.Message {
 	var message defs.Message
-	fmt.Println("in parsemessage")
+	/*fmt.Println("in parsemessage")
 	PrintMessage(message)
 	err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message)
-	PrintMessage(message)
+	PrintMessage(message)*/
 	if err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
