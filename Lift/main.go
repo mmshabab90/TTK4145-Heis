@@ -162,6 +162,7 @@ func handleMessage(message defs.Message) {
 			Floor:  message.Floor,
 			Button: message.Button,
 			Cost:   cost}
+		fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Floor+1, costMessage.Button, costMessage.Cost)
 		network.Send(costMessage) // Rather send on message channel to network module
 	case defs.CompleteOrder:
 		fmt.Println("handleMessage(): CompleteOrder message")
