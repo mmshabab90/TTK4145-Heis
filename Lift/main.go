@@ -157,7 +157,7 @@ func handleMessage(message defs.Message) {
 		// if err != nil {
 		// 	log.Println(err)
 		// }
-		cost := CalculateCost(queue.CopyLocalQueue(),
+		cost := cost.Calculate(queue.CopyLocalQueue(),
 			message.Floor, message.Button,
 			fsm.Floor(), hw.Floor(), fsm.Direction())
 

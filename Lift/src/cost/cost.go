@@ -15,21 +15,21 @@ import (
 // currFloor is the true current floor, as reported by sensors (-1 if between
 // floors)
 // currDir is the true current direction
-func CalculateCost(queue []bool, targetFloor, targetDir, prevFloor, currFloor, currDir int) int {
-	addToQueue(queue, targetFloor, targetDir) // necessary to add target to queue? maybe.
+func Calculate(queue [defs.NumFloors][defs.NumButtons]bool, targetFloor, targetDir, prevFloor, currFloor, currDir int) int {
+	addToQueue(queue, targetFloor, targetDir)
 	floor := prevFloor
+	dir := currDir
 	cost := 0
 
 	if currFloor == -1 {
 		cost++
-		floor = increment(floor, currDir)
+		floor = increment(floor, dir)
 	} else if currDir != defs.DirnStop {
 		cost += 2
-		floor = increment(floor, currDir)
+		floor = increment(floor, dir)
 	}
 
 	for !( (floor == targetFloor) && ( (dir == targetDir) || noOrdersAhead(queue, floor, dir) ) ) {
-		dir := currDir
 		if (floor == 0) || (floor >= defs.NumFloors) {
 			dir *= -1
 		}
@@ -44,7 +44,7 @@ func CalculateCost(queue []bool, targetFloor, targetDir, prevFloor, currFloor, c
 	return cost
 }
 
-func addToQueue(queue []bool, floor, dir int) {
+func addToQueue(queue [defs.NumFloors][defs.NumButtons]bool, floor, dir int) {
 	switch dir {
 	case defs.ButtonCallDown:
 		queue[floor][defs.ButtonCallDown] = true
@@ -55,7 +55,7 @@ func addToQueue(queue []bool, floor, dir int) {
 	}
 }
 
-func noOrdersAhead(queue []bool, floor, dir int) bool {
+func noOrdersAhead(queue [defs.NumFloors][defs.NumButtons]bool, floor, dir int) bool {
 	isOrdersAhead := false
 	for f := floor; f >= 0 && f < defs.NumFloors; f += dir {
 		for b := 0; b < defs.NumButtons; b++ {
@@ -67,14 +67,14 @@ func noOrdersAhead(queue []bool, floor, dir int) bool {
 	return !isOrdersAhead
 }
 
-func shouldStop(queue []bool, floor, dir int) {
+func shouldStop(queue [defs.NumFloors][defs.NumButtons]bool, floor, dir int) bool {
 	if queue[floor][defs.ButtonCommand] {
 		return true
 	}
-	if dir == DirnUp && queue[floor][defs.ButtonCallUp] {
+	if dir == defs.DirnUp && queue[floor][defs.ButtonCallUp] {
 		return true
 	}
-	if dir == DirnDown && queue[floor][defs.ButtonCallDown] {
+	if dir == defs.DirnDown && queue[floor][defs.ButtonCallDown] {
 		return true
 	}
 	return false
