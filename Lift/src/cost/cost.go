@@ -24,6 +24,8 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 
 	cost := 0
 	var err error
+
+	// Between floors
 	if currFloor == -1 {
 		fmt.Printf("%d >>> ", currFloor)
 		cost += 1
@@ -31,6 +33,10 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 		if err != nil {
 			defer log.Println(err)
 		}
+	} else if fsmDir != defs.DirnStop {
+		// Not between floors but moving (i.e. departing or arriving)
+		cost += 2
+		fsmFloor = incrementFloor(fsmFloor, fsmDir)
 	}
 
 	fmt.Printf("%d", fsmFloor)
