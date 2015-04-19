@@ -10,17 +10,18 @@ import (
 
 // --------------- PUBLIC: ---------------
 
+
+// CalculateCost calculates how much effort it takes this lift to carry out
+// the given order. Each sheduled stop on the way there and each travel
+// between adjacent floors will add cost 2. Cost 1 is added if the lift
+// starts between floors.
 func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (int, error) {
-	switch targetButton {
-	case defs.ButtonCallUp, defs.ButtonCallDown:
-	case defs.ButtonCommand:
-		return 0, errors.New("CalculateCost() called with internal order!")
-	default:
+	if (targetButton != defs.ButtonCallUp) && (targetButton != defs.ButtonCallDown) {
 		return 0, fmt.Errorf("CalculateCost() called with invalid order: %d\n", targetButton)
 	}
 
 	cost := 0
-
+	
 	if currFloor == -1 {
 		cost += 1
 		fsmFloor = incrementFloor(fsmFloor, fsmDir)
@@ -38,8 +39,6 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 
 	return cost, nil
 }
-
-// --------------- PRIVATE: ---------------
 
 func incrementFloor(floor int, direction int) int {
 	switch direction {
