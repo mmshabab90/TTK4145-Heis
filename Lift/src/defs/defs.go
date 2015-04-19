@@ -35,7 +35,7 @@ type Message struct {
 	Addr   string `json:"-"`
 }
 
-var MessageChan = make(chan Message)
+var MessageChan = make(chan Message) // vurder buff
 
 var Laddr *net.UDPAddr //Local address
 
