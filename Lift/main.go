@@ -147,8 +147,8 @@ func handleMessage(message defs.Message) {
 			go connectionTimer(&newConnection)
 		}
 	case defs.NewOrder:
-		fmt.Printf("handleMessage(): NewOrder message: f=%d b=%d (with cost %d) from lift %s\n",
-			message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
+		fmt.Printf("handleMessage(): NewOrder message: f=%d b=%d from lift %s\n",
+			message.Floor+1, message.Button, message.Addr[12:15])
 
 		// queue.AddInternalOrder(message.Floor, message.Button)
 		// cost, err := cost.CalculateCost(message.Floor, message.Button,
@@ -160,6 +160,7 @@ func handleMessage(message defs.Message) {
 		cost := cost.Calculate(queue.CopyLocalQueue(),
 			message.Floor, message.Button,
 			fsm.Floor(), hw.Floor(), fsm.Direction())
+		fmt.Printf("Calculate() returned cost %v\n", cost)
 
 		costMessage := defs.Message{
 			Kind:   defs.Cost,
