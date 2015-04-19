@@ -252,12 +252,6 @@ func PrintQueues() {
 		} else {
 			fmt.Printf(" ")
 		}
-		if sharedQueue[f][defs.ButtonCommand].isOrderActive {
-			fmt.Printf("×")
-			lifts += "(× " + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCommand].assignedLiftAddr) + ")"
-		} else {
-			fmt.Printf(" ")
-		}
 		if sharedQueue[f][defs.ButtonCallDown].isOrderActive {
 			fmt.Printf("↓")
 			lifts += "(↓ " + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCallDown].assignedLiftAddr) + ")"
