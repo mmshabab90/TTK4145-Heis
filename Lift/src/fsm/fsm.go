@@ -45,7 +45,7 @@ func Init() {
 
 func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 	fmt.Printf("\n\nEvent internal button (floor %d %s) pressed in state %s\n",
-		buttonFloor, buttonName(buttonType), stateName(state))
+		buttonFloor, buttonString(buttonType), stateString(state))
 	queue.PrintQueues()
 	switch state {
 	case idle:
@@ -77,7 +77,7 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 
 func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 	fmt.Printf("\n\nEvent external button (floor %d %s) pressed in state %s\n",
-		buttonFloor, buttonName(buttonType), stateName(state))
+		buttonFloor, buttonString(buttonType), stateString(state))
 	queue.PrintQueues()
 	switch state {
 	case idle, doorOpen, moving:
@@ -113,7 +113,7 @@ func EventExternalOrderGivenToMe() {
 }
 
 func EventFloorReached(newFloor int) {
-	fmt.Printf("\n\nEvent floor %d reached in state %s\n", newFloor, stateName(state))
+	fmt.Printf("\n\nEvent floor %d reached in state %s\n", newFloor, stateString(state))
 	queue.PrintQueues()
 	floor = newFloor
 	hw.SetFloorLamp(floor)
@@ -130,13 +130,13 @@ func EventFloorReached(newFloor int) {
 			departDirection = direction
 		}
 	default:
-		log.Fatalf("Makes no sense to arrive at a floor in state %d", state)
+		log.Fatalf("Makes no sense to arrive at a floor in state %d.", stateString(state))
 	}
 	syncLights()
 }
 
 func EventDoorTimeout() {
-	fmt.Printf("\n\nEvent door timeout in state %s\n", stateName(state))
+	fmt.Printf("\n\nEvent door timeout in state %s\n", stateString(state))
 	queue.PrintQueues()
 	switch state {
 	case doorOpen:
@@ -190,7 +190,7 @@ func syncLights() {
 	}
 }
 
-func stateName(state stateType) string {
+func stateString(state stateType) string {
 	switch state {
 	case idle:
 		return "idle"
@@ -203,7 +203,7 @@ func stateName(state stateType) string {
 	}
 }
 
-func buttonName(button int) string {
+func buttonString(button int) string {
 	switch button {
 	case defs.ButtonCallUp:
 		return "up"
