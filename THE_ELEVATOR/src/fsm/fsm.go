@@ -27,7 +27,7 @@ func Init() {
 }
 
 func EventButtonPressed(buttonFloor int, buttonType int) {
-	fmt.Printf("Event button pressed in state %s\n", stateName(state))
+	fmt.Printf("Event button (floor %d %s) pressed in state %s\n", buttonFloor, buttonName(buttonType), stateName(state))
 	switch state {
 	case idle:
 		queue.NewOrder(buttonFloor, buttonType)
@@ -57,7 +57,7 @@ func EventButtonPressed(buttonFloor int, buttonType int) {
 }
 
 func EventFloorReached(newFloor int) {
-	fmt.Printf("Event button pressed in state %s\n", stateName(state))
+	fmt.Printf("Event floor %d reached in state %s\n", newFloor, stateName(state))
 	floor = newFloor
 	hw.SetFloorLamp(floor)
 	switch state {
@@ -80,7 +80,7 @@ func EventFloorReached(newFloor int) {
 }
 
 func EventDoorTimeout() {
-	fmt.Printf("Event button pressed in state %s\n", stateName(state))
+	fmt.Printf("Event door timeout in state %s\n", stateName(state))
 	switch state {
 	case doorOpen:
 		direction = queue.ChooseDirection(floor, direction)
@@ -93,7 +93,7 @@ func EventDoorTimeout() {
 			departDirection = direction
 		}
 	default:
-		log.Fatalf("Makes no sense to time out when not in doorOpen\n")
+		log.Fatalf("Makes no sense to time out when not in state door open\n")
 	}
 	syncLights()
 }
@@ -162,5 +162,16 @@ func stateName(state stateType) string {
 		return "door open"
 	default:
 		return "error: bad state"
+	}
+}
+
+func buttonName(button int) string {
+	switch button {
+	case ButtonCallUp:
+		return "up"
+	case ButtonCallDown:
+		return "down"
+	case ButtonCommand:
+		return "command"
 	}
 }
