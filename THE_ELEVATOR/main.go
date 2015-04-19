@@ -57,7 +57,15 @@ func run() {
 	for {
 		select {
 		case keypress := <-buttonChan:
-			fsm.EventButtonPressed(keypress.floor, keypress.button)
+			switch keypress.button {
+			case defs.ButtonCommand:
+				fsm.EventInternalButtonPressed(keypress.floor, keypress.button)
+			case defs.ButtonCallUp, defs.ButtonCallDown:
+				fsm.EventExternalButtonPressed(keypress.floor, keypress.button)
+			default:
+				// maybe care about bad button here
+			}
+			
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
 		case udpMessage := <-network.ReceiveChan:
@@ -207,6 +215,10 @@ func split(m defs.Message) (order, reply) {
 	return order{floor: m.Floor, button: m.Button}, reply{cost: m.Cost, lift: m.Addr}
 }
 
+// evaluateLists goes through the map of orders with associated costs, checks
+// if any orders have received answers from all live lifts, and finds the
+// the best candidate for all such orders. The best candidate is added to the
+// shared queue.
 // This is very cryptic and ungood.
 func evaluateLists(que map[order][]reply) {
 	// Loop thru all lists
