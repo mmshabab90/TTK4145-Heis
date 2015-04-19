@@ -67,7 +67,7 @@ func EventFloorReached(newFloor int) {
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			// send completed order-message:
-			queue.SendOrderCompleteMessage(floor)
+			go queue.SendOrderCompleteMessage(floor)
 			fmt.Println("SendOrderCompleteMessage finished")
 			doorReset <- true
 			state = doorOpen
