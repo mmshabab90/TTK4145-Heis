@@ -170,7 +170,7 @@ func handleMessage(message defs.Message) {
 		
 		// prob more to do here
 	case defs.Cost:
-		fmt.Println("handleMessage(): Cost message")
+		fmt.Println("handleMessage(): Cost message: f=%d b=%d with cost %d from lift %s\n", message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
 		costChan <- message
 	}
 }
