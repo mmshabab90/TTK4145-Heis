@@ -264,6 +264,7 @@ func PrintQueues() {
 		} else {
 			fmt.Printf(" ")
 		}
+		fmt.Printf("%s", lifts)
 		fmt.Println()
 	}
 }
