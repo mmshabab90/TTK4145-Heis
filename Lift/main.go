@@ -126,6 +126,7 @@ func pollFloors() <-chan int {
 	return c
 }
 
+// consider moving each case into a function
 func handleMessage(message defs.Message) {
 	/*fmt.Println("Received")
 	network.PrintMessage(message)
@@ -146,7 +147,7 @@ func handleMessage(message defs.Message) {
 			go connectionTimer(&newConnection)
 		}
 	case defs.NewOrder:
-		fmt.Println("case: NewOrder in handleMessage")
+		fmt.Println("handleMessage(): NewOrder message")
 
 		queue.AddInternalOrder(message.Floor, message.Button)
 		cost, err := cost.CalculateCost(message.Floor, message.Button,
@@ -163,12 +164,13 @@ func handleMessage(message defs.Message) {
 			Cost:   cost}
 		network.Send(costMessage) // Rather send on message channel to network module
 	case defs.CompleteOrder:
-		fmt.Println("case: CompleteOrder in handleMessage")
+		fmt.Println("handleMessage(): CompleteOrder message")
 		// remove from queues
 		queue.RemoveSharedOrder(message.Floor, message.Button)
+		
 		// prob more to do here
 	case defs.Cost:
-		fmt.Println("case: Cost in handleMessage")
+		fmt.Println("handleMessage(): Cost message")
 		costChan <- message
 	}
 }
@@ -233,7 +235,7 @@ func evaluateLists(que map[order][]reply) {
 	for key, replyList := range que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) {
-			fmt.Println("we have the same number of replies as lifts")
+			fmt.Println("evaluateLists(): We have the same number of replies as lifts!")
 			var (
 				lowCost = 50 //50 = inf
 				lowAddr string

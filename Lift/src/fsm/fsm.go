@@ -27,8 +27,9 @@ func Init() {
 }
 
 func EventInternalButtonPressed(buttonFloor int, buttonType int) {
-	fmt.Printf("Event internal button (floor %d %s) pressed in state %s\n",
+	fmt.Printf("\n\nEvent internal button (floor %d %s) pressed in state %s\n",
 		buttonFloor, buttonName(buttonType), stateName(state))
+	queue.PrintQueues()
 	switch state {
 	case idle:
 		queue.AddInternalOrder(buttonFloor, buttonType)
@@ -58,8 +59,9 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 }
 
 func EventExternalButtonPressed(buttonFloor int, buttonType int) {
-	fmt.Printf("Event external button (floor %d %s) pressed in state %s\n",
+	fmt.Printf("\n\nEvent external button (floor %d %s) pressed in state %s\n",
 		buttonFloor, buttonName(buttonType), stateName(state))
+	queue.PrintQueues()
 	switch state {
 	case idle, doorOpen, moving:
 		// send order on network
@@ -68,10 +70,12 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 	default:
 		//
 	}
+	syncLights()
 }
 
 func EventFloorReached(newFloor int) {
-	fmt.Printf("Event floor %d reached in state %s\n", newFloor, stateName(state))
+	fmt.Printf("\n\nEvent floor %d reached in state %s\n", newFloor, stateName(state))
+	queue.PrintQueues()
 	floor = newFloor
 	hw.SetFloorLamp(floor)
 	switch state {
@@ -80,7 +84,6 @@ func EventFloorReached(newFloor int) {
 			hw.SetMotorDirection(defs.DirnStop)
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
-			// send completed order-message:
 			go queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
 			state = doorOpen
@@ -94,7 +97,8 @@ func EventFloorReached(newFloor int) {
 }
 
 func EventDoorTimeout() {
-	fmt.Printf("Event door timeout in state %s\n", stateName(state))
+	fmt.Printf("\n\nEvent door timeout in state %s\n", stateName(state))
+	queue.PrintQueues()
 	switch state {
 	case doorOpen:
 		direction = queue.ChooseDirection(floor, direction)

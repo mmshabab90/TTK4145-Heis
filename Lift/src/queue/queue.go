@@ -3,7 +3,10 @@ package queue
 import (
 	"../defs"
 	"log"
+	"fmt"
 )
+
+var _ = fmt.Printf
 
 type sharedOrder struct {
 	isOrderActive    bool
@@ -45,7 +48,7 @@ func RemoveInternalOrder(floor int, button int) {
 // current floor.
 func ChooseDirection(currFloor int, currDir int) int {
 	if !isAnyOrders() {
-		log.Println("isAnyOrders is false!")
+		log.Println("ChooseDirection(): no orders!")
 		return defs.DirnStop
 	}
 	switch currDir {
@@ -184,10 +187,15 @@ func isAnyOrders() bool {
 func updateLocalQueue() {
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
-			if b != defs.ButtonCommand &&
+			if sharedQueue[f][b].isOrderActive {
+				fmt.Printf("updateLocalQueue(): laddr = %s, addr in que = %s\n",
+					defs.Laddr.String(), sharedQueue[f][b].assignedLiftAddr)
+				if b != defs.ButtonCommand &&
 				sharedQueue[f][b].isOrderActive &&
-				sharedQueue[f][b].assignedLiftAddr == defs.Laddr.String() { //Laddr gets changed in UdpInit, i think this is fine
-				localQueue[f][b] = true
+				sharedQueue[f][b].assignedLiftAddr == defs.Laddr.String() {
+						//Laddr gets changed in UdpInit, i think this is fine
+						localQueue[f][b] = true
+				}
 			}
 		}
 	}
@@ -195,13 +203,14 @@ func updateLocalQueue() {
 
 // RemoveSharedOrder removes the giver order from the shared queue. This is
 // done when an order is completed.
-func RemoveSharedOrder(floor int, button int) {
+func RemoveSharedOrder(floor int, button int) { // Rename to RemoveOrder()!
 	if button == defs.ButtonCommand {
 		// error
 		return
 	}
 
 	sharedQueue[floor][button] = blankOrder
+	updateLocalQueue()
 }
 
 func resetLocalQueue() {
@@ -220,9 +229,9 @@ func resetSharedQueue() {
 	}
 }
 
-func printQueues() {
-	fmt.Println("Local:    Shared:")
-	for f := NumFloors; f > 0; f-- {
+func PrintQueues() {
+	fmt.Println("Local   Shared")
+	for f := defs.NumFloors-1; f >= 0; f-- {
 		if localQueue[f][defs.ButtonCallUp] {
 			fmt.Printf("↑")
 		} else {
@@ -233,27 +242,28 @@ func printQueues() {
 		} else {
 			fmt.Printf(" ")
 		}
-		if localQueue[f][defs.ButtonCallCommand] {
-			fmt.Printf("×      ")
+		if localQueue[f][defs.ButtonCommand] {
+			fmt.Printf("o   %d  ", f)
 		} else {
-			fmt.Printf("       ")
+			fmt.Printf("    %d  ", f)
 		}
 
-		if sharedQueue[f][defs.ButtonCallUp] {
+		if sharedQueue[f][defs.ButtonCallUp].isOrderActive {
 			fmt.Printf("↑")
 		} else {
 			fmt.Printf(" ")
 		}
-		if sharedQueue[f][defs.ButtonCallDown] {
+		if sharedQueue[f][defs.ButtonCallDown].isOrderActive {
 			fmt.Printf("↓")
 		} else {
 			fmt.Printf(" ")
 		}
-		if sharedQueue[f][defs.ButtonCallCommand] {
-			fmt.Printf("×")
+		if sharedQueue[f][defs.ButtonCommand].isOrderActive {
+			fmt.Printf("o")
 		} else {
 			fmt.Printf(" ")
 		}
+		fmt.Println()
 	}
 }
 
