@@ -146,7 +146,12 @@ func handleMessage(message defs.Message) {
 		}
 	case defs.NewOrder:
 		fmt.Println("case: NewOrder in handleMessage")
-		cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.Floor(), fsm.Direction(), hw.Floor())
+
+		queue.AddInternalOrder(message.Floor, message.Button)
+		cost, err := cost.CalculateCost(message.Floor, message.Button,
+			fsm.Floor(), fsm.Direction(), hw.Floor())
+		queue.RemoveInternalOrder(message.Floor, message.Button)
+
 		if err != nil {
 			log.Println(err)
 		}
@@ -243,5 +248,3 @@ func evaluateLists(que map[order][]reply) {
 		}
 	}
 }
-
-

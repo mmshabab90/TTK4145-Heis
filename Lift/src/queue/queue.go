@@ -32,6 +32,15 @@ func AddInternalOrder(floor int, button int) {
 	localQueue[floor][button] = true
 }
 
+// RemoveInternalOrder adds internal orders to the local queue.
+func RemovoInternalOrder(floor int, button int) {
+	if button != defs.ButtonCommand {
+		// error!
+		return
+	}
+	localQueue[floor][button] = false
+}
+
 // ChooseDirection returns the direction the lift should continue after the
 // current floor.
 func ChooseDirection(currFloor int, currDir int) int {
