@@ -9,6 +9,23 @@ import (
 	"time"
 )
 
+type stateType int
+
+const (
+	idle stateType = iota
+	moving
+	doorOpen
+)
+
+var state stateType
+var floor int
+var direction int
+var departDirection int
+
+var doorReset = make(chan bool)
+
+const doorOpenTime = 1 * time.Second
+
 // --------------- PUBLIC: ---------------
 
 var DoorTimeoutChan = make(chan bool)
@@ -73,6 +90,28 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 	syncLights()
 }
 
+func EventExternalOrderGivenToMe() {
+	if !queue.IsAnyOrders() {
+		// strange
+	}
+	switch state {
+	case idle:
+		switch direction := queue.ChooseDirection(floor, direction); direction {
+		case defs.DirnStop:
+			hw.SetDoorOpenLamp(true)
+			queue.RemoveOrdersAt(floor)
+			doorReset <- true
+			state = doorOpen
+		case defs.DirnUp, defs.DirnDown:
+			hw.SetMotorDirection(direction)
+			departDirection = direction
+			state = moving
+		}
+	default:
+		fmt.Println("EventExternalOrderGivenToMe(): Not in idle, will ignore.")
+	}
+}
+
 func EventFloorReached(newFloor int) {
 	fmt.Printf("\n\nEvent floor %d reached in state %s\n", newFloor, stateName(state))
 	queue.PrintQueues()
@@ -123,25 +162,6 @@ func Direction() int {
 func Floor() int {
 	return floor
 }
-
-// --------------- PRIVATE: ---------------
-
-type stateType int
-
-const (
-	idle stateType = iota
-	moving
-	doorOpen
-)
-
-var state stateType
-var floor int
-var direction int
-var departDirection int
-
-var doorReset = make(chan bool)
-
-const doorOpenTime = 3 * time.Second
 
 func startTimer() {
 	timer := time.NewTimer(0)

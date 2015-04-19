@@ -166,7 +166,7 @@ func handleMessage(message defs.Message) {
 	case defs.CompleteOrder:
 		fmt.Println("handleMessage(): CompleteOrder message")
 		// remove from queues
-		queue.RemoveSharedOrder(message.Floor, message.Button)
+		queue.RemoveSharedOrdersAt(message.Floor)
 		
 		// prob more to do here
 	case defs.Cost:
@@ -249,6 +249,13 @@ func evaluateLists(que map[order][]reply) {
 			}
 			// Assign order key to lift
 			queue.AddSharedOrder(key.floor, key.button, lowAddr)
+			queue.PrintQueues()
+			if lowAddr == defs.Laddr.String() {
+				fsm.EventExternalOrderGivenToMe()
+			}
+			// Empty list
+			delete(que, key)
+			// SUPERIMPORTANT: NOTIFY ABOUT EVENT NEW ORDER
 		}
 	}
 }

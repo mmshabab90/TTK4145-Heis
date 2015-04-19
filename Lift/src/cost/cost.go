@@ -3,10 +3,12 @@ package cost
 import (
 	"../defs"
 	"../queue"
-	//"errors"
+	"errors"
 	"fmt"
 	"log"
 )
+
+var _ = errors.New
 
 // CalculateCost calculates how much effort it takes this lift to carry out
 // the given order. Each sheduled stop on the way there and each travel
@@ -20,11 +22,14 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 	fmt.Printf("Cost floor sequence: ")
 
 	cost := 0
-	
+	var err error
 	if currFloor == -1 {
 		fmt.Printf("%d >>> ", currFloor)
 		cost += 1
-		fsmFloor = incrementFloor(fsmFloor, fsmDir)
+		fsmFloor, err = incrementFloor(fsmFloor, fsmDir)
+		if err != nil {
+			defer log.Println(err)
+		}
 	}
 
 	fmt.Printf("%d", fsmFloor)
@@ -34,7 +39,10 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 			fmt.Printf("(S)")
 		}
 		fsmDir = queue.ChooseDirection(fsmFloor, fsmDir)
-		fsmFloor = incrementFloor(fsmFloor, fsmDir)
+		fsmFloor, err = incrementFloor(fsmFloor, fsmDir)
+		if err != nil {
+			defer log.Println(err)
+		}
 		cost += 2
 		fmt.Printf(" >>> %d", fsmFloor)
 	}
@@ -43,16 +51,16 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 	return cost, nil
 }
 
-func incrementFloor(floor int, direction int) int {
+func incrementFloor(floor int, direction int) (int, error) {
 	switch direction {
 	case defs.DirnDown:
 		floor--
 	case defs.DirnUp:
 		floor++
 	case defs.DirnStop:
-		log.Println("Error(ish): Direction stop, floor not incremented.")
+		return floor, errors.New("Error(ish): Direction stop, floor not incremented.")
 	default:
-		log.Println("Error: Invalid direction, floor not incremented.")
+		return floor, errors.New("Error: Invalid direction, floor not incremented.")
 	}
-	return floor
+	return floor, nil
 }

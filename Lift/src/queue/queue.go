@@ -47,7 +47,7 @@ func RemoveInternalOrder(floor int, button int) {
 // ChooseDirection returns the direction the lift should continue after the
 // current floor.
 func ChooseDirection(currFloor int, currDir int) int {
-	if !isAnyOrders() {
+	if !IsAnyOrders() {
 		log.Println("ChooseDirection(): no orders!")
 		return defs.DirnStop
 	}
@@ -173,7 +173,7 @@ func isOrdersBelow(floor int) bool {
 	return false
 }
 
-func isAnyOrders() bool {
+func IsAnyOrders() bool {
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
 			if localQueue[f][b] {
@@ -188,8 +188,8 @@ func updateLocalQueue() {
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
 			if sharedQueue[f][b].isOrderActive {
-				fmt.Printf("updateLocalQueue(): laddr = %s, addr in que = %s\n",
-					defs.Laddr.String(), sharedQueue[f][b].assignedLiftAddr)
+				//fmt.Printf("updateLocalQueue(): laddr = %s, addr in que = %s\n",
+				//	defs.Laddr.String(), sharedQueue[f][b].assignedLiftAddr)
 				if b != defs.ButtonCommand &&
 				sharedQueue[f][b].isOrderActive &&
 				sharedQueue[f][b].assignedLiftAddr == defs.Laddr.String() {
@@ -203,13 +203,10 @@ func updateLocalQueue() {
 
 // RemoveSharedOrder removes the giver order from the shared queue. This is
 // done when an order is completed.
-func RemoveSharedOrder(floor int, button int) { // Rename to RemoveOrder()!
-	if button == defs.ButtonCommand {
-		// error
-		return
+func RemoveSharedOrdersAt(floor int) { // Rename to RemoveOrder()!
+	for b := 0; b < defs.NumButtons; b++ {
+		sharedQueue[floor][b] = blankOrder
 	}
-
-	sharedQueue[floor][button] = blankOrder
 	updateLocalQueue()
 }
 
