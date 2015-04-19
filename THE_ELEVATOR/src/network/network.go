@@ -26,8 +26,8 @@ func Init() {
 		fmt.Print("err = %s \n", err)
 	}
 
-	//go aliveSpammer()
-	//go pollMessages()
+	go aliveSpammer()
+	go pollMessages()
 }
 
 func pollMessages() {
@@ -56,10 +56,10 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 	var message defs.Message
 	fmt.Println("in parsemessage")
 	PrintMessage(message)
-	err := json.Unmarshal(udpMessage.data, &message)
+	err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message)
 	PrintMessage(message)
 	if err != nil {
-		// handle
+		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
 	message.Addr = udpMessage.raddr
 	return message
@@ -79,22 +79,22 @@ func aliveSpammer() {
 }
 
 func PrintMessage(msg defs.Message) {
-	fmt.Printf("\n----------Message start----------\n")
+	fmt.Printf("\n-----Message start-----\n")
 	switch msg.Kind {
 	case defs.Alive:
-		fmt.Println("I'm alive\n")
+		fmt.Println("I'm alive")
 	case defs.NewOrder:
 		fmt.Println("New order:")
 		fmt.Printf("Floor: %d\n", msg.Floor)
-		fmt.Printf("Button: %d\n\n", msg.Button)
+		fmt.Printf("Button: %d\n", msg.Button)
 	case defs.CompleteOrder:
 		fmt.Println("Complete order:")
 		fmt.Printf("Floor: %d\n", msg.Floor)
-		fmt.Printf("Button: %d\n\n", msg.Button)
+		fmt.Printf("Button: %d\n", msg.Button)
 	case defs.Cost:
-		fmt.Printf("Cost: %d\n\n", msg.Cost)
+		fmt.Printf("Cost: %d\n", msg.Cost)
 	default:
 		fmt.Println("Invalid message type!\n")
 	}
-	fmt.Println("----------Message   end----------")
+	fmt.Println("-----Message end-------\n")
 }
