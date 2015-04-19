@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
 	"time"
 )
 
@@ -48,7 +47,7 @@ func main() {
 	fsm.Init()
 	network.Init()
 
-	go run()
+	run()
 }
 
 func run() {
@@ -103,10 +102,10 @@ func pollFloors() <-chan int {
 	c := make(chan int)
 
 	go func() {
-		oldFloor := hw.GetFloor()
+		oldFloor := hw.Floor()
 
 		for {
-			newFloor := hw.GetFloor()
+			newFloor := hw.Floor()
 			if newFloor != oldFloor && newFloor != -1 {
 				c <- newFloor
 			}
@@ -135,7 +134,7 @@ func handleMessage(message defs.Message) {
 			go connectionTimer(&newConnection)
 		}
 	case defs.NewOrder:
-		cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.GetFloor(), fsm.GetDirection(), hw.GetFloor())
+		cost, err := cost.CalculateCost(message.Floor, message.Button, fsm.Floor(), fsm.Direction(), hw.Floor())
 		if err != nil {
 			log.Println(err)
 		}
@@ -209,26 +208,24 @@ func split(m defs.Message) (order, reply) {
 }
 
 // This is very cryptic and ungood.
-func evaluateLists(queue map[order][]reply) {
+func evaluateLists(que map[order][]reply) {
 	// Loop thru all lists
-	for key, replyList := range queue {
+	for key, replyList := range que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) {
 			var (
-				lowKey  int
-				lowCost = math.Inf(1)
-				lowAddr
+				lowCost = 50
+				lowAddr string
 			)
 			// Loop thru costs in each complete list
-			for i, reply := range replyList {
+			for _, reply := range replyList {
 				if reply.cost < lowCost {
 					lowCost = reply.cost
-					lowKey = i
 					lowAddr = reply.lift
 				}
 			}
 			// Assign order key to lift
-			queue.AddSharedOrder(lowKey.floor, lowKey.button, lowAddr)
+			queue.AddSharedOrder(key.floor, key.button, lowAddr)
 		}
 	}
 }
