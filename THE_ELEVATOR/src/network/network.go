@@ -26,8 +26,8 @@ func Init() {
 		fmt.Print("err = %s \n", err)
 	}
 
-	//go aliveSpammer()
-	//go pollMessages()
+	go aliveSpammer()
+	go pollMessages()
 }
 
 func pollMessages() {

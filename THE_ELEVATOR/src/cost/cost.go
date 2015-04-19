@@ -3,7 +3,7 @@ package cost
 import (
 	"../defs"
 	"../queue"
-	"errors"
+	//"errors"
 	"fmt"
 	"log"
 )
