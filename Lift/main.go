@@ -14,7 +14,7 @@ import (
 )
 
 const debugPrint = false
-const resetTime = 10 * time.Second
+const resetTime = 1 * time.Second
 
 var _ = log.Println
 var _ = fmt.Println

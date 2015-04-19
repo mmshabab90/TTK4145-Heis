@@ -70,7 +70,7 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	const spamInterval = 5000 * time.Millisecond
+	const spamInterval = 100 * time.Millisecond
 	message := defs.Message{Kind: defs.Alive}
 	for {
 		Send(message)
