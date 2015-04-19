@@ -9,7 +9,7 @@ const NumFloors = 4
 const (
 	ButtonCallUp int = iota
 	ButtonCallDown
-	ButtonCommand
+	ButtonCommand // Rename to ButtonInternal or something
 )
 
 const (
