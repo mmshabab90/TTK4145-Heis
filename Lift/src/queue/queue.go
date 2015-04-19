@@ -244,9 +244,9 @@ func PrintQueues() {
 			fmt.Printf(" ")
 		}
 		if localQueue[f][defs.ButtonCallDown] {
-			fmt.Printf("↓   %d  ", f)
+			fmt.Printf("↓   %d  ", f+1)
 		} else {
-			fmt.Printf("    %d  ", f)
+			fmt.Printf("    %d  ", f+1)
 		}
 		if sharedQueue[f][defs.ButtonCallUp].isOrderActive {
 			fmt.Printf("↑")
