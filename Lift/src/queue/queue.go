@@ -229,34 +229,38 @@ func resetSharedQueue() {
 func PrintQueues() {
 	fmt.Println("Local   Shared")
 	for f := defs.NumFloors-1; f >= 0; f-- {
+		lifts := ""
+
 		if localQueue[f][defs.ButtonCallUp] {
 			fmt.Printf("↑")
 		} else {
 			fmt.Printf(" ")
 		}
-		if localQueue[f][defs.ButtonCallDown] {
-			fmt.Printf("↓")
+		if localQueue[f][defs.ButtonCommand] {
+			fmt.Printf("○")
 		} else {
 			fmt.Printf(" ")
 		}
-		if localQueue[f][defs.ButtonCommand] {
-			fmt.Printf("o   %d  ", f)
+		if localQueue[f][defs.ButtonCallDown] {
+			fmt.Printf("↓   %d  ", f)
 		} else {
 			fmt.Printf("    %d  ", f)
 		}
-
 		if sharedQueue[f][defs.ButtonCallUp].isOrderActive {
 			fmt.Printf("↑")
+			lifts += "(↑" + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCallUp].assignedLiftAddr) + ")"
+		} else {
+			fmt.Printf(" ")
+		}
+		if sharedQueue[f][defs.ButtonCommand].isOrderActive {
+			fmt.Printf("○")
+			lifts += "(○" + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCommand].assignedLiftAddr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
 		if sharedQueue[f][defs.ButtonCallDown].isOrderActive {
 			fmt.Printf("↓")
-		} else {
-			fmt.Printf(" ")
-		}
-		if sharedQueue[f][defs.ButtonCommand].isOrderActive {
-			fmt.Printf("o")
+			lifts += "(↓" + defs.LastPartOfIp(sharedQueue[f][defs.ButtonCallDown].assignedLiftAddr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}

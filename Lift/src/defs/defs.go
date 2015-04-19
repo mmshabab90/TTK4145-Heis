@@ -37,3 +37,7 @@ type Message struct {
 var MessageChan = make(chan Message)
 
 var Laddr *net.UDPAddr //Local address
+
+func LastPartOfIp(ip string) string {
+	return strings.Split(strings.Split(ip, ".")[3], ":")[0]
+}
