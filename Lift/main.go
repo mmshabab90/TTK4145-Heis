@@ -196,34 +196,29 @@ func liftAssigner() {
 	// lifts make the same choice every time
 	go func() {
 		assignmentQueue := make(map[order][]reply)
-		costTimer := time.NewTimer(time.Second)
-		costTimerOut := false
+		
 		for {
-			select {
-			case message := <-costChan:
-				newOrder, newReply := split(message)
-				// Check if order in queue
-				if value, exist := assignmentQueue[newOrder]; exist {
-					// Check if lift in list of that order
-					found := false
-					for _, e := range value {
-						if e == newReply {
-							found = true
-						}
+			message := <-costChan
+			newOrder, newReply := split(message)
+			// Check if order in queue
+			if value, exist := assignmentQueue[newOrder]; exist {
+				// Check if lift in list of that order
+				found := false
+				for _, e := range value {
+					if e == newReply {
+						found = true
 					}
-					// Add it if not found
-					if !found {
-						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-					}
-				} else {
-					// If order not in queue at all, init order list with it
-					assignmentQueue[newOrder] = []reply{newReply}
 				}
-			case <- costTimer.C:
-				costTimerOut = true
+				// Add it if not found
+				if !found {
+					assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
+				}
+			} else {
+				// If order not in queue at all, init order list with it
+				assignmentQueue[newOrder] = []reply{newReply}
 			}
-			evaluateLists(assignmentQueue, costTimerOut)
-			costTimer.Reset(time.Second)
+			
+			evaluateLists(assignmentQueue)
 		}
 	}()
 }
@@ -237,11 +232,13 @@ func split(m defs.Message) (order, reply) {
 // the best candidate for all such orders. The best candidate is added to the
 // shared queue.
 // This is very cryptic and ungood.
-func evaluateLists(que map[order][]reply, costTimerOut bool) {
+func evaluateLists(que map[order][]reply) {
 	// Loop thru all lists
+	fmt.Printf("Lists: ")
+	fmt.Println(que)
 	for key, replyList := range que {
 		// Check if the list is complete
-		if len(replyList) == len(onlineLifts) || costTimerOut {
+		if len(replyList) == len(onlineLifts){
 			fmt.Printf("Laddr = %v\n", defs.Laddr)
 			var (
 				lowCost = 1000 // Set to maximum integer or something
