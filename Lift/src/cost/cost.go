@@ -15,6 +15,7 @@ var _ = errors.New
 // between adjacent floors will add cost 2. Cost 1 is added if the lift
 // starts between floors.
 func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (int, error) {
+	// Bug! Lift between floor 2 and 1 going down: Gives cost 1 to floor 2, should be 5.
 	if (targetButton != defs.ButtonCallUp) && (targetButton != defs.ButtonCallDown) {
 		return 0, fmt.Errorf("CalculateCost() called with invalid order: %d\n", targetButton)
 	}

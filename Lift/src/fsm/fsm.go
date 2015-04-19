@@ -156,7 +156,7 @@ func EventDoorTimeout() {
 }
 
 func Direction() int {
-	return direction
+	return departDirection
 }
 
 func Floor() int {
