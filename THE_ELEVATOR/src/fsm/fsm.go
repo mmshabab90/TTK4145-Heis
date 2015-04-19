@@ -167,11 +167,13 @@ func stateName(state stateType) string {
 
 func buttonName(button int) string {
 	switch button {
-	case ButtonCallUp:
+	case defs.ButtonCallUp:
 		return "up"
-	case ButtonCallDown:
+	case defs.ButtonCallDown:
 		return "down"
-	case ButtonCommand:
+	case defs.ButtonCommand:
 		return "command"
+	default:
+		return "error: bad button"
 	}
 }
