@@ -20,6 +20,9 @@ func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (
 		return 0, fmt.Errorf("CalculateCost() called with invalid order: %d\n", targetButton)
 	}
 
+	fmt.Printf("CalculateCost called with parameters %d, %d, %d, %d, %d\n",
+		targetFloor, targetButton, fsmFloor, fsmDir, currFloor)
+
 	fmt.Printf("Cost floor sequence: ")
 
 	cost := 0

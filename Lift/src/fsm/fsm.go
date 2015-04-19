@@ -156,6 +156,10 @@ func EventDoorTimeout() {
 }
 
 func Direction() int {
+	return direction
+}
+
+func DepartDirection() int {
 	return departDirection
 }
 
