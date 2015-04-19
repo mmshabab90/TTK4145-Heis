@@ -23,16 +23,13 @@ func Init() {
 	resetSharedQueue()
 }
 
-// NewOrder adds internal orders to localQueue, and sends external orders out
-// on the network to be considered by all live lifts.
-func NewOrder(floor int, button int) {
-	if button == defs.ButtonCommand {
-		localQueue[floor][button] = true
-	} else {
-		message := &defs.Message{Kind: defs.NewOrder, Floor: floor, Button: button}
-		defs.MessageChan <- *message
-		//network.Send(message)
+// AddInternalOrder adds internal orders to the local queue.
+func AddInternalOrder(floor int, button int) {
+	if button != defs.ButtonCommand {
+		// error!
+		return
 	}
+	localQueue[floor][button] = true
 }
 
 // ChooseDirection returns the direction the lift should continue after the

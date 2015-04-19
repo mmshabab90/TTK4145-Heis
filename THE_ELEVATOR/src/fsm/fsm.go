@@ -26,34 +26,48 @@ func Init() {
 	syncLights()
 }
 
-func EventButtonPressed(buttonFloor int, buttonType int) {
-	fmt.Printf("Event button (floor %d %s) pressed in state %s\n", buttonFloor, buttonName(buttonType), stateName(state))
+func EventInternalButtonPressed(buttonFloor int, buttonType int) {
+	fmt.Printf("Event internal button (floor %d %s) pressed in state %s\n",
+		buttonFloor, buttonName(buttonType), stateName(state))
 	switch state {
 	case idle:
-		queue.NewOrder(buttonFloor, buttonType)
-		direction = queue.ChooseDirection(floor, direction)
-		if direction == defs.DirnStop {
+		queue.AddInternalOrder(buttonFloor, buttonType)
+		switch direction := queue.ChooseDirection(floor, direction); direction {
+		case defs.DirnStop:
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			doorReset <- true
 			state = doorOpen
-		} else {
+		case defs.DirnUp, defs.DirnDown:
 			hw.SetMotorDirection(direction)
 			departDirection = direction
 			state = moving
-		}
+		}		
 	case doorOpen:
 		if floor == buttonFloor {
 			doorReset <- true
 		} else {
-			queue.NewOrder(buttonFloor, buttonType)
+			queue.AddInternalOrder(buttonFloor, buttonType)
 		}
 	case moving:
-		queue.NewOrder(buttonFloor, buttonType)
+		queue.AddInternalOrder(buttonFloor, buttonType)
 	default:
 		log.Fatalf("State %d is invalid!\n", state)
 	}
 	syncLights()
+}
+
+func EventExternalButtonPressed(buttonFloor int, buttonType int) {
+	fmt.Printf("Event external button (floor %d %s) pressed in state %s\n",
+		buttonFloor, buttonName(buttonType), stateName(state))
+	switch state {
+	case idle, doorOpen, moving:
+		// send order on network
+		message := &defs.Message{Kind: defs.NewOrder, Floor: floor, Button: button}
+		defs.MessageChan <- *message
+	default:
+		//
+	}
 }
 
 func EventFloorReached(newFloor int) {
