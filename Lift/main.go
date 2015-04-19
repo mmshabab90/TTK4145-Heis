@@ -263,7 +263,8 @@ func evaluateLists(que map[order][]reply) {
 					}
 				}
 			}
-			fmt.Printf("lowAddr = %s\n", lowAddr)
+			// Print winner:
+			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], key.floor, key.button)
 			// Assign order key to lift
 			queue.AddSharedOrder(key.floor, key.button, lowAddr)
 			queue.PrintQueues()
