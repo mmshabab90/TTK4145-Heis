@@ -73,7 +73,7 @@ func aliveSpammer() {
 	const spamInterval = 100 * time.Millisecond
 	message := defs.Message{Kind: defs.Alive}
 	for {
-		Send(message)
+		defs.MessageChan -< message
 		time.Sleep(spamInterval)
 	}
 }
