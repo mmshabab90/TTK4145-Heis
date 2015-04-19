@@ -147,7 +147,7 @@ func handleMessage(message defs.Message) {
 			go connectionTimer(&newConnection)
 		}
 	case defs.NewOrder:
-		fmt.Println("handleMessage(): NewOrder message")
+		fmt.Printf("handleMessage(): NewOrder message: f=%d b=%d (with cost %d) from lift %s\n", message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
 
 		queue.AddInternalOrder(message.Floor, message.Button)
 		cost, err := cost.CalculateCost(message.Floor, message.Button,
