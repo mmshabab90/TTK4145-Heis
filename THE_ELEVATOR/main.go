@@ -155,7 +155,7 @@ func handleMessage(message defs.Message) {
 			Floor:  message.Floor,
 			Button: message.Button,
 			Cost:   cost}
-		network.Send(costMessage)
+		network.Send(costMessage) // Rather send on message channel to network module
 	case defs.CompleteOrder:
 		fmt.Println("case: CompleteOrder in handleMessage")
 		// remove from queues

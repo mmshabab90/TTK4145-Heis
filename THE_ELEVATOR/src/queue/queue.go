@@ -96,6 +96,8 @@ func RemoveOrdersAt(floor int) {
 	}
 }
 
+// IsOrder returns whether there in an order with the given floor and button
+// in the local queue.
 func IsOrder(floor int, button int) bool {
 	return localQueue[floor][button]
 }
@@ -115,7 +117,6 @@ func ReassignOrders(deadAddr string) { // better name plz
 					Kind:   defs.NewOrder,
 					Floor:  f,
 					Button: b}
-				//network.Send(reassignMessage)
 				defs.MessageChan <- *reassignMessage
 			}
 		}
@@ -126,7 +127,6 @@ func ReassignOrders(deadAddr string) { // better name plz
 // taken care of orders at the given floor.
 func SendOrderCompleteMessage(floor int) {
 	message := &defs.Message{Kind: defs.CompleteOrder, Floor: floor}
-	//network.Send(message)
 	defs.MessageChan <- *message
 }
 

@@ -12,7 +12,7 @@ const (
 	ButtonCommand // Rename to ButtonInternal or something
 )
 
-const (
+const ( // Rename to DirDown etc.
 	DirnDown int = iota - 1
 	DirnStop
 	DirnUp
@@ -25,6 +25,7 @@ const (
 	Cost
 )
 
+// Generic network message. No other messages are ever sent on the network.
 type Message struct {
 	Kind   int
 	Floor  int
