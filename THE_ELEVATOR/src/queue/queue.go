@@ -178,7 +178,7 @@ func updateLocalQueue() {
 		for b := 0; b < defs.NumButtons; b++ {
 			if b != defs.ButtonCommand &&
 				sharedQueue[f][b].isOrderActive &&
-				sharedQueue[f][b].assignedLiftAddr == defs.Laddr.String() {
+				sharedQueue[f][b].assignedLiftAddr == defs.Laddr.String() { //Laddr gets changed in UdpInit, i think this is fine
 				localQueue[f][b] = true
 			}
 		}

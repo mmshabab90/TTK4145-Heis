@@ -168,7 +168,7 @@ func handleDeadLift(deadAddr string) {
 }
 
 func connectionTimer(connection *network.UdpConnection) {
-	for {
+	for { //don't think this needs to be a for-loop
 		<-connection.Timer.C
 		deadChan <- *connection
 	}
@@ -183,30 +183,26 @@ func liftAssigner() {
 	go func() {
 		assignmentQueue := make(map[order][]reply)
 		for {
-			select {
-			case message := <-costChan:
-				newOrder, newReply := split(message)
-				// Check if order in queue
-				if value, exist := assignmentQueue[newOrder]; exist {
-					// Check if lift in list of that order
-					found := false
-					for _, e := range value {
-						if e == newReply {
-							found = true
-						}
+			message := <-costChan
+			newOrder, newReply := split(message)
+			// Check if order in queue
+			if value, exist := assignmentQueue[newOrder]; exist {
+				// Check if lift in list of that order
+				found := false
+				for _, e := range value {
+					if e == newReply {
+						found = true
 					}
-					// Add it if not found
-					if !found {
-						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-					}
-				} else {
-					// If order not in queue at all, init order list with it
-					assignmentQueue[newOrder] = []reply{newReply}
 				}
-				evaluateLists(assignmentQueue)
-			default:
-				// worry
+				// Add it if not found
+				if !found {
+					assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
+				}
+			} else {
+				// If order not in queue at all, init order list with it
+				assignmentQueue[newOrder] = []reply{newReply}
 			}
+			evaluateLists(assignmentQueue)
 		}
 	}()
 }
