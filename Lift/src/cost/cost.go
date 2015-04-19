@@ -132,6 +132,8 @@ func increment(floor int, dir int) int {
 			floor--
 		case defs.DirnUp:
 			floor++
+		case defs.DirnStop:
+			// This is okay.
 		default:
 			fmt.Println("increment(): error: invalid direction, not incremented")
 	}
