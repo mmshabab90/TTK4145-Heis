@@ -147,7 +147,8 @@ func handleMessage(message defs.Message) {
 			go connectionTimer(&newConnection)
 		}
 	case defs.NewOrder:
-		fmt.Printf("handleMessage(): NewOrder message: f=%d b=%d (with cost %d) from lift %s\n", message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
+		fmt.Printf("handleMessage(): NewOrder message: f=%d b=%d (with cost %d) from lift %s\n",
+			message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
 
 		queue.AddInternalOrder(message.Floor, message.Button)
 		cost, err := cost.CalculateCost(message.Floor, message.Button,
@@ -162,7 +163,8 @@ func handleMessage(message defs.Message) {
 			Floor:  message.Floor,
 			Button: message.Button,
 			Cost:   cost}
-		fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Floor+1, costMessage.Button, costMessage.Cost)
+		fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n",
+			costMessage.Floor+1, costMessage.Button, costMessage.Cost)
 		//network.Send(costMessage) // Rather send on message channel to network module
 		defs.MessageChan <-costMessage
 	case defs.CompleteOrder:
