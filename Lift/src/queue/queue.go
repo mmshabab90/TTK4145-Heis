@@ -25,19 +25,19 @@ func Init() {
 
 // AddInternalOrder adds internal orders to the local queue.
 func AddInternalOrder(floor int, button int) {
-	if button != defs.ButtonCommand {
+	/*if button != defs.ButtonCommand {
 		// error!
 		return
-	}
+	}*/
 	localQueue[floor][button] = true
 }
 
 // RemoveInternalOrder adds internal orders to the local queue.
 func RemoveInternalOrder(floor int, button int) {
-	if button != defs.ButtonCommand {
+	/*if button != defs.ButtonCommand {
 		// error!
 		return
-	}
+	}*/
 	localQueue[floor][button] = false
 }
 
@@ -45,6 +45,7 @@ func RemoveInternalOrder(floor int, button int) {
 // current floor.
 func ChooseDirection(currFloor int, currDir int) int {
 	if !isAnyOrders() {
+		log.Println("isAnyOrders is false!")
 		return defs.DirnStop
 	}
 	switch currDir {

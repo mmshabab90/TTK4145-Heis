@@ -47,6 +47,7 @@ func main() {
 	fsm.Init()
 	network.Init()
 
+	liftAssigner()
 	run()
 }
 
