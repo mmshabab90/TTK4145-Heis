@@ -196,27 +196,34 @@ func liftAssigner() {
 	// lifts make the same choice every time
 	go func() {
 		assignmentQueue := make(map[order][]reply)
+		costTimer := time.NewTimer(time.Second)
+		costTimerOut := false
 		for {
-			message := <-costChan
-			newOrder, newReply := split(message)
-			// Check if order in queue
-			if value, exist := assignmentQueue[newOrder]; exist {
-				// Check if lift in list of that order
-				found := false
-				for _, e := range value {
-					if e == newReply {
-						found = true
+			select {
+			case message := <-costChan:
+				newOrder, newReply := split(message)
+				// Check if order in queue
+				if value, exist := assignmentQueue[newOrder]; exist {
+					// Check if lift in list of that order
+					found := false
+					for _, e := range value {
+						if e == newReply {
+							found = true
+						}
 					}
+					// Add it if not found
+					if !found {
+						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
+					}
+				} else {
+					// If order not in queue at all, init order list with it
+					assignmentQueue[newOrder] = []reply{newReply}
 				}
-				// Add it if not found
-				if !found {
-					assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-				}
-			} else {
-				// If order not in queue at all, init order list with it
-				assignmentQueue[newOrder] = []reply{newReply}
+			case <- costTimer.C:
+				costTimerOut = true
 			}
-			evaluateLists(assignmentQueue)
+			evaluateLists(assignmentQueue, costTimerOut)
+			costTimer.Reset(time.Second)
 		}
 	}()
 }
@@ -230,21 +237,32 @@ func split(m defs.Message) (order, reply) {
 // the best candidate for all such orders. The best candidate is added to the
 // shared queue.
 // This is very cryptic and ungood.
-func evaluateLists(que map[order][]reply) {
+func evaluateLists(que map[order][]reply, costTimerOut bool) {
 	// Loop thru all lists
 	for key, replyList := range que {
 		// Check if the list is complete
-		if len(replyList) == len(onlineLifts) {
-			fmt.Println("evaluateLists(): We have the same number of replies as lifts!")
+		if len(replyList) == len(onlineLifts) || costTimerOut {
 			var (
-				lowCost = 50 //50 = inf
+				lowCost = 1000 // Set to maximum integer or something
 				lowAddr string
 			)
 			// Loop thru costs in each complete list
 			for _, reply := range replyList {
+				// ny kost: reply.cost
+				// gammel kost: lowCost
+				// ny ip: reply.lift
+				// gammel ip: lowAddr
+
+				// hvis ny bedre enn gammel: best = ny
+				// hvis ny og gammel like bra og best: ny = lavest ip
 				if reply.cost < lowCost {
 					lowCost = reply.cost
 					lowAddr = reply.lift
+				} else if reply.cost == lowCost {
+					if reply.lift < lowAddr {
+						lowCost = reply.cost
+						lowAddr = reply.lift
+					}
 				}
 			}
 			// Assign order key to lift
