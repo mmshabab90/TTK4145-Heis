@@ -1,18 +1,14 @@
 Morten Late Night Tales
 =======================
 
-Det egentlige spørsmålet er: Er Morten på jordet?
-
 Datastrukturer
 --------------
 
-Alle heiser har en kopi av en struct (eller noe) som inneholder:
-- Alle ytre bestillinger (totalt 6 mulige bestillinger, kanskje heller en 1x6-liste heller enn en 2x3-matrise?)
-- For hver bestilling: Hvilken heis som er satt til å utføre den
-- Liste over aktive heiser på nettverket
-- Hvor lenge det er siden heisene har gitt lyd fra seg
+Alle heiser har kopier av:
+- Struct med alle eksterne bestillinger i systemet og hvilke heiser hver bestilling er gitt til
+- Liste over aktive heiser på nettverket og hvor lenge det er siden de har gitt lyd fra seg
 
-Denne skal 'alltid' være lagret lokalt i alle levende heiser, og være identisk i alle heiser.
+Denne skal 'alltid' være lagret lokalt i alle levende heiser, og være identisk i alle heiser på et nettverk.
 
 I tillegg skal alle heiser ha en separat, lokal liste over indre bestillinger.
 
