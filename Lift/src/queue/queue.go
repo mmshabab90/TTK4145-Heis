@@ -151,6 +151,16 @@ func AddSharedOrder(floor, button int, addr string) {
 	updateLocalQueue()
 }
 
+func CopyLocalQueue() []bool {
+	var copy [defs.NumFloors][defs.NumButtons]bool
+	for f := 0; f < defs.NumFloors; f++ {
+		for b := 0; b < defs.NumButtons; b++ {
+			copy[f][b] = localQueue[f][b]
+		}
+	}
+	return copy
+}
+
 // --------------- PRIVATE: ---------------
 
 func isOrdersAbove(floor int) bool {

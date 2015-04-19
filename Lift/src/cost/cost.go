@@ -2,83 +2,92 @@ package cost
 
 import (
 	"../defs"
-	"../queue"
-	"errors"
-	"fmt"
-	"log"
 )
-
-var _ = errors.New
 
 // CalculateCost calculates how much effort it takes this lift to carry out
 // the given order. Each sheduled stop on the way there and each travel
 // between adjacent floors will add cost 2. Cost 1 is added if the lift
 // starts between floors.
-func CalculateCost(targetFloor, targetButton, fsmFloor, fsmDir, currFloor int) (int, error) {
-	// Bug! Lift between floor 2 and 1 going down: Gives cost 1 to floor 2, should be 5.
-	if (targetButton != defs.ButtonCallUp) && (targetButton != defs.ButtonCallDown) {
-		return 0, fmt.Errorf("CalculateCost() called with invalid order: %d\n", targetButton)
-	}
-
-	fmt.Printf("CalculateCost called with parameters %d, %d, %d, %d, %d\n",
-		targetFloor, targetButton, fsmFloor, fsmDir, currFloor)
-
-	fmt.Printf("Cost floor sequence: ")
-
+// Parameters:
+// targetFloor and targetButton are self-explanatory.
+// prevFloor is the most recent floor the lift has reached (same as currFloor
+// if lift is at a floor).
+// currFloor is the true current floor, as reported by sensors (-1 if between
+// floors)
+// currDir is the true current direction
+func CalculateCost(queue []bool, targetFloor, targetDir, prevFloor, currFloor, currDir int) int {
+	addToQueue(queue, targetFloor, targetDir) // necessary to add target to queue? maybe.
+	floor := prevFloor
 	cost := 0
-	var err error
 
-	// Between floors
 	if currFloor == -1 {
-		fmt.Printf("%d >>> ", currFloor)
-		cost += 1
-		fsmFloor, err = incrementFloor(fsmFloor, fsmDir)
-		if err != nil {
-			defer log.Println(err)
-		}
-	} else if (fsmDir != defs.DirnStop) && (fsmFloor != targetFloor) {
-		// Not between floors but moving (i.e. departing or arriving)
+		cost++
+		floor = increment(floor, currDir)
+	} else if currDir != defs.DirnStop {
 		cost += 2
-		fsmFloor, err = incrementFloor(fsmFloor, fsmDir)
-		if err != nil {
-			log.Println(err)
-		}
+		floor = increment(floor, currDir)
 	}
 
-	fmt.Printf("%d", fsmFloor)
-	for !(fsmFloor == targetFloor && queue.ShouldStop(fsmFloor, fsmDir)) {
-		if queue.ShouldStop(fsmFloor, fsmDir) {
+	for !( (floor == targetFloor) && ( (dir == targetDir) || noOrdersAhead(queue, floor, dir) ) ) {
+		dir := currDir
+		if (floor == 0) || (floor >= defs.NumFloors) {
+			dir *= -1
+		}
+		if noOrdersAhead(queue, floor, dir) {
+			dir *= -1
+		}
+		if shouldStop(queue, floor, dir) {
 			cost += 2
-			fmt.Printf("(S)")
 		}
-		fsmDir = queue.ChooseDirection(fsmFloor, fsmDir)
-		fsmFloor, err = incrementFloor(fsmFloor, fsmDir)
-		if err != nil {
-			defer log.Println(err)
-		}
-		cost += 2
-		fmt.Printf(" >>> %d", fsmFloor)
+		floor = increment(floor, dir)
 	}
-	fmt.Printf(" = cost %d\n", cost)
-
-	return cost, nil
+	return cost
 }
 
-func incrementFloor(floor int, direction int) (int, error) {
-	switch direction {
-	case defs.DirnDown:
-		floor--
-	case defs.DirnUp:
-		floor++
-	case defs.DirnStop:
-		return floor, errors.New("Error(ish): Direction stop, floor not incremented.")
+func addToQueue(queue []bool, floor, dir int) {
+	switch dir {
+	case defs.ButtonCallDown:
+		queue[floor][defs.ButtonCallDown] = true
+	case defs.ButtonCallUp:
+		queue[floor][defs.ButtonCallUp] = true
 	default:
-		return floor, errors.New("Error: Invalid direction, floor not incremented.")
+		// error, nothing added
 	}
+}
 
-	if (floor < 0) or (floor >= defs.NumFloors) {
-		return floor, fmt.Printf("Error: Floor incremented to invalid floor %d.", floor)
+func noOrdersAhead(queue []bool, floor, dir int) bool {
+	isOrdersAhead := false
+	for f := floor; f >= 0 && f < defs.NumFloors; f += dir {
+		for b := 0; b < defs.NumButtons; b++ {
+			if queue[f][b] {
+				isOrdersAhead = true
+			}
+		}
 	}
+	return !isOrdersAhead
+}
 
-	return floor, nil
+func shouldStop(queue []bool, floor, dir int) {
+	if queue[floor][defs.ButtonCommand] {
+		return true
+	}
+	if dir == DirnUp && queue[floor][defs.ButtonCallUp] {
+		return true
+	}
+	if dir == DirnDown && queue[floor][defs.ButtonCallDown] {
+		return true
+	}
+	return false
+}
+
+func increment(floor int, dir int) int {
+	switch dir {
+		case defs.DirnDown:
+			floor--
+		case defs.DirnUp:
+			floor++
+		default:
+			// error; no change to floor
+	}
+	return floor
 }
