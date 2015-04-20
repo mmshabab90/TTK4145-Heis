@@ -58,8 +58,7 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 	PrintMessage(message)
 	PrintMessage(message)*/
 	
-	fmt.Printf("before parse: ")
-	fmt.Println(string(udpMessage.data))
+	fmt.Printf("before parse: %s from %s\n", string(udpMessage.data), udpMessage.raddr)
 	
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
