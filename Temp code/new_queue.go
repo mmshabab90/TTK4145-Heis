@@ -34,6 +34,19 @@ func RemoveInternalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{false, ""})
 }
 
+// AddSharedOrder adds the given order to the shared queue.
+func AddSharedOrder(floor, button int, addr string) {
+	shared.q[floor][button] = orderStatus{true, addr}
+	updateLocalQueue() // bad abstraction
+}
+
+func RemoveSharedOrdersAt(floor int) {
+	for b := 0; b < defs.NumButtons; b++ {
+		shared.setOrder(floor, b, blankOrder)
+	}
+	updateLocalQueue() // bad abstraction
+}
+
 // ChooseDirection returns the direction the lift should continue after the
 // current floor.
 func ChooseDirection(currFloor, currDir int) int {
@@ -53,6 +66,40 @@ func RemoveOrdersAt(floor int) {
 		shared.setOrder(floor, b, blankOrder)
 	}
 	SendOrderCompleteMessage(floor) // bad abstraction
+}
+
+// IsOrder returns whether there in an order with the given floor and button
+// in the local queue.
+func IsOrder(floor, button int) bool {
+	return local.isActiveOrder(floor, button)
+}
+
+// ReassignOrders finds all orders assigned to the given dead lift, removes
+// them from the shared queue, and sends them on the network as new, un-
+// assigned orders.
+func ReassignOrders(deadAddr string) {
+	// loop thru shared queue
+	// remove all orders assigned to the dead lift
+	// send neworder-message for each removed order
+	for f := 0; f < defs.NumFloors; f++ {
+		for b := 0; b < defs.NumButtons; b++ {
+			if shared.q[f][b].addr == deadAddr {
+				shared.setOrder(f, b, blankOrder)
+				reassignMessage := &defs.Message{
+					Kind:   defs.NewOrder,
+					Floor:  f,
+					Button: b}
+				defs.MessageChan <- *reassignMessage
+			}
+		}
+	}
+}
+
+// SendOrderCompleteMessage communicates to the network that this lift has
+// taken care of orders at the given floor.
+func SendOrderCompleteMessage(floor int) {
+	message := &defs.Message{Kind: defs.CompleteOrder, Floor: floor}
+	defs.MessageChan <- *message
 }
 
 func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
@@ -221,5 +268,18 @@ func incrementFloor(floor, dir int) (floor, dir int) {
 	}
 	if floor == defs.NumFloors-1 && dir == defs.DirnUp {
 		dir = defs.DirnDown
+	}
+}
+
+func updateLocalQueue() {
+	for f := 0; f < defs.NumFloors; f++ {
+		for b := 0; b < defs.NumButtons; b++ {
+			if shared.isActiveOrder(f, b) {
+				if b != defs.ButtonCommand && shared.q[f][b].addr == defs.Laddr.String() {
+					// set local order f b
+					local.setOrder(f, b, orderStatus{true, ""})
+				}
+			}
+		}
 	}
 }
