@@ -343,7 +343,7 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 }
 
 func incrementFloor(floor, dir int) (int, int) {
-	fmt.Printf("(incr:f%v d%v)", floor, dir)
+	// fmt.Printf("(incr:f%v d%v)", floor, dir)
 	switch dir {
 	case defs.DirnDown:
 		floor--
