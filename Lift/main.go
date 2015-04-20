@@ -226,7 +226,7 @@ func liftAssigner() {
 					// go orderTimer(&newOrder)
 				}
 				evaluateLists(assignmentQueue)
-				/*case newOrder := <-orderTimeoutChan:
+			/*case newOrder := <-orderTimeoutChan:
 				fmt.Printf("\n\n ORDER TIMED OUT!\n")
 				// newOrder.timeout = true
 				evaluateLists(assignmentQueue)*/
@@ -287,13 +287,5 @@ func evaluateLists(que map[order][]reply) {
 			delete(que, key)
 			// SUPERIMPORTANT: NOTIFY ABOUT EVENT NEW ORDER
 		}
-	}
-}
-
-func printLifts() {
-	for {
-		<-defs.PrintLifts
-		fmt.Fprintf("Lifts: ", onlineLifts)
-		time.Sleep(time.Millisecond)
 	}
 }
