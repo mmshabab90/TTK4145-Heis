@@ -26,6 +26,8 @@ const (
 	Cost
 )
 
+const MaxInt = int(^uint(0) >> 1)
+
 // Generic network message. No other messages are ever sent on the network.
 type Message struct {
 	Kind   int
