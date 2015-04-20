@@ -223,6 +223,7 @@ func liftAssigner() {
 					// If order not in queue at all, init order list with it
 					assignmentQueue[newOrder] = []reply{newReply}
 					newOrder.timer = time.NewTimer(10 * time.Second)
+					//go orderTimer(&newOrder)
 				}
 				evaluateLists(assignmentQueue)
 			case newOrder := <-orderTimeoutChan:
