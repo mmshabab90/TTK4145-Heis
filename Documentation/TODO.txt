@@ -6,16 +6,18 @@ eksternt panel skal være likt for alle heisene
 fiks opp/ned knapper for én heis:
 F.eks hvis den er på opp til 4 og får en bestilling ned i 3., skal den først opp til 4. før den går til 3.
 
-kommuniser med driver via kanal
+kommuniser med driver via kanaler
 
 får av og til "Makes no sense to arrive at a floor in state idle", hva skyldes dette?
 
-køer burde bli structs med tilknyttede funksjoner DONE!!!!!! OOOOH
-
 gi timeout på ordre slik at om noen svar mangler så gjøres det læll
 
+<<<<<<< HEAD
+maybe: reassign alle ordre når det kommer en ny heis på nettverket
+=======
 maybe: reassign alle ordre når det kommer en ny heis på nettverket
 
 synclights skal i en goroutine som syncer hver gang den får en melding (true), og den må kalles hver gang en bestilling legges til eller slettes også fra remote queue // sannsynligvis ordnet
 
 updatelocalqueue also into a goroutine
+>>>>>>> 905cfc80f548c4e5ae7a5c077c3cd9e351696faf
