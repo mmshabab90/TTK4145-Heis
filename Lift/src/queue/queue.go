@@ -354,11 +354,13 @@ func incrementFloor(floor, dir int) (int, int) {
 		fmt.Println("incrementFloor(): invalid direction, not incremented")
 	}
 
-	if floor == 0 && dir == defs.DirnDown {
+	if floor <= 0 && dir == defs.DirnDown {
 		dir = defs.DirnUp
+		floor = 0
 	}
-	if floor == defs.NumFloors-1 && dir == defs.DirnUp {
+	if floor >= defs.NumFloors-1 && dir == defs.DirnUp {
 		dir = defs.DirnDown
+		floor = defs.NumFloors - 1
 	}
 	return floor, dir
 }
@@ -371,7 +373,6 @@ func updateLocalQueue() {
 			for b := 0; b < defs.NumButtons; b++ {
 				if remote.isActiveOrder(f, b) {
 					if b != defs.ButtonCommand && remote.q[f][b].addr == defs.Laddr.String() {
-						// set local order f b
 						local.setOrder(f, b, orderStatus{true, ""})
 					}
 				}
