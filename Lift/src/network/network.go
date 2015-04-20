@@ -40,12 +40,12 @@ func pollMessages() { // change name to pollOutgoing or something
 		var i int
 		jsonMsg, err := json.Marshal(msg)
 
-		for i = 0; err != nil || i < 10; i++ {
-			fmt.Printf("json.Marshal error: %s\n", err)
+		for i = 0; err != nil && i < 10; i++ {
+			fmt.Printf("json.Marshal error: %v\n", err)
 			jsonMsg, err = json.Marshal(msg)
 		}
 		if i < 10 {
-			sendChan <- udpMessage{raddr: "broadcast", data: jsonMessage, length: len(jsonMessage)}
+			sendChan <- udpMessage{raddr: "broadcast", data: jsonMsg, length: len(jsonMsg)}
 		}
 
 		time.Sleep(time.Millisecond)

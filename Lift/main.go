@@ -226,10 +226,10 @@ func liftAssigner() {
 					// go orderTimer(&newOrder)
 				}
 				evaluateLists(assignmentQueue)
-			case newOrder := <-orderTimeoutChan:
+			/*case newOrder := <-orderTimeoutChan:
 				fmt.Printf("\n\n ORDER TIMED OUT!\n")
 				// newOrder.timeout = true
-				evaluateLists(assignmentQueue)
+				evaluateLists(assignmentQueue)*/
 			}
 		}
 	}()
@@ -250,7 +250,7 @@ func evaluateLists(que map[order][]reply) {
 	fmt.Println(que)
 	for key, replyList := range que {
 		// Check if the list is complete
-		if len(replyList) == len(onlineLifts) || key.timeout {
+		if len(replyList) == len(onlineLifts) /*|| key.timeout*/ {
 			fmt.Printf("Laddr = %v\n", defs.Laddr)
 			var (
 				lowCost = defs.MaxInt
