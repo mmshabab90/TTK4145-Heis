@@ -22,7 +22,7 @@ type queue struct {
 }
 
 var local queue
-var remote queue
+var shared queue
 
 // AddInternalOrder adds an order to the local queue.
 func AddInternalOrder(floor int, button int) {
@@ -34,17 +34,17 @@ func RemoveInternalOrder(floor int, button int) {
 	local.setOrder(floor, button, blankOrder)
 }
 
-// AddRemoteOrder adds the given order to the remote queue.
-func AddRemoteOrder(floor, button int, addr string) {
-	remote.q[floor][button] = orderStatus{true, addr}
+// AddSharedOrder adds the given order to the shared queue.
+func AddSharedOrder(floor, button int, addr string) {
+	shared.q[floor][button] = orderStatus{true, addr}
 
 	defs.SyncLightsChan <- true
 	updateLocalQueue() // bad abstraction
 }
 
-func RemoveRemoteOrdersAt(floor int) {
+func RemoveSharedOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
-		remote.setOrder(floor, b, blankOrder)
+		shared.setOrder(floor, b, blankOrder)
 	}
 
 	defs.SyncLightsChan <- true
@@ -63,11 +63,11 @@ func ShouldStop(floor, dir int) bool {
 	return local.shouldStop(floor, dir)
 }
 
-// RemoveOrdersAt removes all orders at the given floor in local and remote queue.
+// RemoveOrdersAt removes all orders at the given floor in local and shared queue.
 func RemoveOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
 		local.setOrder(floor, b, blankOrder)
-		remote.setOrder(floor, b, blankOrder)
+		shared.setOrder(floor, b, blankOrder)
 	}
 	SendOrderCompleteMessage(floor) // bad abstraction
 }
@@ -83,23 +83,23 @@ func IsLocalEmpty() bool {
 	return local.isEmpty()
 }
 
-// IsRemoteOrder returns true if there is a order with the given floor and
-// button in the remote queue.
-func IsRemoteOrder(floor, button int) bool {
-	return remote.isActiveOrder(floor, button)
+// IsSharedOrder returns true if there is a order with the given floor and
+// button in the shared queue.
+func IsSharedOrder(floor, button int) bool {
+	return shared.isActiveOrder(floor, button)
 }
 
 // ReassignOrders finds all orders assigned to the given dead lift, removes
-// them from the remote queue, and sends them on the network as new, un-
+// them from the shared queue, and sends them on the network as new, un-
 // assigned orders.
 func ReassignOrders(deadAddr string) {
-	// loop thru remote queue
+	// loop thru shared queue
 	// remove all orders assigned to the dead lift
 	// send neworder-message for each removed order
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
-			if remote.q[f][b].addr == deadAddr {
-				remote.setOrder(f, b, blankOrder)
+			if shared.q[f][b].addr == deadAddr {
+				shared.setOrder(f, b, blankOrder)
 				reassignMessage := &defs.Message{
 					Kind:   defs.NewOrder,
 					Floor:  f,
@@ -122,7 +122,7 @@ func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int)
 }
 
 func Print() {
-	fmt.Println("Local   Remote")
+	fmt.Println("Local   Shared")
 	for f := defs.NumFloors - 1; f >= 0; f-- {
 		lifts := "   "
 
@@ -141,15 +141,15 @@ func Print() {
 		} else {
 			fmt.Printf("    %d  ", f+1)
 		}
-		if remote.isActiveOrder(f, defs.ButtonCallUp) {
+		if shared.isActiveOrder(f, defs.ButtonCallUp) {
 			fmt.Printf("↑")
-			lifts += "(↑ " + defs.LastPartOfIp(remote.q[f][defs.ButtonCallUp].addr) + ")"
+			lifts += "(↑ " + defs.LastPartOfIp(shared.q[f][defs.ButtonCallUp].addr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
-		if remote.isActiveOrder(f, defs.ButtonCallDown) {
+		if shared.isActiveOrder(f, defs.ButtonCallDown) {
 			fmt.Printf("↓")
-			lifts += "(↓ " + defs.LastPartOfIp(remote.q[f][defs.ButtonCallDown].addr) + ")"
+			lifts += "(↓ " + defs.LastPartOfIp(shared.q[f][defs.ButtonCallDown].addr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
@@ -360,8 +360,8 @@ func incrementFloor(floor, dir int) (int, int) {
 func updateLocalQueue() {
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
-			if remote.isActiveOrder(f, b) {
-				if b != defs.ButtonCommand && remote.q[f][b].addr == defs.Laddr.String() {
+			if shared.isActiveOrder(f, b) {
+				if b != defs.ButtonCommand && shared.q[f][b].addr == defs.Laddr.String() {
 					// set local order f b
 					local.setOrder(f, b, orderStatus{true, ""})
 				}

@@ -64,7 +64,7 @@ func run() {
 			default:
 				// maybe care about bad button here
 			}
-
+			
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
 		case udpMessage := <-network.ReceiveChan:
@@ -158,12 +158,12 @@ func handleMessage(message defs.Message) {
 		fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n",
 			costMessage.Floor+1, costMessage.Button, costMessage.Cost)
 		//network.Send(costMessage) // Rather send on message channel to network module
-		defs.MessageChan <- costMessage
+		defs.MessageChan <-costMessage
 	case defs.CompleteOrder:
 		fmt.Println("handleMessage(): CompleteOrder message")
 		// remove from queues
-		queue.RemoveRemoteOrdersAt(message.Floor)
-
+		queue.RemoveSharedOrdersAt(message.Floor)
+		
 		// prob more to do here
 	case defs.Cost:
 		fmt.Printf("handleMessage(): Cost message: f=%d b=%d with cost %d from lift %s\n", message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
@@ -192,7 +192,7 @@ func liftAssigner() {
 	// lifts make the same choice every time
 	go func() {
 		assignmentQueue := make(map[order][]reply)
-
+		
 		for {
 			message := <-costChan
 			newOrder, newReply := split(message)
@@ -213,7 +213,7 @@ func liftAssigner() {
 				// If order not in queue at all, init order list with it
 				assignmentQueue[newOrder] = []reply{newReply}
 			}
-
+			
 			evaluateLists(assignmentQueue)
 		}
 	}()
@@ -234,7 +234,7 @@ func evaluateLists(que map[order][]reply) {
 	fmt.Println(que)
 	for key, replyList := range que {
 		// Check if the list is complete
-		if len(replyList) == len(onlineLifts) {
+		if len(replyList) == len(onlineLifts){
 			fmt.Printf("Laddr = %v\n", defs.Laddr)
 			var (
 				lowCost = 1000 // Set to maximum integer or something
@@ -262,7 +262,7 @@ func evaluateLists(que map[order][]reply) {
 			// Print winner:
 			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], key.floor+1, key.button)
 			// Assign order key to lift
-			queue.AddRemoteOrder(key.floor, key.button, lowAddr)
+			queue.AddSharedOrder(key.floor, key.button, lowAddr)
 			//queue.PrintQueues()
 			if lowAddr == defs.Laddr.String() {
 				fsm.EventExternalOrderGivenToMe()
