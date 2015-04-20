@@ -296,7 +296,7 @@ func evaluateLists(que map[order][]reply) {
 func printLifts() {
 	for {
 		<-defs.PrintLifts
-		// fmt.Fprintf("Lifts: ", onlineLifts)
+		fmt.Fprintf("Lifts: ", onlineLifts)
 		time.Sleep(time.Millisecond)
 	}
 }
