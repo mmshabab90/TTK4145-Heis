@@ -15,10 +15,10 @@ type orderStatus struct {
 	addr   string
 }
 
-var inactive = orderStatus{false, ""}
+var blankOrder = orderStatus{false, ""}
 
 type queue struct {
-	q [nF][nB]orderStatus
+	q [defs.NumFloors][defs.NumButtons]orderStatus
 }
 
 var local queue
@@ -55,7 +55,7 @@ func ChooseDirection(currFloor, currDir int) int {
 
 // ShouldStop returns whether the lift should stop at the given floor, if
 // going in the given direction.
-func ShouldStop(floor, dir int) {
+func ShouldStop(floor, dir int) bool {
 	return local.shouldStop(floor, dir)
 }
 
@@ -72,6 +72,11 @@ func RemoveOrdersAt(floor int) {
 // in the local queue.
 func IsOrder(floor, button int) bool { // Rename to IsLocalOrder
 	return local.isActiveOrder(floor, button)
+}
+
+// Blah blah blah
+func IsLocalEmpty() bool {
+	return local.isEmpty()
 }
 
 // IsSharedOrder returns true if there is a order with the given floor and
@@ -131,8 +136,30 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 	q.q[floor][button] = status
 }
 
-func (q *queue) isActiveOrder(floor, button int) {
+func (q *queue) isActiveOrder(floor, button int) bool {
 	return q.q[floor][button].active
+}
+
+func (q *queue) isOrdersAbove(floor int) bool {
+	for f := floor + 1; f < defs.NumFloors; f++ {
+		for b := 0; b < defs.NumButtons; b++ {
+			if q.isActiveOrder(f, b) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (q *queue) isOrdersBelow(floor int) bool {
+	for f := 0; f < floor; f++ {
+		for b := 0; b < defs.NumButtons; b++ {
+			if q.isActiveOrder(f, b) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (q *queue) chooseDirection(floor, dir int) int {
@@ -162,7 +189,7 @@ func (q *queue) chooseDirection(floor, dir int) int {
 			return defs.DirnStop
 		}
 	default:
-		log.Printf("ChooseDirection(): called with invalid direction %d, returning stop\n", currDir)
+		log.Printf("ChooseDirection(): called with invalid direction %d, returning stop\n", dir)
 		return defs.DirnStop
 	}
 }
@@ -173,18 +200,18 @@ func (q *queue) shouldStop(floor, dir int) bool {
 		return q.isActiveOrder(floor, defs.ButtonCallDown) ||
 			q.isActiveOrder(floor, defs.ButtonCommand) ||
 			floor == 0 ||
-			!isOrdersBelow(floor)
+			!q.isOrdersBelow(floor)
 	case defs.DirnUp:
 		return q.isActiveOrder(floor, defs.ButtonCallUp) ||
 			q.isActiveOrder(floor, defs.ButtonCommand) ||
 			floor == defs.NumFloors-1 ||
-			!isOrdersAbove(floor)
+			!q.isOrdersAbove(floor)
 	case defs.DirnStop:
 		return q.isActiveOrder(floor, defs.ButtonCallDown) ||
 			q.isActiveOrder(floor, defs.ButtonCallUp) ||
 			q.isActiveOrder(floor, defs.ButtonCommand)
 	default:
-		log.Printf("shouldStop() called with invalid direction %d!\n", direction)
+		log.Printf("shouldStop() called with invalid direction %d!\n", dir)
 		return false
 	}
 }
@@ -193,22 +220,22 @@ func (q *queue) print() {
 	var status string
 	var lifts string
 
-	for f := nF - 1; f >= 0; f-- {
-		if q.q[f][buttUp].active {
+	for f := defs.NumFloors-1; f >= 0; f-- {
+		if q.q[f][defs.ButtonCallUp].active {
 			status += "↑"
-			lifts += "(↑ " + q.q[f][buttUp].addr + ")"
+			lifts += "(↑ " + q.q[f][defs.ButtonCallUp].addr + ")"
 		} else {
 			status += " "
 		}
-		if q.q[f][buttInt].active {
+		if q.q[f][defs.ButtonCommand].active {
 			status += "×"
-			lifts += "(× " + q.q[f][buttInt].addr + ")"
+			lifts += "(× " + q.q[f][defs.ButtonCommand].addr + ")"
 		} else {
 			status += " "
 		}
-		if q.q[f][buttDown].active {
+		if q.q[f][defs.ButtonCallDown].active {
 			status += "↓   "
-			lifts += "(↓ " + q.q[f][buttDown].addr + ")"
+			lifts += "(↓ " + q.q[f][defs.ButtonCallDown].addr + ")"
 		} else {
 			status += " "
 		}
@@ -222,10 +249,10 @@ func (q *queue) deepCopy() *queue {
 	var copy queue
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
-			copy[f][b] = q[f][b]
+			copy.q[f][b] = q.q[f][b]
 		}
 	}
-	return copy
+	return &copy
 }
 
 // this should run on a copy of local queue
@@ -258,23 +285,25 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 	return cost
 }
 
-func incrementFloor(floor, dir int) (floor, dir int) {
+func incrementFloor(floor, dir int) (newFloor, newDir int) {
 	switch dir {
 	case defs.DirnDown:
-		floor--
+		newFloor = floor - 1
 	case defs.DirnUp:
-		floor++
+		newFloor = floor + 1
 	case defs.DirnStop:
 		fmt.Println("incrementFloor(): direction stop, not incremented (this is okay)")
 	default:
 		fmt.Println("incrementFloor(): invalid direction, not incremented")
 	}
+	newDir = dir
 	if floor == 0 && dir == defs.DirnDown {
-		dir = defs.DirnUp
+		newDir = defs.DirnUp
 	}
 	if floor == defs.NumFloors-1 && dir == defs.DirnUp {
-		dir = defs.DirnDown
+		newDir = defs.DirnDown
 	}
+	return
 }
 
 func updateLocalQueue() {

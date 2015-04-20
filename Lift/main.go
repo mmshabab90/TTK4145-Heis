@@ -1,7 +1,6 @@
 package main
 
 import (
-	"./src/cost"
 	"./src/defs"
 	"./src/fsm"
 	"./src/hw"
@@ -43,7 +42,6 @@ func main() {
 	if err := hw.Init(); err != nil {
 		log.Fatal(err)
 	}
-	queue.Init()
 	fsm.Init()
 	network.Init()
 
@@ -157,10 +155,13 @@ func handleMessage(message defs.Message) {
 		// if err != nil {
 		// 	log.Println(err)
 		// }
-		cost := cost.Calculate(queue.CopyLocalQueue(),
-			message.Floor, message.Button,
-			fsm.Floor(), hw.Floor(), fsm.Direction())
-		fmt.Printf("Calculate() returned cost %v\n", cost)
+
+		// cost := cost.Calculate(queue.CopyLocalQueue(),
+		// 	message.Floor, message.Button,
+		// 	fsm.Floor(), hw.Floor(), fsm.Direction())
+		// fmt.Printf("Calculate() returned cost %v\n", cost)
+
+		cost := queue.CalculateCost(message.Floor, message.Button, fsm.Floor(), hw.Floor(), fsm.Direction())
 
 		costMessage := defs.Message{
 			Kind:   defs.Cost,
@@ -275,7 +276,7 @@ func evaluateLists(que map[order][]reply) {
 			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], key.floor+1, key.button)
 			// Assign order key to lift
 			queue.AddSharedOrder(key.floor, key.button, lowAddr)
-			queue.PrintQueues()
+			//queue.PrintQueues()
 			if lowAddr == defs.Laddr.String() {
 				fsm.EventExternalOrderGivenToMe()
 			}

@@ -46,7 +46,7 @@ func Init() {
 func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 	fmt.Printf("\n\nEvent internal button (floor %d %s) pressed in state %s\n",
 		buttonFloor, buttonString(buttonType), stateString(state))
-	queue.PrintQueues()
+	//queue.PrintQueues()
 	switch state {
 	case idle:
 		queue.AddInternalOrder(buttonFloor, buttonType)
@@ -78,7 +78,7 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 	fmt.Printf("\n\nEvent external button (floor %d %s) pressed in state %s\n",
 		buttonFloor, buttonString(buttonType), stateString(state))
-	queue.PrintQueues()
+	//queue.PrintQueues()
 	switch state {
 	case idle, doorOpen, moving:
 		// send order on network
@@ -91,7 +91,7 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 }
 
 func EventExternalOrderGivenToMe() {
-	if !queue.IsAnyOrders() {
+	if queue.IsLocalEmpty() {
 		// strange
 	}
 	switch state {
@@ -110,11 +110,12 @@ func EventExternalOrderGivenToMe() {
 	default:
 		fmt.Println("EventExternalOrderGivenToMe(): Not in idle, will ignore.")
 	}
+	syncLights()
 }
 
 func EventFloorReached(newFloor int) {
 	fmt.Printf("\n\nEvent floor %d reached in state %s\n", newFloor, stateString(state))
-	queue.PrintQueues()
+	//queue.PrintQueues()
 	floor = newFloor
 	hw.SetFloorLamp(floor)
 	switch state {
@@ -137,7 +138,7 @@ func EventFloorReached(newFloor int) {
 
 func EventDoorTimeout() {
 	fmt.Printf("\n\nEvent door timeout in state %s\n", stateString(state))
-	queue.PrintQueues()
+	//queue.PrintQueues()
 	switch state {
 	case doorOpen:
 		direction = queue.ChooseDirection(floor, direction)
