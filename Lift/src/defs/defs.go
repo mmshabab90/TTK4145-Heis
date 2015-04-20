@@ -22,18 +22,17 @@ const ( // Rename to DirDown etc.
 	DirnUp
 )
 
+const MaxInt = int(^uint(0) >> 1)
+
+const SpamInterval = 60 * time.Second
+const ResetTime = 600 * time.Second
+
 const (
 	Alive int = iota + 1
 	NewOrder
 	CompleteOrder
 	Cost
 )
-
-const MaxInt = int(^uint(0) >> 1)
-
-const SpamInterval = 5000 * time.Millisecond
-const ResetTime = 11 * time.Second
-
 // Generic network message. No other messages are ever sent on the network.
 type Message struct {
 	Kind   int
