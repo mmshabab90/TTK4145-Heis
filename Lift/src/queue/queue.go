@@ -300,7 +300,7 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 	floor := prevFloor
 	dir := currDir
 	
-	fmt.Printf("Cost floor sequence: %v", currFloor+1)
+	fmt.Printf("Cost floor sequence: %v", currFloor)
 	// Go to valid state (a floor/dir that mirrors a button)
 	if currFloor == -1 {
 		// Between floors, add 1 cost
@@ -309,12 +309,13 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 		// At floor, but moving, add 2 cost
 		cost += 2
 		// Pass på at currFloor == prevFloor!
+		if currFloor != prevFloor {
+			fmt.Println("not goode: currFloor != prevFloor")
+		}
 	}
 	
 	floor, dir = incrementFloor(floor, dir)
-	if floor != prevFloor {
-		fmt.Printf(" →  %v", floor+1)
-	}
+	fmt.Printf(" →  %v", floor)
 	
 	for !(floor == targetFloor && q.shouldStop(floor, dir)) {
 		if q.shouldStop(floor, dir) {
@@ -324,13 +325,16 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 		dir = q.chooseDirection(floor, dir)
 		floor, dir = incrementFloor(floor, dir)
 		cost += 2
-		fmt.Printf(" →  %v", floor+1)
+		fmt.Printf(" →  %v", floor)
 	}
-	fmt.Println()
+	fmt.Printf(" = cost %v\n", cost)
 	return cost
 }
 
-func incrementFloor(floor, dir int) (newFloor, newDir int) {
+func incrementFloor(floor, dir int) (newFloor, newDir int) { // reconsider named return values
+	newFloor = floor
+	newDir = dir
+	
 	switch dir {
 	case defs.DirnDown:
 		newFloor = floor - 1
