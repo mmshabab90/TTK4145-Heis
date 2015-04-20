@@ -217,7 +217,7 @@ func liftAssigner() {
 					// Add it if not found
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-						newOrder.timer.Reset(10 * time.Second)
+						//newOrder.timer.Reset(10 * time.Second)
 					}
 				} else {
 					// If order not in queue at all, init order list with it
@@ -252,7 +252,7 @@ func evaluateLists(que map[order][]reply) {
 		if len(replyList) == len(onlineLifts) || key.timeout {
 			fmt.Printf("Laddr = %v\n", defs.Laddr)
 			var (
-				lowCost = 1000 // Set to maximum integer or something
+				lowCost = defs.MaxInt
 				lowAddr string
 			)
 			// Loop thru costs in each complete list
