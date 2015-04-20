@@ -35,10 +35,10 @@ type reply struct {
 	lift string
 }
 type order struct {
-	floor   int
-	button  int
-	timeout bool
-	timer   *time.Timer
+	floor  int
+	button int
+	// timeout bool
+	// timer   *time.Timer
 }
 
 func main() {
@@ -187,11 +187,11 @@ func connectionTimer(connection *network.UdpConnection) {
 	}
 }
 
-func orderTimer(newOrder *order) {
-	<-newOrder.timer.C
-	orderTimeoutChan <- *newOrder
+// func orderTimer(newOrder *order) {
+// 	<-newOrder.timer.C
+// 	orderTimeoutChan <- *newOrder
 
-}
+// }
 
 func liftAssigner() {
 	// collect cost values from all lifts
@@ -222,13 +222,13 @@ func liftAssigner() {
 				} else {
 					// If order not in queue at all, init order list with it
 					assignmentQueue[newOrder] = []reply{newReply}
-					newOrder.timer = time.NewTimer(10 * time.Second)
-					//go orderTimer(&newOrder)
+					// newOrder.timer = time.NewTimer(10 * time.Second)
+					// go orderTimer(&newOrder)
 				}
 				evaluateLists(assignmentQueue)
 			case newOrder := <-orderTimeoutChan:
 				fmt.Printf("\n\n ORDER TIMED OUT!\n")
-				newOrder.timeout = true
+				// newOrder.timeout = true
 				evaluateLists(assignmentQueue)
 			}
 		}
