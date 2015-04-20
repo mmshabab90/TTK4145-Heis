@@ -36,6 +36,7 @@ type Message struct {
 }
 
 var MessageChan = make(chan Message) // vurder buff
+var SyncLightsChan = make(chan bool)
 
 var Laddr *net.UDPAddr //Local address
 

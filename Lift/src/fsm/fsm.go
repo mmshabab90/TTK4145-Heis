@@ -40,7 +40,7 @@ func Init() {
 		floor = hw.MoveToDefinedState()
 	}
 	departDirection = defs.DirnDown
-	syncLights()
+	go syncLights()
 }
 
 func EventInternalButtonPressed(buttonFloor int, buttonType int) {
@@ -60,7 +60,7 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 			hw.SetMotorDirection(direction)
 			departDirection = direction
 			state = moving
-		}		
+		}
 	case doorOpen:
 		if floor == buttonFloor {
 			doorReset <- true
@@ -72,7 +72,7 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 	default:
 		log.Fatalf("State %d is invalid!\n", state)
 	}
-	syncLights()
+	defs.SyncLightsChan <- true
 }
 
 func EventExternalButtonPressed(buttonFloor int, buttonType int) {
@@ -87,7 +87,7 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 	default:
 		//
 	}
-	syncLights() // maybe go this instead
+	defs.SyncLightsChan <- true
 }
 
 func EventExternalOrderGivenToMe() {
@@ -112,7 +112,7 @@ func EventExternalOrderGivenToMe() {
 	default:
 		fmt.Println("EventExternalOrderGivenToMe(): Not in idle, will ignore.")
 	}
-	syncLights()
+	defs.SyncLightsChan <- true
 }
 
 func EventFloorReached(newFloor int) {
@@ -135,7 +135,7 @@ func EventFloorReached(newFloor int) {
 	default:
 		log.Printf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
 	}
-	syncLights()
+	defs.SyncLightsChan <- true
 }
 
 func EventDoorTimeout() {
@@ -155,7 +155,7 @@ func EventDoorTimeout() {
 	default:
 		log.Fatalf("Makes no sense to time out when not in state door open\n")
 	}
-	syncLights()
+	defs.SyncLightsChan <- true
 }
 
 func Direction() int {
@@ -185,13 +185,17 @@ func startTimer() {
 }
 
 func syncLights() {
-	for f := 0; f < defs.NumFloors; f++ {
-		for b := 0; b < defs.NumButtons; b++ {
-			if (b == defs.ButtonCallUp && f == defs.NumFloors-1) ||
-				(b == defs.ButtonCallDown && f == 0) {
-				continue
-			} else {
-				hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
+	for {
+		<-defs.SyncLightsChan
+
+		for f := 0; f < defs.NumFloors; f++ {
+			for b := 0; b < defs.NumButtons; b++ {
+				if (b == defs.ButtonCallUp && f == defs.NumFloors-1) ||
+					(b == defs.ButtonCallDown && f == 0) {
+					continue
+				} else {
+					hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
+				}
 			}
 		}
 	}
