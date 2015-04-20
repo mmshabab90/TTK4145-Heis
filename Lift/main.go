@@ -13,7 +13,6 @@ import (
 )
 
 const debugPrint = false
-const resetTime = 1 * time.Second
 
 var _ = log.Println
 var _ = fmt.Println
@@ -135,12 +134,12 @@ func handleMessage(message defs.Message) {
 	switch message.Kind {
 	case defs.Alive:
 		if connection, exist := onlineLifts[message.Addr]; exist {
-			connection.Timer.Reset(resetTime)
+			connection.Timer.Reset(defs.ResetTime)
 			if debugPrint {
 				fmt.Printf("Timer reset for IP %s\n", message.Addr)
 			}
 		} else {
-			newConnection := network.UdpConnection{message.Addr, time.NewTimer(resetTime)}
+			newConnection := network.UdpConnection{message.Addr, time.NewTimer(defs.ResetTime)}
 			onlineLifts[message.Addr] = newConnection
 			if debugPrint {
 				fmt.Printf("New connection with IP %s\n", message.Addr)

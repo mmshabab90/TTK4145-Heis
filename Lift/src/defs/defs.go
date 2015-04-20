@@ -1,7 +1,10 @@
 package defs
 
-import "net"
-import "strings"
+import (
+	"net"
+	"strings"
+	"time"
+)
 
 // Global system constants
 const NumButtons = 3
@@ -27,6 +30,9 @@ const (
 )
 
 const MaxInt = int(^uint(0) >> 1)
+
+const SpamInterval = 5000 * time.Millisecond
+const ResetTime = 11 * time.Second
 
 // Generic network message. No other messages are ever sent on the network.
 type Message struct {

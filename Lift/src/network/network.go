@@ -57,6 +57,10 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 	/*fmt.Println("in parsemessage")
 	PrintMessage(message)
 	PrintMessage(message)*/
+	
+	fmt.Printf("before parse: ")
+	fmt.Println(string(udpMessage.data))
+	
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
@@ -70,11 +74,11 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	const spamInterval = 100 * time.Millisecond
+	
 	message := defs.Message{Kind: defs.Alive}
 	for {
 		defs.MessageChan <- message
-		time.Sleep(spamInterval)
+		time.Sleep(defs.SpamInterval)
 	}
 }
 
