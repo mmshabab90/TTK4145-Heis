@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type stateType int
+type stateType int // kill this
 
 const (
 	idle stateType = iota

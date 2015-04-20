@@ -2,10 +2,8 @@ digraph G {
 	main -> hw;
 	main -> fsm;
 	main -> queue;
-	main -> cost;
 	main -> network;
 	fsm -> hw;
 	fsm -> queue;
-	cost -> queue;
 	defs;
 }
