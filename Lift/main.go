@@ -28,14 +28,17 @@ var onlineLifts = make(map[string]network.UdpConnection)
 
 var deadChan = make(chan network.UdpConnection)
 var costChan = make(chan defs.Message)
+var orderTimeoutChan = make(chan order)
 
 type reply struct {
 	cost int
 	lift string
 }
 type order struct {
-	floor  int
-	button int
+	floor   int
+	button  int
+	timeout bool
+	timer   *time.Timer
 }
 
 func main() {
@@ -64,7 +67,7 @@ func run() {
 			default:
 				// maybe care about bad button here
 			}
-			
+
 		case floor := <-floorChan:
 			fsm.EventFloorReached(floor)
 		case udpMessage := <-network.ReceiveChan:
@@ -158,12 +161,12 @@ func handleMessage(message defs.Message) {
 		fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n",
 			costMessage.Floor+1, costMessage.Button, costMessage.Cost)
 		//network.Send(costMessage) // Rather send on message channel to network module
-		defs.MessageChan <-costMessage
+		defs.MessageChan <- costMessage
 	case defs.CompleteOrder:
 		fmt.Println("handleMessage(): CompleteOrder message")
 		// remove from queues
 		queue.RemoveSharedOrdersAt(message.Floor)
-		
+
 		// prob more to do here
 	case defs.Cost:
 		fmt.Printf("handleMessage(): Cost message: f=%d b=%d with cost %d from lift %s\n", message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
@@ -184,6 +187,12 @@ func connectionTimer(connection *network.UdpConnection) {
 	}
 }
 
+func orderTimer(newOrder *order) {
+	<-newOrder.timer.C
+	orderTimeoutChan <- *newOrder
+
+}
+
 func liftAssigner() {
 	// collect cost values from all lifts
 	// decide which lift gets the order when all lifts
@@ -192,29 +201,35 @@ func liftAssigner() {
 	// lifts make the same choice every time
 	go func() {
 		assignmentQueue := make(map[order][]reply)
-		
 		for {
-			message := <-costChan
-			newOrder, newReply := split(message)
-			// Check if order in queue
-			if value, exist := assignmentQueue[newOrder]; exist {
-				// Check if lift in list of that order
-				found := false
-				for _, e := range value {
-					if e == newReply {
-						found = true
+			select {
+			case message := <-costChan:
+				newOrder, newReply := split(message)
+				// Check if order in queue
+				if value, exist := assignmentQueue[newOrder]; exist {
+					// Check if lift in list of that order
+					found := false
+					for _, e := range value {
+						if e == newReply {
+							found = true
+						}
 					}
+					// Add it if not found
+					if !found {
+						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
+						newOrder.timer.Reset(10 * time.Second)
+					}
+				} else {
+					// If order not in queue at all, init order list with it
+					assignmentQueue[newOrder] = []reply{newReply}
+					newOrder.timer = time.NewTimer(10 * time.Second)
 				}
-				// Add it if not found
-				if !found {
-					assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-				}
-			} else {
-				// If order not in queue at all, init order list with it
-				assignmentQueue[newOrder] = []reply{newReply}
+				evaluateLists(assignmentQueue)
+			case newOrder := <-orderTimeoutChan:
+				fmt.Printf("\n\n ORDER TIMED OUT!\n")
+				newOrder.timeout = true
+				evaluateLists(assignmentQueue)
 			}
-			
-			evaluateLists(assignmentQueue)
 		}
 	}()
 }
@@ -234,7 +249,7 @@ func evaluateLists(que map[order][]reply) {
 	fmt.Println(que)
 	for key, replyList := range que {
 		// Check if the list is complete
-		if len(replyList) == len(onlineLifts){
+		if len(replyList) == len(onlineLifts) || key.timeout {
 			fmt.Printf("Laddr = %v\n", defs.Laddr)
 			var (
 				lowCost = 1000 // Set to maximum integer or something
