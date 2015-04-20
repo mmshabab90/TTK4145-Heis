@@ -91,8 +91,9 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 }
 
 func EventExternalOrderGivenToMe() {
-	fmt.Printf("\n\nEvent external order given to me\n")
+	fmt.Printf("\n\nEvent external order given to me.\n")
 	queue.Print()
+
 	if queue.IsLocalEmpty() {
 		// strange
 	}
