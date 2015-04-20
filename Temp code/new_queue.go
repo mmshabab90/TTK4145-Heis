@@ -31,7 +31,7 @@ func AddInternalOrder(floor int, button int) {
 
 // RemoveInternalOrder removes an order from the local queue.
 func RemoveInternalOrder(floor int, button int) {
-	local.setOrder(floor, button, orderStatus{false, ""})
+	local.setOrder(floor, button, blankOrder)
 }
 
 // AddSharedOrder adds the given order to the shared queue.
@@ -70,8 +70,14 @@ func RemoveOrdersAt(floor int) {
 
 // IsOrder returns whether there in an order with the given floor and button
 // in the local queue.
-func IsOrder(floor, button int) bool {
+func IsOrder(floor, button int) bool { // Rename to IsLocalOrder
 	return local.isActiveOrder(floor, button)
+}
+
+// IsSharedOrder returns true if there is a order with the given floor and
+// button in the shared queue.
+func IsSharedOrder(floor, button int) bool {
+	return shared.isActiveOrder(floor, button)
 }
 
 // ReassignOrders finds all orders assigned to the given dead lift, removes
