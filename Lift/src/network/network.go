@@ -30,16 +30,24 @@ func Init() {
 	go pollMessages()
 }
 
-func pollMessages() {
+func pollMessages() { // change name to pollOutgoing or something
 	var msg defs.Message
 	for {
-		msg = <- defs.MessageChan
+		msg = <-defs.MessageChan
+
 		//PrintMessage(msg)
-		if jsonMessage, err := json.Marshal(msg); err != nil { 
-			fmt.Printf("json.Unmarshal error: %s\n", err)
-		} else {
+
+		var i int
+		jsonMsg, err := json.Marshal(msg)
+
+		for i = 0; err != nil || i < 10; i++ {
+			fmt.Printf("json.Marshal error: %s\n", err)
+			jsonMsg, err = json.Marshal(msg)
+		}
+		if i < 10 {
 			sendChan <- udpMessage{raddr: "broadcast", data: jsonMessage, length: len(jsonMessage)}
 		}
+
 		time.Sleep(time.Millisecond)
 	}
 }
