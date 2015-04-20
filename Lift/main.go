@@ -230,9 +230,6 @@ func liftAssigner() {
 				fmt.Printf("\n\n ORDER TIMED OUT!\n")
 				// newOrder.timeout = true
 				evaluateLists(assignmentQueue)*/
-			case <-defs.PrintLists:
-				fmt.Printf("Lists: ")
-				fmt.Println(assignmentQueue)
 			}
 		}
 	}()
