@@ -12,12 +12,4 @@ får av og til "Makes no sense to arrive at a floor in state idle", hva skyldes 
 
 gi timeout på ordre slik at om noen svar mangler så gjøres det læll
 
-<<<<<<< HEAD
 maybe: reassign alle ordre når det kommer en ny heis på nettverket
-=======
-maybe: reassign alle ordre når det kommer en ny heis på nettverket
-
-synclights skal i en goroutine som syncer hver gang den får en melding (true), og den må kalles hver gang en bestilling legges til eller slettes også fra remote queue // sannsynligvis ordnet
-
-updatelocalqueue also into a goroutine
->>>>>>> 905cfc80f548c4e5ae7a5c077c3cd9e351696faf
