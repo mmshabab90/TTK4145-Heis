@@ -308,7 +308,7 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 	} else if dir != defs.DirnStop {
 		// At floor, but moving, add 2 cost
 		cost += 2
-		// Pass på at currFloor == prevFloor!
+
 		if currFloor != prevFloor {
 			fmt.Println("not goode: currFloor != prevFloor")
 		}
@@ -331,28 +331,26 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 	return cost
 }
 
-func incrementFloor(floor, dir int) (newFloor, newDir int) { // reconsider named return values
-	newFloor = floor
-	newDir = dir
-	
+func incrementFloor(floor, dir int) (int, int) {
+	fmt.Printf("(incr:f%v d%v)", floor, dir)
 	switch dir {
 	case defs.DirnDown:
-		newFloor = floor - 1
+		floor--
 	case defs.DirnUp:
-		newFloor = floor + 1
+		floor++
 	case defs.DirnStop:
 		// fmt.Println("incrementFloor(): direction stop, not incremented (this is okay)")
 	default:
 		fmt.Println("incrementFloor(): invalid direction, not incremented")
 	}
-	newDir = dir
+
 	if floor == 0 && dir == defs.DirnDown {
-		newDir = defs.DirnUp
+		dir = defs.DirnUp
 	}
 	if floor == defs.NumFloors-1 && dir == defs.DirnUp {
-		newDir = defs.DirnDown
+		dir = defs.DirnDown
 	}
-	return
+	return floor, dir
 }
 
 func updateLocalQueue() {

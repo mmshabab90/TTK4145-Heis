@@ -50,7 +50,7 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 	switch state {
 	case idle:
 		queue.AddInternalOrder(buttonFloor, buttonType)
-		switch direction := queue.ChooseDirection(floor, direction); direction {
+		switch direction = queue.ChooseDirection(floor, direction); direction {
 		case defs.DirnStop:
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
@@ -87,17 +87,18 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 	default:
 		//
 	}
-	syncLights()
+	syncLights() // maybe go this instead
 }
 
 func EventExternalOrderGivenToMe() {
+	fmt.Printf("\n\nEvent external order given to me\n")
 	queue.Print()
 	if queue.IsLocalEmpty() {
 		// strange
 	}
 	switch state {
 	case idle:
-		switch direction := queue.ChooseDirection(floor, direction); direction {
+		switch direction = queue.ChooseDirection(floor, direction); direction {
 		case defs.DirnStop:
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)

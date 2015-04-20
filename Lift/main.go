@@ -148,19 +148,6 @@ func handleMessage(message defs.Message) {
 		fmt.Printf("handleMessage(): NewOrder message: f=%d b=%d from lift %s\n",
 			message.Floor+1, message.Button, message.Addr[12:15])
 
-		// queue.AddInternalOrder(message.Floor, message.Button)
-		// cost, err := cost.CalculateCost(message.Floor, message.Button,
-		// 	fsm.Floor(), fsm.DepartDirection(), hw.Floor())
-		// queue.RemoveInternalOrder(message.Floor, message.Button)
-		// if err != nil {
-		// 	log.Println(err)
-		// }
-
-		// cost := cost.Calculate(queue.CopyLocalQueue(),
-		// 	message.Floor, message.Button,
-		// 	fsm.Floor(), hw.Floor(), fsm.Direction())
-		// fmt.Printf("Calculate() returned cost %v\n", cost)
-
 		cost := queue.CalculateCost(message.Floor, message.Button, fsm.Floor(), hw.Floor(), fsm.Direction())
 
 		costMessage := defs.Message{
