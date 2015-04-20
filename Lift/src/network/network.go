@@ -35,7 +35,7 @@ func pollMessages() { // change name to pollOutgoing or something
 	for {
 		msg = <-defs.MessageChan
 
-		//PrintMessage(msg)
+		PrintMessage(msg)
 
 		var i int
 		jsonMsg, err := json.Marshal(msg)
