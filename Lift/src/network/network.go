@@ -63,8 +63,9 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
-
+	
 	message.Addr = udpMessage.raddr
+	fmt.Printf("   ಠ_ಠ    %s\n", message.Addr)
 	return message
 }
 
