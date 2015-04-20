@@ -37,6 +37,8 @@ func RemoveInternalOrder(floor int, button int) {
 // AddSharedOrder adds the given order to the shared queue.
 func AddSharedOrder(floor, button int, addr string) {
 	shared.q[floor][button] = orderStatus{true, addr}
+
+	defs.SyncLightsChan <- true
 	updateLocalQueue() // bad abstraction
 }
 
@@ -44,6 +46,8 @@ func RemoveSharedOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
 		shared.setOrder(floor, b, blankOrder)
 	}
+
+	defs.SyncLightsChan <- true
 	updateLocalQueue() // bad abstraction
 }
 
@@ -119,7 +123,7 @@ func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int)
 
 func Print() {
 	fmt.Println("Local   Shared")
-	for f := defs.NumFloors-1; f >= 0; f-- {
+	for f := defs.NumFloors - 1; f >= 0; f-- {
 		lifts := "   "
 
 		if local.isActiveOrder(f, defs.ButtonCallUp) {
@@ -257,7 +261,7 @@ func (q *queue) print() {
 	var status string
 	var lifts string
 
-	for f := defs.NumFloors-1; f >= 0; f-- {
+	for f := defs.NumFloors - 1; f >= 0; f-- {
 		if q.q[f][defs.ButtonCallUp].active {
 			status += "↑"
 			lifts += "(↑ " + q.q[f][defs.ButtonCallUp].addr + ")"
@@ -299,7 +303,7 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 	cost := 0
 	floor := prevFloor
 	dir := currDir
-	
+
 	fmt.Printf("Cost floor sequence: %v", currFloor)
 	// Go to valid state (a floor/dir that mirrors a button)
 	if currFloor == -1 {
@@ -313,10 +317,10 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 			fmt.Println("not goode: currFloor != prevFloor")
 		}
 	}
-	
+
 	floor, dir = incrementFloor(floor, dir)
 	fmt.Printf(" →  %v", floor)
-	
+
 	for !(floor == targetFloor && q.shouldStop(floor, dir)) {
 		if q.shouldStop(floor, dir) {
 			cost += 2
