@@ -163,7 +163,7 @@ func Print() {
 		fmt.Printf("%s", lifts)
 		fmt.Println()
 	}
-	defs.PrintLifts <- true
+	defs.PrintLists <- true
 }
 
 /*
