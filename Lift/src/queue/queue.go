@@ -117,6 +117,43 @@ func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int)
 	return local.deepCopy().calculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir)
 }
 
+func Print() {
+	fmt.Println("Local   Shared")
+	for f := defs.NumFloors-1; f >= 0; f-- {
+		lifts := "   "
+
+		if local.isActiveOrder(f, defs.ButtonCallUp) {
+			fmt.Printf("↑")
+		} else {
+			fmt.Printf(" ")
+		}
+		if local.isActiveOrder(f, defs.ButtonCommand) {
+			fmt.Printf("×")
+		} else {
+			fmt.Printf(" ")
+		}
+		if local.isActiveOrder(f, defs.ButtonCallDown) {
+			fmt.Printf("↓   %d  ", f+1)
+		} else {
+			fmt.Printf("    %d  ", f+1)
+		}
+		if shared.isActiveOrder(f, defs.ButtonCallUp) {
+			fmt.Printf("↑")
+			lifts += "(↑ " + defs.LastPartOfIp(shared.q[f][defs.ButtonCallUp].addr) + ")"
+		} else {
+			fmt.Printf(" ")
+		}
+		if shared.isActiveOrder(f, defs.ButtonCallDown) {
+			fmt.Printf("↓")
+			lifts += "(↓ " + defs.LastPartOfIp(shared.q[f][defs.ButtonCallDown].addr) + ")"
+		} else {
+			fmt.Printf(" ")
+		}
+		fmt.Printf("%s", lifts)
+		fmt.Println()
+	}
+}
+
 /*
  * Methods on queue struct:
  */
