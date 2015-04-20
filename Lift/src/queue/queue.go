@@ -24,6 +24,12 @@ type queue struct {
 var local queue
 var remote queue
 
+var updateLocalChan = make(chan bool)
+
+func init() {
+	go updateLocalQueue()
+}
+
 // AddInternalOrder adds an order to the local queue.
 func AddInternalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, ""})
@@ -39,7 +45,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 	remote.q[floor][button] = orderStatus{true, addr}
 
 	defs.SyncLightsChan <- true
-	updateLocalQueue() // bad abstraction
+	updateLocalChan <- true
 }
 
 func RemoveRemoteOrdersAt(floor int) {
@@ -48,7 +54,7 @@ func RemoveRemoteOrdersAt(floor int) {
 	}
 
 	defs.SyncLightsChan <- true
-	updateLocalQueue() // bad abstraction
+	updateLocalChan <- true
 }
 
 // ChooseDirection returns the direction the lift should continue after the
@@ -358,12 +364,16 @@ func incrementFloor(floor, dir int) (int, int) {
 }
 
 func updateLocalQueue() {
-	for f := 0; f < defs.NumFloors; f++ {
-		for b := 0; b < defs.NumButtons; b++ {
-			if remote.isActiveOrder(f, b) {
-				if b != defs.ButtonCommand && remote.q[f][b].addr == defs.Laddr.String() {
-					// set local order f b
-					local.setOrder(f, b, orderStatus{true, ""})
+	for {
+		<-updateLocalChan
+
+		for f := 0; f < defs.NumFloors; f++ {
+			for b := 0; b < defs.NumButtons; b++ {
+				if remote.isActiveOrder(f, b) {
+					if b != defs.ButtonCommand && remote.q[f][b].addr == defs.Laddr.String() {
+						// set local order f b
+						local.setOrder(f, b, orderStatus{true, ""})
+					}
 				}
 			}
 		}
