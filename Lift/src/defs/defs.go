@@ -24,8 +24,8 @@ const ( // Rename to DirDown etc.
 
 const MaxInt = int(^uint(0) >> 1)
 
-const SpamInterval = 60 * time.Second
-const ResetTime = 600 * time.Second
+const SpamInterval = 30 * time.Second
+const ResetTime = 120 * time.Second
 
 const (
 	Alive int = iota + 1

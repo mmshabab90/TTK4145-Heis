@@ -96,6 +96,8 @@ func PrintMessage(msg defs.Message) {
 		fmt.Printf("Floor: %d\n", msg.Floor)
 		fmt.Printf("Button: %d\n", msg.Button)
 	case defs.Cost:
+		fmt.Printf("Floor: %d\n", msg.Floor)
+		fmt.Printf("Button: %d\n", msg.Button)
 		fmt.Printf("Cost: %d\n", msg.Cost)
 	default:
 		fmt.Println("Invalid message type!\n")
