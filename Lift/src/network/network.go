@@ -35,20 +35,12 @@ func pollMessages() {
 	for {
 		msg = <- defs.MessageChan
 		//PrintMessage(msg)
-		Send(msg)
+		if jsonMessage, err := json.Marshal(msg); err != nil { 
+			fmt.Printf("json.Unmarshal error: %s\n", err)
+		} else {
+			sendChan <- udpMessage{raddr: "broadcast", data: jsonMessage, length: len(jsonMessage)}
+		}
 		time.Sleep(time.Millisecond)
-	}
-}
-
-func Send(message defs.Message) { //now takes a pointer, does it still work over the network?
-	/*fmt.Println("Sending")
-	PrintMessage(message)
-	fmt.Println()*/
-	
-	if jsonMessage, err := json.Marshal(message); err != nil { //is json good? can it take a pointer?
-		fmt.Printf("json.Unmarshal error: %s\n", err)
-	} else {
-		sendChan <- udpMessage{raddr: "broadcast", data: jsonMessage, length: len(jsonMessage)}
 	}
 }
 
