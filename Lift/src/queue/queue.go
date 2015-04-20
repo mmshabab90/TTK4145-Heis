@@ -5,6 +5,7 @@ import (
 	"../defs"
 	"fmt"
 	"log"
+	"time"
 )
 
 var _ = fmt.Printf
@@ -378,5 +379,6 @@ func updateLocalQueue() {
 				}
 			}
 		}
+		time.Sleep(time.Millisecond)
 	}
 }

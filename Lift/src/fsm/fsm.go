@@ -72,6 +72,7 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 	default:
 		log.Fatalf("State %d is invalid!\n", state)
 	}
+
 	defs.SyncLightsChan <- true
 }
 
@@ -87,6 +88,7 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 	default:
 		//
 	}
+
 	defs.SyncLightsChan <- true
 }
 
@@ -199,6 +201,7 @@ func syncLights() {
 				}
 			}
 		}
+		time.Sleep(time.Millisecond)
 	}
 }
 
