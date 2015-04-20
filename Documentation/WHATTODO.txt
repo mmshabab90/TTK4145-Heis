@@ -10,4 +10,10 @@ kommuniser med driver via kanal
 
 får av og til "Makes no sense to arrive at a floor in state idle", hva skyldes dette?
 
-køer burde bli structs med tilknyttede funksjoner
+køer burde bli structs med tilknyttede funksjoner DONE!!!!!! OOOOH
+
+gi timeout på ordre slik at om noen svar mangler så gjøres det læll
+
+maybe: reassign alle ordre når det kommer en ny heis på nettverket
+
+synclights skal i en goroutine som syncer hver gang den får en melding (true), og den må kalles hver gang en bestilling legges til eller slettes også fra remote queue
