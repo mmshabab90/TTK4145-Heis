@@ -12,11 +12,11 @@ type UdpConnection struct {
 	Timer *time.Timer
 }
 
-func Print_udp_message(msg udpMessage) { //should this be private?
-	fmt.Printf("msg:  \n \t raddr = %s \n \t data = %s \n \t length = %v \n", msg.raddr, msg.data, msg.length)
-}
+// func Print_udp_message(msg udpMessage) { //should this be private?
+// 	fmt.Printf("msg:  \n \t raddr = %s \n \t data = %s \n \t length = %v \n", msg.raddr, msg.data, msg.length)
+// }
 
-func Udp_init(localListenPort, broadcastListenPort, message_size int, send_ch, receive_ch chan udpMessage) (err error) {
+func UdpInit(localListenPort, broadcastListenPort, message_size int, send_ch, receive_ch chan udpMessage) (err error) {
 	//Generating broadcast address
 	baddr, err = net.ResolveUDPAddr("udp4", "255.255.255.255:"+strconv.Itoa(broadcastListenPort))
 	if err != nil {

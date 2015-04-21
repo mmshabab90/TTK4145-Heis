@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-var ReceiveChan = make(chan udpMessage) //this is now buffered with 10 slots, does this lead to fuckup?
+var ReceiveChan = make(chan udpMessage)
 
 func Init() {
 	const localListenPort = 20057
 	const broadcastListenPort = 20058
 	const messageSize = 1024
 
-	err := Udp_init(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
+	err := UdpInit(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
 	if err != nil {
 		fmt.Print("Udp_init() error: %s \n", err)
 	}
