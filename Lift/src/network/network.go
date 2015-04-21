@@ -45,19 +45,15 @@ func pollMessages() { // change name to pollOutgoing or something
 }
 
 func ParseMessage(udpMessage udpMessage) defs.Message {
-	var message defs.Message
-	/*fmt.Println("in parsemessage")
-	PrintMessage(message)
-	PrintMessage(message)*/
-
 	fmt.Printf("before parse: %s from %s\n", string(udpMessage.data), udpMessage.raddr)
 
+	var message defs.Message
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
 
 	message.Addr = udpMessage.raddr
-	fmt.Printf("   ಠ_ಠ    %s\n", message.Addr)
+	fmt.Printf("ಠ_ಠ after Unmarshal:       %s\n", message.Addr)
 	return message
 }
 
