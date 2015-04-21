@@ -79,19 +79,16 @@ func PrintMessage(msg defs.Message) {
 	case defs.Alive:
 		fmt.Println("I'm alive")
 	case defs.NewOrder:
-		fmt.Println("New order:")
-		fmt.Printf("Floor: %d\n", msg.Floor)
-		fmt.Printf("Button: %d\n", msg.Button)
+		fmt.Println("New order")
 	case defs.CompleteOrder:
-		fmt.Println("Complete order:")
-		fmt.Printf("Floor: %d\n", msg.Floor)
-		fmt.Printf("Button: %d\n", msg.Button)
+		fmt.Println("Complete order")
 	case defs.Cost:
-		fmt.Printf("Floor: %d\n", msg.Floor)
-		fmt.Printf("Button: %d\n", msg.Button)
-		fmt.Printf("Cost: %d\n", msg.Cost)
+		fmt.Println("Cost:")
 	default:
 		fmt.Println("Invalid message type!\n")
 	}
+	fmt.Printf("Floor:  %d\n", msg.Floor)
+	fmt.Printf("Button: %d\n", msg.Button)
+	fmt.Printf("Cost:   %d\n", msg.Cost)
 	fmt.Println("-----Message end-------\n")
 }
