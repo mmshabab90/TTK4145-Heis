@@ -1,21 +1,20 @@
 package network
 
 import (
-	"../defs"
+	def "../config"
 	"fmt"
 	"net"
 	"strconv"
 	"time"
 )
 
-type UdpConnection struct {
-	Addr  string
-	Timer *time.Timer
-}
+var baddr *net.UDPAddr //Broadcast address
 
-// func Print_udp_message(msg udpMessage) { //should this be private?
-// 	fmt.Printf("msg:  \n \t raddr = %s \n \t data = %s \n \t length = %v \n", msg.raddr, msg.data, msg.length)
-// }
+type udpMessage struct {
+	raddr  string //if receiving raddr=senders address, if sending raddr should be set to "broadcast" or an ip:port
+	data   []byte
+	length int //length of received data, in #bytes // N/A for sending
+}
 
 func UdpInit(localListenPort, broadcastListenPort, message_size int, send_ch, receive_ch chan udpMessage) (err error) {
 	//Generating broadcast address
@@ -28,11 +27,11 @@ func UdpInit(localListenPort, broadcastListenPort, message_size int, send_ch, re
 	tempConn, err := net.DialUDP("udp4", nil, baddr)
 	defer tempConn.Close()
 	tempAddr := tempConn.LocalAddr()
-	defs.Laddr, err = net.ResolveUDPAddr("udp4", tempAddr.String())
-	defs.Laddr.Port = localListenPort
+	def.Laddr, err = net.ResolveUDPAddr("udp4", tempAddr.String())
+	def.Laddr.Port = localListenPort
 
 	//Creating local listening connections
-	localListenConn, err := net.ListenUDP("udp4", defs.Laddr)
+	localListenConn, err := net.ListenUDP("udp4", def.Laddr)
 	if err != nil {
 		return err
 	}
@@ -53,14 +52,6 @@ func UdpInit(localListenPort, broadcastListenPort, message_size int, send_ch, re
 }
 
 // --------------- PRIVATE: ---------------
-
-var baddr *net.UDPAddr //Broadcast address
-
-type udpMessage struct {
-	raddr  string //if receiving raddr=senders address, if sending raddr should be set to "broadcast" or an ip:port
-	data   []byte
-	length int //length of received data, in #bytes // N/A for sending
-}
 
 func udp_transmit_server(lconn, bconn *net.UDPConn, send_ch chan udpMessage) {
 	defer func() {

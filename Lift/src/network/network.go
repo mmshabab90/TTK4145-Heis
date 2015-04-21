@@ -1,31 +1,63 @@
 package network
 
 import (
-	"../defs"
+	def "../config"
 	"encoding/json"
 	"fmt"
 	"time"
 )
 
-var ReceiveChan = make(chan udpMessage)
+// Generic network message. No other messages are ever sent on the network.
+const (
+	Alive int = iota + 1
+	NewOrder
+	CompleteOrder
+	Cost
+)
+
+type Message struct {
+	Kind   int
+	Floor  int
+	Button int
+	Cost   int
+	Addr   string
+}
+
+var receiveChan = make(chan udpMessage)
+
+// Move these out of here:
+const spamInterval = 30 * time.Second
+const resetTime = 120 * time.Second // rename
 
 func Init() {
 	const localListenPort = 37103
 	const broadcastListenPort = 37104
 	const messageSize = 1024
 
-	err := UdpInit(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
+	err := UdpInit(localListenPort, broadcastListenPort, messageSize, sendChan, receiveChan)
 	if err != nil {
 		fmt.Print("UdpInit() error: %s \n", err)
 	}
 
 	go aliveSpammer()
-	go pollMessages()
+	go pollIncoming()
+	go pollOutgoing()
 }
 
-func pollMessages() { // change name to pollOutgoing or something
+func pollIncoming() { // merge with pollOutgoing?
 	for {
-		msg := <-defs.MessageChan
+		udpMsg <- receiveChan
+		msg := new(Message)
+		json.Unmarshal(udpMsg.data[:udpMsg.lenght], &msg)
+		// acceptance test msg here!
+		msg.Addr = udpMsg.raddr
+		incoming <- msg
+	}
+}
+
+func pollOutgoing() {
+	for {
+		msg := <-def.Outgoing
 
 		PrintMessage(msg)
 
@@ -44,46 +76,33 @@ func pollMessages() { // change name to pollOutgoing or something
 	}
 }
 
-func ParseMessage(udpMessage udpMessage) defs.Message {
-	fmt.Printf("before parse: %s from %s\n", string(udpMessage.data), udpMessage.raddr)
-
-	var message defs.Message
-	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
-		fmt.Printf("json.Unmarshal error: %s\n", err)
-	}
-
-	message.Addr = udpMessage.raddr
-	fmt.Printf("ಠ_ಠ after Unmarshal:       %s\n", message.Addr)
-	return message
-}
-
 // --------------- PRIVATE: ---------------
 
 var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	alive := defs.Message{Kind: defs.Alive, Storey: -1, Button: -1, Cost: -1}
+	alive := def.Message{Kind: def.Alive, Floor: -1, Button: -1, Cost: -1}
 	for {
-		defs.MessageChan <- alive
-		time.Sleep(defs.SpamInterval)
+		def.Outgoing <- alive
+		time.Sleep(def.SpamInterval)
 	}
 }
 
-func PrintMessage(msg defs.Message) {
+func PrintMessage(msg def.Message) {
 	fmt.Printf("\n-----Message start-----\n")
 	switch msg.Kind {
-	case defs.Alive:
+	case def.Alive:
 		fmt.Println("I'm alive")
-	case defs.NewOrder:
+	case def.NewOrder:
 		fmt.Println("New order")
-	case defs.CompleteOrder:
+	case def.CompleteOrder:
 		fmt.Println("Complete order")
-	case defs.Cost:
+	case def.Cost:
 		fmt.Println("Cost:")
 	default:
 		fmt.Println("Invalid message type!\n")
 	}
-	fmt.Printf("Storey: %d\n", msg.Storey)
+	fmt.Printf("Floor: %d\n", msg.Floor)
 	fmt.Printf("Button: %d\n", msg.Button)
 	fmt.Printf("Cost:   %d\n", msg.Cost)
 	fmt.Println("-----Message end-------\n")
