@@ -10,13 +10,13 @@ import (
 var ReceiveChan = make(chan udpMessage)
 
 func Init() {
-	const localListenPort = 20057
-	const broadcastListenPort = 20058
+	const localListenPort = 37103
+	const broadcastListenPort = 37104
 	const messageSize = 1024
 
 	err := UdpInit(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
 	if err != nil {
-		fmt.Print("Udp_init() error: %s \n", err)
+		fmt.Print("UdpInit() error: %s \n", err)
 	}
 
 	go aliveSpammer()
@@ -83,7 +83,7 @@ func PrintMessage(msg defs.Message) {
 	default:
 		fmt.Println("Invalid message type!\n")
 	}
-	fmt.Printf("Storey:  %d\n", msg.Storey)
+	fmt.Printf("Storey: %d\n", msg.Storey)
 	fmt.Printf("Button: %d\n", msg.Button)
 	fmt.Printf("Cost:   %d\n", msg.Cost)
 	fmt.Println("-----Message end-------\n")
