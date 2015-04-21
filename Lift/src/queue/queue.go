@@ -13,15 +13,17 @@ import (
 var _ = fmt.Printf
 var _ = log.Printf
 
+const diskDebug = false
+
 type orderStatus struct {
-	active bool
-	addr   string
+	Active bool
+	Addr   string
 }
 
 var blankOrder = orderStatus{false, ""}
 
 type queue struct {
-	q [defs.NumFloors][defs.NumButtons]orderStatus
+	Q [defs.NumFloors][defs.NumButtons]orderStatus
 }
 
 var local queue
@@ -111,7 +113,7 @@ func ReassignOrders(deadAddr string) {
 	// send neworder-message for each removed order
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
-			if remote.q[f][b].addr == deadAddr {
+			if remote.Q[f][b].Addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
 				reassignMessage := defs.Message{
 					Kind:   defs.NewOrder,
@@ -162,13 +164,13 @@ func Print() {
 		}
 		if remote.isActiveOrder(f, defs.ButtonCallUp) {
 			fmt.Printf("↑")
-			lifts += "(↑ " + defs.LastPartOfIp(remote.q[f][defs.ButtonCallUp].addr) + ")"
+			lifts += "(↑ " + defs.LastPartOfIp(remote.Q[f][defs.ButtonCallUp].Addr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
 		if remote.isActiveOrder(f, defs.ButtonCallDown) {
 			fmt.Printf("↓")
-			lifts += "(↓ " + defs.LastPartOfIp(remote.q[f][defs.ButtonCallDown].addr) + ")"
+			lifts += "(↓ " + defs.LastPartOfIp(remote.Q[f][defs.ButtonCallDown].Addr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
@@ -184,7 +186,7 @@ func Print() {
 func (q *queue) isEmpty() bool {
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
-			if q.q[f][b].active {
+			if q.Q[f][b].Active {
 				return false
 			}
 		}
@@ -193,11 +195,11 @@ func (q *queue) isEmpty() bool {
 }
 
 func (q *queue) setOrder(floor, button int, status orderStatus) {
-	q.q[floor][button] = status
+	q.Q[floor][button] = status
 }
 
 func (q *queue) isActiveOrder(floor, button int) bool {
-	return q.q[floor][button].active
+	return q.Q[floor][button].Active
 }
 
 func (q *queue) isOrdersAbove(floor int) bool {
@@ -279,7 +281,7 @@ func (q *queue) deepCopy() *queue {
 	var copy queue
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
-			copy.q[f][b] = q.q[f][b]
+			copy.Q[f][b] = q.Q[f][b]
 		}
 	}
 	return &copy
@@ -356,7 +358,7 @@ func updateLocalQueue() {
 		for f := 0; f < defs.NumFloors; f++ {
 			for b := 0; b < defs.NumButtons; b++ {
 				if remote.isActiveOrder(f, b) {
-					if b != defs.ButtonCommand && remote.q[f][b].addr == defs.Laddr.String() {
+					if b != defs.ButtonCommand && remote.Q[f][b].Addr == defs.Laddr.String() {
 						local.setOrder(f, b, orderStatus{true, ""})
 					}
 				}
@@ -377,13 +379,18 @@ func runBackup() {
 
 	for {
 		<-backup
-		local.saveToDisk(filenameLocal)
-		remote.saveToDisk(filenameRemote)
+		if err := local.saveToDisk(filenameLocal); err != nil {
+			fmt.Println(err)
+		}
+		if err := remote.saveToDisk(filenameRemote); err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 
 func (q *queue) saveToDisk(filename string) error {
-	if fi, err := os.Create(filename); err != nil {
+	fi, err := os.Create(filename)
+	if err != nil {
 		return err
 	}
 	defer fi.Close()
@@ -391,15 +398,18 @@ func (q *queue) saveToDisk(filename string) error {
 	if err := gob.NewEncoder(fi).Encode(q); err != nil {
 		return err
 	}
-
+	
+	if diskDebug {
+		fmt.Printf("Successful save of file %s\n", filename)
+	}
 	return nil
 }
 
 // loadFromDisk checks if a file of the given name is available on disk, and
 // saves its contents to the queue it's invoked on if the file is present.
-func (q *queue) loadFromDisk(filename string) {
+func (q *queue) loadFromDisk(filename string) error {
 	if _, err := os.Stat(filename); err == nil {
-		// File exists, processing...
+		fmt.Printf("Backup file %s exists, processing...\n", filename)
 		fi, err := os.Open(filename)
 		if err != nil {
 			return err
