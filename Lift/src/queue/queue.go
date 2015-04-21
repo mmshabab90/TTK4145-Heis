@@ -147,7 +147,7 @@ func Print() {
 	for f := defs.NumFloors - 1; f >= 0; f-- {
 		lifts := "   "
 
-		if local.isActiveOrder(f, defs.ButtonCallUp) {
+		if local.isActiveOrder(f, defs.ButtonUp) {
 			fmt.Printf("↑")
 		} else {
 			fmt.Printf(" ")
@@ -157,20 +157,20 @@ func Print() {
 		} else {
 			fmt.Printf(" ")
 		}
-		if local.isActiveOrder(f, defs.ButtonCallDown) {
+		if local.isActiveOrder(f, defs.ButtonDown) {
 			fmt.Printf("↓   %d  ", f+1)
 		} else {
 			fmt.Printf("    %d  ", f+1)
 		}
-		if remote.isActiveOrder(f, defs.ButtonCallUp) {
+		if remote.isActiveOrder(f, defs.ButtonUp) {
 			fmt.Printf("↑")
-			lifts += "(↑ " + defs.LastPartOfIp(remote.Q[f][defs.ButtonCallUp].Addr) + ")"
+			lifts += "(↑ " + defs.LastPartOfIp(remote.Q[f][defs.ButtonUp].Addr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
-		if remote.isActiveOrder(f, defs.ButtonCallDown) {
+		if remote.isActiveOrder(f, defs.ButtonDown) {
 			fmt.Printf("↓")
-			lifts += "(↓ " + defs.LastPartOfIp(remote.Q[f][defs.ButtonCallDown].Addr) + ")"
+			lifts += "(↓ " + defs.LastPartOfIp(remote.Q[f][defs.ButtonDown].Addr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
@@ -226,50 +226,50 @@ func (q *queue) isOrdersBelow(floor int) bool {
 
 func (q *queue) chooseDirection(floor, dir int) int {
 	if q.isEmpty() {
-		return defs.DirnStop
+		return defs.DirStop
 	}
 	switch dir {
-	case defs.DirnDown:
+	case defs.DirDown:
 		if q.isOrdersBelow(floor) && floor > 0 {
-			return defs.DirnDown
+			return defs.DirDown
 		} else {
-			return defs.DirnUp
+			return defs.DirUp
 		}
-	case defs.DirnUp:
+	case defs.DirUp:
 		if q.isOrdersAbove(floor) && floor < defs.NumFloors-1 {
-			return defs.DirnUp
+			return defs.DirUp
 		} else {
-			return defs.DirnDown
+			return defs.DirDown
 		}
-	case defs.DirnStop:
+	case defs.DirStop:
 		if q.isOrdersAbove(floor) {
-			return defs.DirnUp
+			return defs.DirUp
 		} else if q.isOrdersBelow(floor) {
-			return defs.DirnDown
+			return defs.DirDown
 		} else {
-			return defs.DirnStop
+			return defs.DirStop
 		}
 	default:
 		log.Printf("ChooseDirection(): called with invalid direction %d, returning stop\n", dir)
-		return defs.DirnStop
+		return defs.DirStop
 	}
 }
 
 func (q *queue) shouldStop(floor, dir int) bool {
 	switch dir {
-	case defs.DirnDown:
-		return q.isActiveOrder(floor, defs.ButtonCallDown) ||
+	case defs.DirDown:
+		return q.isActiveOrder(floor, defs.ButtonDown) ||
 			q.isActiveOrder(floor, defs.ButtonCommand) ||
 			floor == 0 ||
 			!q.isOrdersBelow(floor)
-	case defs.DirnUp:
-		return q.isActiveOrder(floor, defs.ButtonCallUp) ||
+	case defs.DirUp:
+		return q.isActiveOrder(floor, defs.ButtonUp) ||
 			q.isActiveOrder(floor, defs.ButtonCommand) ||
 			floor == defs.NumFloors-1 ||
 			!q.isOrdersAbove(floor)
-	case defs.DirnStop:
-		return q.isActiveOrder(floor, defs.ButtonCallDown) ||
-			q.isActiveOrder(floor, defs.ButtonCallUp) ||
+	case defs.DirStop:
+		return q.isActiveOrder(floor, defs.ButtonDown) ||
+			q.isActiveOrder(floor, defs.ButtonUp) ||
 			q.isActiveOrder(floor, defs.ButtonCommand)
 	default:
 		log.Printf("shouldStop() called with invalid direction %d!\n", dir)
@@ -295,22 +295,16 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 	floor := prevFloor
 	dir := currDir
 
-	fmt.Printf("Cost floor sequence: %v", currFloor)
-	// Go to valid state (a floor/dir that mirrors a button)
 	if currFloor == -1 {
 		// Between floors, add 1 cost
 		cost++
-	} else if dir != defs.DirnStop {
+	} else if dir != defs.DirStop {
 		// At floor, but moving, add 2 cost
 		cost += 2
-
-		if currFloor != prevFloor {
-			fmt.Println("not goode: currFloor != prevFloor")
-		}
 	}
 
 	floor, dir = incrementFloor(floor, dir)
-	fmt.Printf(" →  %v", floor)
+	fmt.Printf("Cost floor sequence: %v →  %v", currFloor, floor)
 
 	for !(floor == targetFloor && q.shouldStop(floor, dir)) {
 		if q.shouldStop(floor, dir) {
@@ -329,22 +323,22 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 func incrementFloor(floor, dir int) (int, int) {
 	// fmt.Printf("(incr:f%v d%v)", floor, dir)
 	switch dir {
-	case defs.DirnDown:
+	case defs.DirDown:
 		floor--
-	case defs.DirnUp:
+	case defs.DirUp:
 		floor++
-	case defs.DirnStop:
+	case defs.DirStop:
 		// fmt.Println("incrementFloor(): direction stop, not incremented (this is okay)")
 	default:
 		fmt.Println("incrementFloor(): invalid direction, not incremented")
 	}
 
-	if floor <= 0 && dir == defs.DirnDown {
-		dir = defs.DirnUp
+	if floor <= 0 && dir == defs.DirDown {
+		dir = defs.DirUp
 		floor = 0
 	}
-	if floor >= defs.NumFloors-1 && dir == defs.DirnUp {
-		dir = defs.DirnDown
+	if floor >= defs.NumFloors-1 && dir == defs.DirUp {
+		dir = defs.DirDown
 		floor = defs.NumFloors - 1
 	}
 	return floor, dir
@@ -398,7 +392,7 @@ func (q *queue) saveToDisk(filename string) error {
 	if err := gob.NewEncoder(fi).Encode(q); err != nil {
 		return err
 	}
-	
+
 	if diskDebug {
 		fmt.Printf("Successful save of file %s\n", filename)
 	}
@@ -420,6 +414,8 @@ func (q *queue) loadFromDisk(filename string) error {
 			return err
 		}
 	}
+
+	// Ny ide: If not empty, event button pressed.
 
 	return nil
 }

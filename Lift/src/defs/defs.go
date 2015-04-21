@@ -11,15 +11,15 @@ const NumButtons = 3
 const NumFloors = 4
 
 const (
-	ButtonCallUp int = iota
-	ButtonCallDown
+	ButtonUp int = iota
+	ButtonDown
 	ButtonCommand // Rename to ButtonInternal or something
 )
 
-const ( // Rename to DirDown etc.
-	DirnDown int = iota - 1
-	DirnStop
-	DirnUp
+const (
+	DirDown int = iota - 1
+	DirStop
+	DirUp
 )
 
 const MaxInt = int(^uint(0) >> 1)
@@ -33,6 +33,7 @@ const (
 	CompleteOrder
 	Cost
 )
+
 // Generic network message. No other messages are ever sent on the network.
 type Message struct {
 	Kind   int

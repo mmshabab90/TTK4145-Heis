@@ -34,12 +34,12 @@ func Init() {
 	log.Println("FSM Init")
 	go startTimer()
 	state = idle
-	direction = defs.DirnStop
+	direction = defs.DirStop
 	floor = hw.Floor()
 	if floor == -1 {
 		floor = hw.MoveToDefinedState()
 	}
-	departDirection = defs.DirnDown
+	departDirection = defs.DirDown
 	go syncLights()
 }
 
@@ -51,12 +51,12 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 	case idle:
 		queue.AddLocalOrder(buttonFloor, buttonType)
 		switch direction = queue.ChooseDirection(floor, direction); direction {
-		case defs.DirnStop:
+		case defs.DirStop:
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			doorReset <- true
 			state = doorOpen
-		case defs.DirnUp, defs.DirnDown:
+		case defs.DirUp, defs.DirDown:
 			hw.SetMotorDirection(direction)
 			departDirection = direction
 			state = moving
@@ -102,12 +102,12 @@ func EventExternalOrderGivenToMe() {
 	switch state {
 	case idle:
 		switch direction = queue.ChooseDirection(floor, direction); direction {
-		case defs.DirnStop:
+		case defs.DirStop:
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			doorReset <- true
 			state = doorOpen
-		case defs.DirnUp, defs.DirnDown:
+		case defs.DirUp, defs.DirDown:
 			hw.SetMotorDirection(direction)
 			departDirection = direction
 			state = moving
@@ -126,7 +126,7 @@ func EventFloorReached(newFloor int) {
 	switch state {
 	case moving:
 		if queue.ShouldStop(floor, direction) {
-			hw.SetMotorDirection(defs.DirnStop)
+			hw.SetMotorDirection(defs.DirStop)
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			go queue.SendOrderCompleteMessage(floor)
@@ -149,7 +149,7 @@ func EventDoorTimeout() {
 		direction = queue.ChooseDirection(floor, direction)
 		hw.SetDoorOpenLamp(false)
 		hw.SetMotorDirection(direction)
-		if direction == defs.DirnStop {
+		if direction == defs.DirStop {
 			state = idle
 		} else {
 			state = moving
@@ -193,8 +193,8 @@ func syncLights() {
 
 		for f := 0; f < defs.NumFloors; f++ {
 			for b := 0; b < defs.NumButtons; b++ {
-				if (b == defs.ButtonCallUp && f == defs.NumFloors-1) ||
-					(b == defs.ButtonCallDown && f == 0) {
+				if (b == defs.ButtonUp && f == defs.NumFloors-1) ||
+					(b == defs.ButtonDown && f == 0) {
 					continue
 				} else {
 					hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
@@ -220,9 +220,9 @@ func stateString(state stateType) string {
 
 func buttonString(button int) string {
 	switch button {
-	case defs.ButtonCallUp:
+	case defs.ButtonUp:
 		return "up"
-	case defs.ButtonCallDown:
+	case defs.ButtonDown:
 		return "down"
 	case defs.ButtonCommand:
 		return "command"

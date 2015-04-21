@@ -61,7 +61,7 @@ func run() {
 			switch keypress.button {
 			case defs.ButtonCommand:
 				fsm.EventInternalButtonPressed(keypress.floor, keypress.button)
-			case defs.ButtonCallUp, defs.ButtonCallDown:
+			case defs.ButtonUp, defs.ButtonDown:
 				fsm.EventExternalButtonPressed(keypress.floor, keypress.button)
 			default:
 				// maybe care about bad button here
@@ -86,8 +86,8 @@ func pollButtons() <-chan keypress {
 		for {
 			for f := 0; f < defs.NumFloors; f++ {
 				for b := 0; b < defs.NumButtons; b++ {
-					if (f == 0 && b == defs.ButtonCallDown) ||
-						(f == defs.NumFloors-1 && b == defs.ButtonCallUp) {
+					if (f == 0 && b == defs.ButtonDown) ||
+						(f == defs.NumFloors-1 && b == defs.ButtonUp) {
 						continue
 					}
 					if hw.ReadButton(f, b) {
@@ -223,7 +223,7 @@ func liftAssigner() {
 					// go orderTimer(&newOrder)
 				}
 				evaluateLists(assignmentQueue)
-			/*case newOrder := <-orderTimeoutChan:
+				/*case newOrder := <-orderTimeoutChan:
 				fmt.Printf("\n\n ORDER TIMED OUT!\n")
 				// newOrder.timeout = true
 				evaluateLists(assignmentQueue)*/
