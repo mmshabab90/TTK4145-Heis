@@ -40,7 +40,7 @@ type Message struct {
 	Storey int
 	Button int
 	Cost   int
-	Addr   string `json:"-"`
+	Addr   string
 }
 
 var MessageChan = make(chan Message) // vurder buff
