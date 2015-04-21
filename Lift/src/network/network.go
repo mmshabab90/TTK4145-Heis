@@ -20,10 +20,10 @@ func Init() {
 	const localListenPort = 20057
 	const broadcastListenPort = 20058
 	const messageSize = 1024
+	
 	err := Udp_init(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
-
 	if err != nil {
-		fmt.Print("err = %s \n", err)
+		fmt.Print("Udp_init() error: %s \n", err)
 	}
 
 	go aliveSpammer()
@@ -31,9 +31,8 @@ func Init() {
 }
 
 func pollMessages() { // change name to pollOutgoing or something
-	var msg defs.Message
 	for {
-		msg = <-defs.MessageChan
+		msg := <-defs.MessageChan
 
 		PrintMessage(msg)
 
@@ -74,10 +73,9 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	
-	message := defs.Message{Kind: defs.Alive}
+	alive := defs.Message{Kind: defs.Alive, Floor: -1, Button: -1, Cost: -1}
 	for {
-		defs.MessageChan <- message
+		defs.MessageChan <- alive
 		time.Sleep(defs.SpamInterval)
 	}
 }

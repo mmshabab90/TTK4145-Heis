@@ -117,8 +117,8 @@ func ReassignOrders(deadAddr string) {
 // SendOrderCompleteMessage communicates to the network that this lift has
 // taken care of orders at the given floor.
 func SendOrderCompleteMessage(floor int) {
-	message := &defs.Message{Kind: defs.CompleteOrder, Floor: floor}
-	defs.MessageChan <- *message
+	orderComplete := defs.Message{Kind: defs.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
+	defs.MessageChan <- orderComplete
 }
 
 // CalculateCost returns how much effort it is for this lift to carry out

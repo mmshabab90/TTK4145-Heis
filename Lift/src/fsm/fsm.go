@@ -83,7 +83,7 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 	switch state {
 	case idle, doorOpen, moving:
 		// send order on network
-		message := defs.Message{Kind: defs.NewOrder, Floor: buttonFloor, Button: buttonType}
+		message := defs.Message{Kind: defs.NewOrder, Floor: buttonFloor, Button: buttonType, Cost: -1}
 		defs.MessageChan <- message
 	default:
 		//
@@ -143,7 +143,7 @@ func EventFloorReached(newFloor int) {
 
 func EventDoorTimeout() {
 	fmt.Printf("\n\n   ☺      Event door timeout in state %s\n", stateString(state))
-	// queue.Print()
+	queue.Print()
 	switch state {
 	case doorOpen:
 		direction = queue.ChooseDirection(floor, direction)
