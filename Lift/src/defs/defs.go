@@ -8,7 +8,7 @@ import (
 
 // Global system constants
 const NumButtons = 3
-const NumFloors = 4
+const NumStoreys = 4
 
 const (
 	ButtonUp int = iota
@@ -37,7 +37,7 @@ const (
 // Generic network message. No other messages are ever sent on the network.
 type Message struct {
 	Kind   int
-	Floor  int
+	Storey int
 	Button int
 	Cost   int
 	Addr   string `json:"-"`

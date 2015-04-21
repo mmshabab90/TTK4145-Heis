@@ -20,7 +20,7 @@ var _ = errors.New
 
 type keypress struct {
 	button int
-	floor  int
+	storey int
 }
 
 var onlineLifts = make(map[string]network.UdpConnection)
@@ -34,7 +34,7 @@ type reply struct {
 	lift string
 }
 type order struct {
-	floor  int
+	storey int
 	button int
 	// timeout bool
 	// timer   *time.Timer
@@ -53,22 +53,22 @@ func main() {
 
 func run() {
 	buttonChan := pollButtons()
-	floorChan := pollFloors()
+	storeyChan := pollStoreys()
 
 	for {
 		select {
 		case keypress := <-buttonChan:
 			switch keypress.button {
 			case defs.ButtonCommand:
-				fsm.EventInternalButtonPressed(keypress.floor, keypress.button)
+				fsm.EventInternalButtonPressed(keypress.storey, keypress.button)
 			case defs.ButtonUp, defs.ButtonDown:
-				fsm.EventExternalButtonPressed(keypress.floor, keypress.button)
+				fsm.EventExternalButtonPressed(keypress.storey, keypress.button)
 			default:
 				// maybe care about bad button here
 			}
 
-		case floor := <-floorChan:
-			fsm.EventFloorReached(floor)
+		case storey := <-storeyChan:
+			fsm.EventStoreyReached(storey)
 		case udpMessage := <-network.ReceiveChan:
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
@@ -81,18 +81,18 @@ func pollButtons() <-chan keypress {
 	c := make(chan keypress)
 
 	go func() {
-		var buttonState [defs.NumFloors][defs.NumButtons]bool
+		var buttonState [defs.NumStoreys][defs.NumButtons]bool
 
 		for {
-			for f := 0; f < defs.NumFloors; f++ {
+			for f := 0; f < defs.NumStoreys; f++ {
 				for b := 0; b < defs.NumButtons; b++ {
 					if (f == 0 && b == defs.ButtonDown) ||
-						(f == defs.NumFloors-1 && b == defs.ButtonUp) {
+						(f == defs.NumStoreys-1 && b == defs.ButtonUp) {
 						continue
 					}
 					if hw.ReadButton(f, b) {
 						if !buttonState[f][b] {
-							c <- keypress{button: b, floor: f}
+							c <- keypress{button: b, storey: f}
 						}
 						buttonState[f][b] = true
 					} else {
@@ -107,18 +107,18 @@ func pollButtons() <-chan keypress {
 	return c
 }
 
-func pollFloors() <-chan int {
+func pollStoreys() <-chan int {
 	c := make(chan int)
 
 	go func() {
-		oldFloor := hw.Floor()
+		oldStorey := hw.Storey()
 
 		for {
-			newFloor := hw.Floor()
-			if newFloor != oldFloor && newFloor != -1 {
-				c <- newFloor
+			newStorey := hw.Storey()
+			if newStorey != oldStorey && newStorey != -1 {
+				c <- newStorey
 			}
-			oldFloor = newFloor
+			oldStorey = newStorey
 			time.Sleep(time.Millisecond)
 		}
 	}()
@@ -148,25 +148,25 @@ func handleMessage(message defs.Message) {
 		}
 	case defs.NewOrder:
 		fmt.Printf("handleMessage(): NewOrder message: f=%d b=%d from lift %s\n",
-			message.Floor+1, message.Button, message.Addr[12:15])
+			message.Storey+1, message.Button, message.Addr[12:15])
 
-		cost := queue.CalculateCost(message.Floor, message.Button, fsm.Floor(), hw.Floor(), fsm.Direction())
+		cost := queue.CalculateCost(message.Storey, message.Button, fsm.Storey(), hw.Storey(), fsm.Direction())
 
 		costMessage := defs.Message{
 			Kind:   defs.Cost,
-			Floor:  message.Floor,
+			Storey: message.Storey,
 			Button: message.Button,
 			Cost:   cost}
-		//fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Floor+1, costMessage.Button, costMessage.Cost)
+		//fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Storey+1, costMessage.Button, costMessage.Cost)
 		defs.MessageChan <- costMessage
 	case defs.CompleteOrder:
 		fmt.Println("handleMessage(): CompleteOrder message")
 		// remove from queues
-		queue.RemoveRemoteOrdersAt(message.Floor)
+		queue.RemoveRemoteOrdersAt(message.Storey)
 
 		// prob more to do here
 	case defs.Cost:
-		fmt.Printf("handleMessage(): Cost message: f=%d b=%d with cost %d from lift %s\n", message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
+		fmt.Printf("handleMessage(): Cost message: f=%d b=%d with cost %d from lift %s\n", message.Storey+1, message.Button, message.Cost, message.Addr[12:15])
 		costChan <- message
 	}
 }
@@ -233,7 +233,7 @@ func liftAssigner() {
 }
 
 func split(m defs.Message) (order, reply) {
-	return order{floor: m.Floor, button: m.Button}, reply{cost: m.Cost, lift: m.Addr}
+	return order{storey: m.Storey, button: m.Button}, reply{cost: m.Cost, lift: m.Addr}
 }
 
 // evaluateLists goes through the map of orders with associated costs, checks
@@ -273,9 +273,9 @@ func evaluateLists(que map[order][]reply) {
 				}
 			}
 			// Print winner:
-			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], key.floor+1, key.button)
+			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], key.storey+1, key.button)
 			// Assign order key to lift
-			queue.AddRemoteOrder(key.floor, key.button, lowAddr)
+			queue.AddRemoteOrder(key.storey, key.button, lowAddr)
 			//queue.PrintQueues()
 			if lowAddr == defs.Laddr.String() {
 				fsm.EventExternalOrderGivenToMe()

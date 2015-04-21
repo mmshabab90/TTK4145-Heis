@@ -62,7 +62,7 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	alive := defs.Message{Kind: defs.Alive, Floor: -1, Button: -1, Cost: -1}
+	alive := defs.Message{Kind: defs.Alive, Storey: -1, Button: -1, Cost: -1}
 	for {
 		defs.MessageChan <- alive
 		time.Sleep(defs.SpamInterval)
@@ -83,7 +83,7 @@ func PrintMessage(msg defs.Message) {
 	default:
 		fmt.Println("Invalid message type!\n")
 	}
-	fmt.Printf("Floor:  %d\n", msg.Floor)
+	fmt.Printf("Storey:  %d\n", msg.Storey)
 	fmt.Printf("Button: %d\n", msg.Button)
 	fmt.Printf("Cost:   %d\n", msg.Cost)
 	fmt.Println("-----Message end-------\n")

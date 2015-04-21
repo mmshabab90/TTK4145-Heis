@@ -11,13 +11,13 @@ import (
 	"log"
 )
 
-var lampChannelMatrix = [defs.NumFloors][defs.NumButtons]int{
+var lampChannelMatrix = [defs.NumStoreys][defs.NumButtons]int{
 	{LIGHT_UP1, LIGHT_DOWN1, LIGHT_COMMAND1},
 	{LIGHT_UP2, LIGHT_DOWN2, LIGHT_COMMAND2},
 	{LIGHT_UP3, LIGHT_DOWN3, LIGHT_COMMAND3},
 	{LIGHT_UP4, LIGHT_DOWN4, LIGHT_COMMAND4},
 }
-var buttonChannelMatrix = [defs.NumFloors][defs.NumButtons]int{
+var buttonChannelMatrix = [defs.NumStoreys][defs.NumButtons]int{
 	{BUTTON_UP1, BUTTON_DOWN1, BUTTON_COMMAND1},
 	{BUTTON_UP2, BUTTON_DOWN2, BUTTON_COMMAND2},
 	{BUTTON_UP3, BUTTON_DOWN3, BUTTON_COMMAND3},
@@ -30,12 +30,12 @@ func Init() error {
 		return errors.New("Hardware driver: ioInit() failed!")
 	}
 
-	// Zero all floor button lamps
-	for f := 0; f < defs.NumFloors; f++ {
+	// Zero all storey button lamps
+	for f := 0; f < defs.NumStoreys; f++ {
 		if f != 0 {
 			SetButtonLamp(f, defs.ButtonDown, false)
 		}
-		if f != defs.NumFloors-1 {
+		if f != defs.NumStoreys-1 {
 			SetButtonLamp(f, defs.ButtonUp, false)
 		}
 		SetButtonLamp(f, defs.ButtonCommand, false)
@@ -69,7 +69,7 @@ func SetDoorOpenLamp(value bool) {
 	}
 }
 
-func Floor() int {
+func Storey() int {
 	if ioReadBit(SENSOR_FLOOR1) {
 		return 0
 	} else if ioReadBit(SENSOR_FLOOR2) {
@@ -83,63 +83,63 @@ func Floor() int {
 	}
 }
 
-func SetFloorLamp(floor int) {
-	if floor < 0 || floor >= defs.NumFloors {
-		log.Printf("Error: Floor %d out of range!\n", floor)
-		log.Println("No floor indicator will be set.")
+func SetStoreyLamp(storey int) {
+	if storey < 0 || storey >= defs.NumStoreys {
+		log.Printf("Error: Storey %d out of range!\n", storey)
+		log.Println("No storey indicator will be set.")
 		return
 	}
 
 	// Binary encoding. One light must always be on.
-	if floor&0x02 > 0 {
+	if storey&0x02 > 0 {
 		ioSetBit(LIGHT_FLOOR_IND1)
 	} else {
 		ioClearBit(LIGHT_FLOOR_IND1)
 	}
 
-	if floor&0x01 > 0 {
+	if storey&0x01 > 0 {
 		ioSetBit(LIGHT_FLOOR_IND2)
 	} else {
 		ioClearBit(LIGHT_FLOOR_IND2)
 	}
 }
 
-func ReadButton(floor int, button int) bool {
-	if floor < 0 || floor >= defs.NumFloors {
-		log.Printf("Error: Floor %d out of range!\n", floor)
+func ReadButton(storey int, button int) bool {
+	if storey < 0 || storey >= defs.NumStoreys {
+		log.Printf("Error: Storey %d out of range!\n", storey)
 		return false
 	}
 	if button < 0 || button >= defs.NumButtons {
 		log.Printf("Error: Button %d out of range!\n", button)
 		return false
 	}
-	if button == defs.ButtonUp && floor == defs.NumFloors-1 {
-		log.Println("Button up from top floor does not exist!")
+	if button == defs.ButtonUp && storey == defs.NumStoreys-1 {
+		log.Println("Button up from top storey does not exist!")
 		return false
 	}
-	if button == defs.ButtonDown && floor == 0 {
-		log.Println("Button down from ground floor does not exist!")
+	if button == defs.ButtonDown && storey == 0 {
+		log.Println("Button down from ground storey does not exist!")
 		return false
 	}
 
-	if ioReadBit(buttonChannelMatrix[floor][button]) {
+	if ioReadBit(buttonChannelMatrix[storey][button]) {
 		return true
 	} else {
 		return false
 	}
 }
 
-func SetButtonLamp(floor int, button int, value bool) {
-	if floor < 0 || floor >= defs.NumFloors {
-		log.Printf("Error: Floor %d out of range!\n", floor)
+func SetButtonLamp(storey int, button int, value bool) {
+	if storey < 0 || storey >= defs.NumStoreys {
+		log.Printf("Error: Storey %d out of range!\n", storey)
 		return
 	}
-	if button == defs.ButtonUp && floor == defs.NumFloors-1 {
-		log.Println("Button up from top floor does not exist!")
+	if button == defs.ButtonUp && storey == defs.NumStoreys-1 {
+		log.Println("Button up from top storey does not exist!")
 		return
 	}
-	if button == defs.ButtonDown && floor == 0 {
-		log.Println("Button down from ground floor does not exist!")
+	if button == defs.ButtonDown && storey == 0 {
+		log.Println("Button down from ground storey does not exist!")
 		return
 	}
 	if button != defs.ButtonUp &&
@@ -150,21 +150,21 @@ func SetButtonLamp(floor int, button int, value bool) {
 	}
 
 	if value {
-		ioSetBit(lampChannelMatrix[floor][button])
+		ioSetBit(lampChannelMatrix[storey][button])
 	} else {
-		ioClearBit(lampChannelMatrix[floor][button])
+		ioClearBit(lampChannelMatrix[storey][button])
 	}
 }
 
 func MoveToDefinedState() int {
 	SetMotorDirection(defs.DirDown)
-	floor := Floor()
-	for floor == -1 {
-		floor = Floor()
+	storey := Storey()
+	for storey == -1 {
+		storey = Storey()
 	}
 	SetMotorDirection(defs.DirStop)
-	SetFloorLamp(floor)
-	return floor
+	SetStoreyLamp(storey)
+	return storey
 }
 
 // Not used:
