@@ -7,20 +7,13 @@ import (
 	"time"
 )
 
-// --------------- PUBLIC: ---------------
-
-type UdpConnection struct { //should this be in udp.go? or in poller.go?
-	Addr  string
-	Timer *time.Timer
-}
-
 var ReceiveChan = make(chan udpMessage) //this is now buffered with 10 slots, does this lead to fuckup?
 
 func Init() {
 	const localListenPort = 20057
 	const broadcastListenPort = 20058
 	const messageSize = 1024
-	
+
 	err := Udp_init(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
 	if err != nil {
 		fmt.Print("Udp_init() error: %s \n", err)
@@ -56,13 +49,13 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 	/*fmt.Println("in parsemessage")
 	PrintMessage(message)
 	PrintMessage(message)*/
-	
+
 	fmt.Printf("before parse: %s from %s\n", string(udpMessage.data), udpMessage.raddr)
-	
+
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
-	
+
 	message.Addr = udpMessage.raddr
 	fmt.Printf("   ಠ_ಠ    %s\n", message.Addr)
 	return message
