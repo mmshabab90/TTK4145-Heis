@@ -1,0 +1,1 @@
+When instances of (defs.Message) are made for sending on the network, they are sometimes made as pointers and sent to (defs.MessageChan) by dereferencing, but sometimes not.
