@@ -375,7 +375,7 @@ func runBackup() {
 	filenameRemote := "remoteQueueBackup"
 
 	local.loadFromDisk(filenameLocal)
-	remote.loadFromDisk(filenameRemote)
+	// remote.loadFromDisk(filenameRemote)
 
 	for {
 		<-backup
