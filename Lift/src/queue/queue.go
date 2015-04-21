@@ -104,11 +104,11 @@ func ReassignOrders(deadAddr string) {
 		for b := 0; b < defs.NumButtons; b++ {
 			if remote.q[f][b].addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
-				reassignMessage := &defs.Message{
+				reassignMessage := defs.Message{
 					Kind:   defs.NewOrder,
 					Floor:  f,
 					Button: b}
-				defs.MessageChan <- *reassignMessage
+				defs.MessageChan <- reassignMessage
 			}
 		}
 	}

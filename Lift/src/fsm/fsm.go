@@ -44,7 +44,7 @@ func Init() {
 }
 
 func EventInternalButtonPressed(buttonFloor int, buttonType int) {
-	fmt.Printf("\n\nEvent internal button (floor %d %s) pressed in state %s\n",
+	fmt.Printf("\n\n   ☺      Event internal button (floor %d %s) pressed in state %s\n",
 		buttonFloor, buttonString(buttonType), stateString(state))
 	queue.Print()
 	switch state {
@@ -77,14 +77,14 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 }
 
 func EventExternalButtonPressed(buttonFloor int, buttonType int) {
-	fmt.Printf("\n\nEvent external button (floor %d %s) pressed in state %s\n",
+	fmt.Printf("\n\n   ☺      Event external button (floor %d %s) pressed in state %s\n",
 		buttonFloor, buttonString(buttonType), stateString(state))
 	queue.Print()
 	switch state {
 	case idle, doorOpen, moving:
 		// send order on network
-		message := &defs.Message{Kind: defs.NewOrder, Floor: buttonFloor, Button: buttonType}
-		defs.MessageChan <- *message
+		message := defs.Message{Kind: defs.NewOrder, Floor: buttonFloor, Button: buttonType}
+		defs.MessageChan <- message
 	default:
 		//
 	}
@@ -93,7 +93,7 @@ func EventExternalButtonPressed(buttonFloor int, buttonType int) {
 }
 
 func EventExternalOrderGivenToMe() {
-	fmt.Printf("\n\nEvent external order given to me.\n")
+	fmt.Printf("\n\n   ☺      Event external order given to me.\n")
 	queue.Print()
 
 	if queue.IsLocalEmpty() {
@@ -113,13 +113,13 @@ func EventExternalOrderGivenToMe() {
 			state = moving
 		}
 	default:
-		fmt.Println("EventExternalOrderGivenToMe(): Not in idle, will ignore.")
+		fmt.Println("   ☺      EventExternalOrderGivenToMe(): Not in idle, will ignore.")
 	}
 	defs.SyncLightsChan <- true
 }
 
 func EventFloorReached(newFloor int) {
-	fmt.Printf("\n\nEvent floor %d reached in state %s\n", newFloor, stateString(state))
+	fmt.Printf("\n\n   ☺      Event floor %d reached in state %s\n", newFloor, stateString(state))
 	queue.Print()
 	floor = newFloor
 	hw.SetFloorLamp(floor)
@@ -142,7 +142,7 @@ func EventFloorReached(newFloor int) {
 }
 
 func EventDoorTimeout() {
-	fmt.Printf("\n\nEvent door timeout in state %s\n", stateString(state))
+	fmt.Printf("\n\n   ☺      Event door timeout in state %s\n", stateString(state))
 	// queue.Print()
 	switch state {
 	case doorOpen:
