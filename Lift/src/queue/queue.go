@@ -3,8 +3,10 @@ package queue
 
 import (
 	"../defs"
+	"encoding/gob"
 	"fmt"
 	"log"
+	"os"
 	"time"
 )
 
@@ -26,14 +28,18 @@ var local queue
 var remote queue
 
 var updateLocal = make(chan bool)
+var backup = make(chan bool)
 
 func init() {
+	go runBackup()
 	go updateLocalQueue()
 }
 
 // AddLocalOrder adds an order to the local queue.
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, ""})
+
+	backup <- true
 }
 
 // AddRemoteOrder adds the given order to the remote queue.
@@ -42,6 +48,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 
 	defs.SyncLightsChan <- true
 	updateLocal <- true
+	backup <- true
 }
 
 // RemoveRemoteOrdersAt removes all orders at the given floor from the remote
@@ -53,6 +60,7 @@ func RemoveRemoteOrdersAt(floor int) {
 
 	defs.SyncLightsChan <- true
 	updateLocal <- true
+	backup <- true
 }
 
 // ChooseDirection returns the direction the lift should continue after the
@@ -74,6 +82,7 @@ func RemoveOrdersAt(floor int) {
 		remote.setOrder(floor, b, blankOrder)
 	}
 	SendOrderCompleteMessage(floor) // bad abstraction
+	backup <- true
 }
 
 // IsOrder returns whether there in an order with the given floor and button
@@ -355,4 +364,52 @@ func updateLocalQueue() {
 		}
 		time.Sleep(time.Millisecond)
 	}
+}
+
+// runBackup loads queue data from file if file exists once and saves backups
+// whenever its asked to.
+func runBackup() {
+	filenameLocal := "localQueueBackup"
+	filenameRemote := "remoteQueueBackup"
+
+	local.loadFromDisk(filenameLocal)
+	remote.loadFromDisk(filenameRemote)
+
+	for {
+		<-backup
+		local.saveToDisk(filenameLocal)
+		remote.saveToDisk(filenameRemote)
+	}
+}
+
+func (q *queue) saveToDisk(filename string) error {
+	if fi, err := os.Create(filename); err != nil {
+		return err
+	}
+	defer fi.Close()
+
+	if err := gob.NewEncoder(fi).Encode(q); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// loadFromDisk checks if a file of the given name is available on disk, and
+// saves its contents to the queue it's invoked on if the file is present.
+func (q *queue) loadFromDisk(filename string) {
+	if _, err := os.Stat(filename); err == nil {
+		// File exists, processing...
+		fi, err := os.Open(filename)
+		if err != nil {
+			return err
+		}
+		defer fi.Close()
+
+		if err := gob.NewDecoder(fi).Decode(&q); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
