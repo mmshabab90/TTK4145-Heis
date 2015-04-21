@@ -49,7 +49,7 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 	queue.Print()
 	switch state {
 	case idle:
-		queue.AddInternalOrder(buttonFloor, buttonType)
+		queue.AddLocalOrder(buttonFloor, buttonType)
 		switch direction = queue.ChooseDirection(floor, direction); direction {
 		case defs.DirnStop:
 			hw.SetDoorOpenLamp(true)
@@ -65,10 +65,10 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 		if floor == buttonFloor {
 			doorReset <- true
 		} else {
-			queue.AddInternalOrder(buttonFloor, buttonType)
+			queue.AddLocalOrder(buttonFloor, buttonType)
 		}
 	case moving:
-		queue.AddInternalOrder(buttonFloor, buttonType)
+		queue.AddLocalOrder(buttonFloor, buttonType)
 	default:
 		log.Fatalf("State %d is invalid!\n", state)
 	}
