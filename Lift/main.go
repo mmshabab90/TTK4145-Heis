@@ -36,8 +36,8 @@ type reply struct {
 type order struct {
 	storey int
 	button int
-	// timeout bool
-	// timer   *time.Timer
+	timeout bool
+	timer   *time.Timer
 }
 
 func main() {
@@ -184,11 +184,23 @@ func connectionTimer(connection *network.UdpConnection) {
 	}
 }
 
-// func orderTimer(newOrder *order) {
-// 	<-newOrder.timer.C
-// 	orderTimeoutChan <- *newOrder
+func orderTimer(newOrder *order) {
+ 	<-newOrder.timer.C
+ 	orderTimeoutChan <- *newOrder
+}
 
-// }
+func (o *order) makeNewOrder(msg defs.Message) {
+	o.storey = msg.Storey
+	o.button = msg.Button
+}
+
+func (o *order) isSameOrder(other order) bool{
+	if other.storey == o.storey && other.button == o.button {
+		return true
+	} else {
+		return false
+	}
+}
 
 func liftAssigner() {
 	// collect cost values from all lifts
@@ -198,10 +210,21 @@ func liftAssigner() {
 	// lifts make the same choice every time
 	go func() {
 		assignmentQueue := make(map[order][]reply)
+		var newOrder order
 		for {
 			select {
 			case message := <-costChan:
-				newOrder, newReply := split(message)
+				fmt.Println("Let's find out where we crash!")
+				//newKey, newReply := split(message) //newKey is actually the worst name ever
+				newOrder.makeNewOrder(message)
+				fmt.Println("I guess we have crashed by now")
+				newReply := getReply(message)
+				for oldOrder := range assignmentQueue {
+					if newOrder.isSameOrder(oldOrder) {
+						newOrder = oldOrder
+					}
+				}
+				fmt.Println("How we crashed yet?")
 				// Check if order in queue
 				if value, exist := assignmentQueue[newOrder]; exist {
 					// Check if lift in list of that order
@@ -214,19 +237,23 @@ func liftAssigner() {
 					// Add it if not found
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-						//newOrder.timer.Reset(10 * time.Second)
+						fmt.Println("Reset the order timer")
+						newOrder.timer.Reset(1 * time.Millisecond)
+						fmt.Println("Reset of order timer done")
 					}
 				} else {
 					// If order not in queue at all, init order list with it
+					fmt.Println("let's try to make a timer")
+					newOrder.timer = time.NewTimer(1 * time.Millisecond)
+					fmt.Println("Timer created")
 					assignmentQueue[newOrder] = []reply{newReply}
-					// newOrder.timer = time.NewTimer(10 * time.Second)
-					// go orderTimer(&newOrder)
+					go orderTimer(&newOrder)
 				}
 				evaluateLists(assignmentQueue)
-				/*case newOrder := <-orderTimeoutChan:
+			case newOrder := <-orderTimeoutChan:
 				fmt.Printf("\n\n ORDER TIMED OUT!\n")
-				// newOrder.timeout = true
-				evaluateLists(assignmentQueue)*/
+				newOrder.timeout = true
+				evaluateLists(assignmentQueue)
 			}
 		}
 	}()
@@ -234,6 +261,10 @@ func liftAssigner() {
 
 func split(m defs.Message) (order, reply) {
 	return order{storey: m.Storey, button: m.Button}, reply{cost: m.Cost, lift: m.Addr}
+}
+
+func getReply(m defs.Message) reply {
+	return reply{cost: m.Cost, lift: m.Addr}
 }
 
 // evaluateLists goes through the map of orders with associated costs, checks
@@ -247,7 +278,7 @@ func evaluateLists(que map[order][]reply) {
 	fmt.Println(que)
 	for key, replyList := range que {
 		// Check if the list is complete
-		if len(replyList) == len(onlineLifts) /*|| key.timeout*/ {
+		if len(replyList) == len(onlineLifts) ||  key.timeout {
 			fmt.Printf("Laddr = %v\n", defs.Laddr)
 			var (
 				lowCost = defs.MaxInt
@@ -281,6 +312,9 @@ func evaluateLists(que map[order][]reply) {
 				fsm.EventExternalOrderGivenToMe()
 			}
 			// Empty list
+			fmt.Println("Now we should kill the timer")
+			key.timer.Stop()
+			fmt.Println("Timer killed")
 			delete(que, key)
 			// SUPERIMPORTANT: NOTIFY ABOUT EVENT NEW ORDER
 		}
