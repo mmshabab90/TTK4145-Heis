@@ -29,10 +29,12 @@ var backup = make(chan bool)
 var floorCompleted = make(chan int)
 var syncChan = make(chan bool)
 
-func Init(setButtonLamp chan<- def.Keypress) (floorCompleted chan bool) {
+func Init(setButtonLamp chan<- def.Keypress,
+	deathChan <-chan string) (floorCompleted chan bool) {
 	go runBackup()
 	go updateLocalQueue()
 	go syncLights(setButtonLamp)
+	go reassignOrders(deathCift)
 	
 	return floorCompleted
 }
@@ -109,17 +111,20 @@ func ShouldStop(floor, dir int) bool {
 	return local.shouldStop(floor, dir)
 }
 
-// ReassignOrders finds all orders assigned to the given dead lift, removes
+// reassignOrders finds all orders assigned to the given dead lift, removes
 // them from the remote queue, and sends them on the network as new, un-
 // assigned orders.
-func ReassignOrders(deadAddr string) {
+func reassignOrders(deathChan <-chan string) {
 	// loop thru remote queue
 	// remove all orders assigned to the dead lift
 	// send neworder-message for each removed order
-	for f := 0; f < def.NumFloors; f++ {
-		for b := 0; b < def.NumButtons; b++ {
-			if remote.Q[f][b].Addr == deadAddr {
-				NewKeypress(def.Keypress{f, b})
+	for {
+		deadAddr := <-deathChan
+		for f := 0; f < def.NumFloors; f++ {
+			for b := 0; b < def.NumButtons; b++ {
+				if remote.Q[f][b].Addr == deadAddr {
+					NewKeypress(def.Keypress{f, b})
+				}
 			}
 		}
 	}

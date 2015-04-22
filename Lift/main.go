@@ -23,9 +23,10 @@ func main() {
 	motorDir := make(chan int)
 	doorOpenLamp := make(chan bool)
 	floorLamp := make(chan int)
-	floorCompleted := queue.Init(floorLamp)
+	deathChan := make(chan string)
+	floorCompleted := queue.Init(floorLamp, deathChan)
 
-	network.Init(orderComplete)
+	network.Init(orderComplete, deathChan)
 	
 	floor := hw.Init(motorDir, doorOpenLamp, floorLamp)
 
@@ -42,7 +43,7 @@ func run(eventNewOrder <-chan bool,
 	for {
 		select {
 		case key := <-buttonChan:
-			queue.NewKeypress(key) // todo fix this function to accept type def.Keypress
+			queue.NewKeypress(key)
 			eventNewOrder <- true
 		case floor := <-floorChan:
 			eventFloorReached <- floor

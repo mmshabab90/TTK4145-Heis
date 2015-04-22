@@ -8,12 +8,12 @@ var costChan = make(chan message) // todo find better place
 
 var onlineLifts = make(map[string]*time.Timer)
 
-func init() {
+func InitMessageHandler(deathChan chan<- string) {
 	incoming := make(chan message)
-	go handleIncoming(incoming)
+	go handleIncoming(incoming, deathChan)
 }
 
-func handleIncoming(incoming <-chan message) {
+func handleIncoming(incoming <-chan message, deathChan chan<- string) {
 	for {
 		msg := <-incoming // formerly known as network.ReceiveChan
 		switch msg.kind {
@@ -24,7 +24,7 @@ func handleIncoming(incoming <-chan message) {
 			} else {
 				timer := time.NewTimer(resetTime)
 				onlineLifts[msg.addr] = timer
-				go waitForDeath(onlineLifts, msg.addr)
+				go waitForDeath(deathChan, onlineLifts, msg.addr)
 			}
 
 		case newOrder:

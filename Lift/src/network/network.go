@@ -30,7 +30,9 @@ var outgoing = make(chan message)
 const spamInterval = 30 * time.Second
 const resetTime = 120 * time.Second // rename
 
-func Init(floorCompleted <- chan int) {
+func Init(floorCompleted <- chan int,
+	deathChan chan<- string) {
+	InitMessageHandler(deathChan)
 	const localListenPort = 37103
 	const broadcastListenPort = 37104
 	const messageSize = 1024

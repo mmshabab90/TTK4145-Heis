@@ -18,15 +18,16 @@ type order struct {
 	// timer   *time.Timer
 }
 
+var deadLift = make(chan string)
+
 func init() {
 	go liftAssigner()
 }
 
-func waitForDeath(aliveLifts map[string]*time.Timer, deadAddr string) {
+func waitForDeath(deathChan chan<- string, aliveLifts map[string]*time.Timer, deadAddr string) {
 	<-onlineLifts[deadAddr].C
-	delete(onlineLifts, deadAddr)
-	//queue.ReassignOrders(deadAddr) // change to channel communication:
-	deadLift <- deadAddr // make someone read this
+	delete(aliveLifts, deadAddr)
+	deathChan <- deadAddr
 }
 
 // liftAssigner collects cost values from all lifts, decides which lift gets
