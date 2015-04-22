@@ -21,7 +21,9 @@ var buttonChannelMatrix = [def.NumFloors][def.NumButtons]int{
 	{BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 }
 
-func Init() floor int {
+func Init(motorDir <-chan int,
+	doorLamp <-chan bool,
+	floorLamp <-chan int) int {
 	if !ioInit() {
 		log.Fatalln("hw.Init(): ioInit() failed!")
 	}
@@ -40,27 +42,40 @@ func Init() floor int {
 	SetStopLamp(false)
 	SetDoorOpenLamp(false)
 
+	go setMotorDir(motorDir)
+	go setDoorLamp(doorLamp)
+	go setFloorLamp(floorLamp)
+
 	floor := moveToDefinedState()
-	return
+
+	return floor
 }
 
-func SetMotorDirection(dirn int) {
-	if dirn == 0 {
-		ioWriteAnalog(MOTOR, 0)
-	} else if dirn > 0 {
-		ioClearBit(MOTORDIR)
-		ioWriteAnalog(MOTOR, 2800)
-	} else if dirn < 0 {
-		ioSetBit(MOTORDIR)
-		ioWriteAnalog(MOTOR, 2800)
+func setMotorDir(motorDir <-chan int) {
+	var dir int
+	for {
+		dir = <-setMotorDir
+		if dir == 0 {
+			ioWriteAnalog(MOTOR, 0)
+		} else if dir > 0 {
+			ioClearBit(MOTORDIR)
+			ioWriteAnalog(MOTOR, 2800)
+		} else if dir < 0 {
+			ioSetBit(MOTORDIR)
+			ioWriteAnalog(MOTOR, 2800)
+		}
 	}
 }
 
-func SetDoorOpenLamp(value bool) {
-	if value {
-		ioSetBit(LIGHT_DOOR_OPEN)
-	} else {
-		ioClearBit(LIGHT_DOOR_OPEN)
+func setDoorLamp(doorLamp <-chan bool) {
+	var lamp bool
+	for {
+		lamp <- doorLamp
+		if value {
+			ioSetBit(LIGHT_DOOR_OPEN)
+		} else {
+			ioClearBit(LIGHT_DOOR_OPEN)
+		}
 	}
 }
 
@@ -78,24 +93,28 @@ func Floor() int {
 	}
 }
 
-func SetFloorLamp(floor int) {
-	if floor < 0 || floor >= def.NumFloors {
-		log.Printf("Error: Floor %d out of range!\n", floor)
-		log.Println("No floor indicator will be set.")
-		return
-	}
+func setFloorLamp(floorLamp <-chan int) {
+	var floor int
+	for {
+		floor <- floorLamp
+		if floor < 0 || floor >= def.NumFloors {
+			log.Printf("Error: Floor %d out of range!\n", floor)
+			log.Println("No floor indicator will be set.")
+			return
+		}
 
-	// Binary encoding. One light must always be on.
-	if floor&0x02 > 0 {
-		ioSetBit(LIGHT_FLOOR_IND1)
-	} else {
-		ioClearBit(LIGHT_FLOOR_IND1)
-	}
+		// Binary encoding. One light must always be on.
+		if floor&0x02 > 0 {
+			ioSetBit(LIGHT_FLOOR_IND1)
+		} else {
+			ioClearBit(LIGHT_FLOOR_IND1)
+		}
 
-	if floor&0x01 > 0 {
-		ioSetBit(LIGHT_FLOOR_IND2)
-	} else {
-		ioClearBit(LIGHT_FLOOR_IND2)
+		if floor&0x01 > 0 {
+			ioSetBit(LIGHT_FLOOR_IND2)
+		} else {
+			ioClearBit(LIGHT_FLOOR_IND2)
+		}
 	}
 }
 

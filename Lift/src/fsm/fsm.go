@@ -1,13 +1,12 @@
+// This finite state machine is based on code and ideas presented in Rob
+// Pike's talk 'Lexical Scanning in Go':
+// https://www.youtube.com/watch?v=HxaD_trXwRE
 package fsm
 
 import (
+	"../queue"
 	"log"
 )
-
-type keypress struct {
-	floor  int
-	button int
-}
 
 const (
 	dirDown int = iota - 1
@@ -15,100 +14,110 @@ const (
 	dirUp
 )
 
-const (
-	idle int = iota
-	moving
-	open
-)
-
-var floor int
-var dir int
-var departDir int
-
-func Init(eventNewOrder <-chan bool,
-	eventFloorReached <-chan int) {
-	log.Println("fsm.Init()")
-
-	eventDoorTimeout := make(chan bool)
-
-	state = idle
-	floor = hw.Init()
-	dir = dirStop
-	departDir = dirDown
-
-	go run(eventNewOrder, eventFloorReached, eventDoorTimeout)
+type lift struct {
+	floor int
+	dir   int
 }
 
-func run(eventNewOrder <-chan bool,
-	eventFloorReached <-chan int,
-	eventDoorTimeout <-chan bool) {
-	for {
-		select {
-		case <-eventNewOrder:
-			eventNewOrder()
-		case floor := <-eventFloorReached:
-			eventFloorReached(floor)
-		case <-eventDoorTimeout:
-			eventDoorTimeout()
-		}
+// stateFunc represents the state of the lift
+// as a function that returns the next state.
+type stateFunc func(*lift) stateFunc
+
+var eventNewOrder = make(chan bool)
+var eventFloorReached = make(chan int)
+var eventDoorTimeout = make(chan bool)
+
+func Init(startFloor int) (eventNewOrder <-chan bool, eventFloorReached <-chan int) {
+	l := &lift{
+		floor: startFloor,
+		dir:   dirStop,
+	}
+
+	go l.run()
+
+	return eventNewOrder, eventFloorReached
+}
+
+func (l *lift) run() {
+	for state := idle; state != nil; {
+		state = state(l)
 	}
 }
 
-func eventNewOrder() {
-	switch state {
-	case idle:
-		switch dir = queue.ChooseDirection(floor, dir); dir {
-		case dirStop:
-			eventFloorReached <- floor
-		case dirDown, dirUp:
-			// motorDir <- dir
-			departDir = dir
-			state = moving
+func idle(l *lift) stateFunc {
+	l.dir = dirStop
+	motorDir <- dirStop
+	doorOpenLamp <- true
+
+	select {
+
+	case <-eventNewOrder:
+		if queue.ShouldStop(l.floor, l.dir) {
+			return open
+		} else {
+			l.dir = queue.ChooseDirection(l.floor, l.dir)
+			return moving
 		}
-	case open:
+
+	case l.floor = <-eventFloorReached:
+		log.Printf("Makes no sense to arrive at a floor (%v) in state idle.\n", l.floor)
+		return idle
+
+	case <-eventDoorTimeout:
+		log.Printf("Makes no sense to time out door timer when in state idle.\n")
+		return idle
+	}
+}
+
+func moving(l *lift) stateFunc {
+	motorDir <- l.dir
+	doorOpenLamp <- false
+
+	select {
+
+	case <-eventNewOrder:
+		return moving
+
+	case l.floor = <-eventFloorReached:
+		if queue.ShouldStop(l.floor, l.dir) {
+			return open
+		} else {
+			l.dir = queue.ChooseDirection(l.floor, l.dir)
+			return moving
+		}
+
+	case <-eventDoorTimeout:
+		log.Println("Makes no sense to time out door timer when in state moving.")
+		return moving
+	}
+}
+
+func open(l *lift) stateFunc {
+	l.dir = dirStop
+	motorDir <- dirStop
+	doorOpenLamp <- true
+	orderComplete <- l.floor
+	doorReset <- true
+	queue.RemoveOrdersAt(l.floor) // maybe this should happen via 'orderComplete <- l.floor'
+
+	select {
+
+	case <-eventNewOrder:
 		if queue.ShouldStop() {
-			dir = dirStop // redundant
+			l.dir = l.dirStop // redundant
 			doorReset <- true
-			queue.RemoveOrdersAt(floor)
+			queue.RemoveOrdersAt(l.floor)
 		}
-	case moving:
-		// ignore
-	}
-}
+		return open
 
-func eventFloorReached(reachedFloor int) {
-	floor = reachedFloor
-	// floorLamp <- floor
-	switch state {
-	case moving:
-		if queue.ShouldStop(floor, dir) {
-			// motorDir <- dir
-			// doorOpenLamp <- true
-			queue.RemoveOrdersAt(floor)
-			// orderComplete <- floor
-			doorReset <- true
-			state = open
-		} else {
-			departDir = dir
-		}
-	default:
-		log.Printf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
-	}
-}
+	case l.floor = <-eventFloorReached:
+		log.Printf("Makes no sense to arrive at a floor (%v) in state door open.\n", l.floor)
 
-func eventDoorTimeout() {
-	// doorOpenLamp <- false
-	switch state {
-	case open:
-		dir = queue.ChooseDirection(floor, dir)
-		// motorDir <- dir
-		if dir == dirStop {
-			state = idle
+	case <-eventDoorTimeout:
+		if l.dir = queue.ChooseDirection(l.floor, l.dir); l.dir == dirStop {
+			return idle
 		} else {
-			state = moving
-			departDir = dir
+			return moving
 		}
-	default:
-		log.Fatalf("Makes no sense to time out when not in state door open\n")
 	}
 }

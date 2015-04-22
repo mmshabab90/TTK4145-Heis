@@ -25,17 +25,17 @@ type keypress struct {
 var orderTimeoutChan = make(chan order)
 
 func main() {
-	if err := hw.Init(); err != nil {
-		log.Fatal(err)
-	}
+	motorDir := make(chan int)
+	doorOpenLamp := make(chan bool)
+	floorLamp := make(chan int)
 
-	eventNewOrder := make(chan bool)
-	eventFloorReached := make(chan int)
+	floor := hw.Init(motorDir, doorOpenLamp, floorLamp)
 
-	fsm.Init(eventNewOrder, eventFloorReached)
 	network.Init()
 
-	run(eventNewOrder)
+	eventNewOrder, eventFloorReached := fsm.Init(floor)
+
+	run(eventNewOrder, eventFloorReached)
 }
 
 func run(eventNewOrder <-chan bool,
@@ -46,7 +46,7 @@ func run(eventNewOrder <-chan bool,
 	for {
 		select {
 		case key := <-buttonChan:
-			queue.AddKeypressOrder(key.floor, key.button)
+			queue.NewKeypress(key.floor, key.button)
 			eventNewOrder <- true
 		case floor := <-floorChan:
 			eventFloorReached <- floor

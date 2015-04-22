@@ -21,3 +21,5 @@ cost burde returnere noe høyt om den mislykkes med å rekne ut
 dokumenter (kommenter) alle funksjoner som har nytte av det
 
 meld fra om ny ordre om load av ikke-tom kø
+
+find a better udp driver

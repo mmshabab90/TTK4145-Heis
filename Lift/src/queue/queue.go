@@ -33,8 +33,10 @@ func init() {
 	go updateLocalQueue()
 }
 
-func AddKeypressOrder(floor, button) {
+func NewKeypress(floor, button) {
 	// todo write this
+	// add order to local if internal
+
 }
 
 // AddLocalOrder adds an order to the local queue.
