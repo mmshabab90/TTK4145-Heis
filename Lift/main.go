@@ -243,11 +243,11 @@ func liftAssigner() {
 					// Add it if not found
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-						newOrder.timer.Reset(1* time.Millisecond)
+						newOrder.timer.Reset(10* time.Second)
 					}
 				} else {
 					// If order not in queue at all, init order list with it
-					newOrder.timer = time.NewTimer(1 * time.Millisecond)
+					newOrder.timer = time.NewTimer(10 * time.Second)
 					assignmentQueue[newOrder] = []reply{newReply}
 					go costTimer(&newOrder)
 				}
