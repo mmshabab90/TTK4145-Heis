@@ -205,6 +205,10 @@ func (o *order) isSameOrder(other order) bool{
 	}
 }
 
+func (o *order) setTimeout(b bool) {
+	o.timeout = b
+}
+
 func liftAssigner() {
 	// collect cost values from all lifts
 	// decide which lift gets the order when all lifts
@@ -217,17 +221,16 @@ func liftAssigner() {
 		for {
 			select {
 			case message := <-costChan:
-				fmt.Println("Let's find out where we crash!")
 				//newKey, newReply := split(message) //newKey is actually the worst name ever
 				newOrder.makeNewOrder(message)
-				fmt.Println("I guess we have crashed by now")
 				newReply := getReply(message)
+
 				for oldOrder := range assignmentQueue {
 					if newOrder.isSameOrder(oldOrder) {
 						newOrder = oldOrder
 					}
 				}
-				fmt.Println("Have we crashed yet?!")
+				
 				// Check if order in queue
 				if value, exist := assignmentQueue[newOrder]; exist {
 					// Check if lift in list of that order
@@ -240,22 +243,18 @@ func liftAssigner() {
 					// Add it if not found
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-						fmt.Println("Reset the order timer")
-						newOrder.timer.Reset(10* time.Second)
-						fmt.Println("Reset of order timer done")
+						newOrder.timer.Reset(1* time.Millisecond)
 					}
 				} else {
 					// If order not in queue at all, init order list with it
-					fmt.Println("let's try to make a timer")
-					newOrder.timer = time.NewTimer(10 * time.Second)
-					fmt.Println("Timer created")
+					newOrder.timer = time.NewTimer(1 * time.Millisecond)
 					assignmentQueue[newOrder] = []reply{newReply}
 					go costTimer(&newOrder)
 				}
 				evaluateLists(&assignmentQueue)
 			case newOrder := <-costTimeoutChan:
 				fmt.Printf("\n ORDER TIMED OUT!\n\n")
-				newOrder.timeout = true
+				newOrder.setTimeout(true)
 				evaluateLists(&assignmentQueue)
 			}
 		}
@@ -278,7 +277,7 @@ func getReply(m defs.Message) reply {
 func evaluateLists(que *(map[order][]reply)) {
 	// Loop thru all lists
 	fmt.Printf("Lists: ")
-	fmt.Println(que)
+	fmt.Println(*que)
 	for key, replyList := range *que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) ||  key.timeout {
@@ -315,9 +314,7 @@ func evaluateLists(que *(map[order][]reply)) {
 				fsm.EventExternalOrderGivenToMe()
 			}
 			// Empty list
-			fmt.Println("Now we should kill the timer")
 			key.timer.Stop()
-			fmt.Println("Timer killed")
 			delete(*que, key)
 			// SUPERIMPORTANT: NOTIFY ABOUT EVENT NEW ORDER
 		}
