@@ -4,42 +4,45 @@ import (
 	"time"
 )
 
-var costChan = make(chan message) // todo find better place
+var costChan = make(chan Message) // todo find better place
 
 var onlineLifts = make(map[string]*time.Timer)
 
 func InitMessageHandler(deathChan chan<- string) {
-	incoming := make(chan message)
+	incoming := make(chan Message)
 	go handleIncoming(incoming, deathChan)
 }
 
-func handleIncoming(incoming <-chan message, deathChan chan<- string) {
-	for {
-		msg := <-incoming // formerly known as network.ReceiveChan
-		switch msg.kind {
+func messageForwarder() {
+}
 
-		case alive:
-			if timer, exist := onlineLifts[msg.addr]; exist {
+func handleIncoming(incoming <-chan Message, deathChan chan<- string) {
+	for {
+		msg := <-incoming
+		switch msg.Kind {
+
+		case Alive:
+			if timer, exist := onlineLifts[msg.Addr]; exist {
 				timer.Reset(resetTime)
 			} else {
 				timer := time.NewTimer(resetTime)
-				onlineLifts[msg.addr] = timer
-				go waitForDeath(deathChan, onlineLifts, msg.addr)
+				onlineLifts[msg.Addr] = timer
+				go waitForDeath(deathChan, onlineLifts, msg.Addr)
 			}
 
-		case newOrder:
-			costValue := queue.CalculateCost(msg.floor, msg.button,
+		case NewOrder:
+			costValue := queue.CalculateCost(msg.Floor, msg.Button,
 				fsm.Floor(), hw.Floor(), fsm.Direction())
-			outgoing <- message{
-				kind:   cost,
-				floor:  msg.floor,
-				button: msg.button,
-				cost:   costValue}
+			outgoing <- Message{
+				Kind:   Cost,
+				Floor:  msg.Floor,
+				Button: msg.Button,
+				Cost:   costValue}
 
-		case completeOrder:
-			queue.RemoveRemoteOrdersAt(msg.floor)
+		case CompleteOrder:
+			queue.RemoveRemoteOrdersAt(msg.Floor)
 
-		case cost:
+		case Cost:
 			costChan <- msg
 		}
 	}

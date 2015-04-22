@@ -8,30 +8,29 @@ import (
 
 // Generic network message. No other messages are ever sent on the network.
 const (
-	alive int = iota + 1
-	newOrder
-	completeOrder
-	cost
+	Alive int = iota + 1
+	NewOrder
+	CompleteOrder
+	Cost
 )
 
-type message struct {
-	kind   int
-	floor  int
-	button int
-	cost   int
-	addr   string
+type Message struct {
+	Kind   int
+	Floor  int
+	Button int
+	Cost   int
+	Addr   string
 }
 
 var receiveChan = make(chan udpMessage)
-var incoming = make(chan message)
-var outgoing = make(chan message)
+var incoming = make(chan Message)
+var outgoing = make(chan Message)
 
 // Move these out of here:
 const spamInterval = 30 * time.Second
 const resetTime = 120 * time.Second // rename
 
-func Init(floorCompleted <- chan int,
-	deathChan chan<- string) {
+func Init(floorCompleted <- chan int, deathChan chan<- string, addRemoteOrder chan<- RemoteOrder) {
 	InitMessageHandler(deathChan)
 	const localListenPort = 37103
 	const broadcastListenPort = 37104
@@ -46,24 +45,25 @@ func Init(floorCompleted <- chan int,
 	go aliveSpammer()
 	go pollIncoming()
 	go pollOutgoing()
+	go liftAssigner(addRemoteOrder)
 }
 
 func floorCompleteForwarder(floorCompleted <-chan int) {
 	for {
 		floor := <- floorCompleted
-		outgoing <- message{
-			kind: completeOrder,
-			floor: floor}
+		outgoing <- Message{
+			Kind: CompleteOrder,
+			Floor: floor}
 	}
 }
 
 func pollIncoming() { // merge with pollOutgoing?
 	for {
 		udpMsg := <- receiveChan
-		var msg message
+		var msg Message
 		json.Unmarshal(udpMsg.data[:udpMsg.length], &msg)
 		// acceptance test msg here!
-		msg.addr = udpMsg.raddr
+		msg.Addr = udpMsg.raddr
 		incoming <- msg
 	}
 }
@@ -94,33 +94,33 @@ func pollOutgoing() {
 var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	alive := message{
-		kind: alive,
-		floor: -1,
-		button: -1,
-		cost: -1}
+	alive := Message{
+		Kind: Alive,
+		Floor: -1,
+		Button: -1,
+		Cost: -1}
 	for {
 		outgoing <- alive
 		time.Sleep(spamInterval)
 	}
 }
 
-func PrintMessage(msg message) {
+func PrintMessage(msg Message) {
 	fmt.Printf("\n-----Message start-----\n")
-	switch msg.kind {
-	case alive:
+	switch msg.Kind {
+	case Alive:
 		fmt.Println("I'm alive")
-	case newOrder:
+	case NewOrder:
 		fmt.Println("New order")
-	case completeOrder:
+	case CompleteOrder:
 		fmt.Println("Complete order")
-	case cost:
+	case Cost:
 		fmt.Println("Cost:")
 	default:
 		fmt.Println("Invalid message type!\n")
 	}
-	fmt.Printf("Floor: %d\n", msg.floor)
-	fmt.Printf("Button: %d\n", msg.button)
-	fmt.Printf("Cost:   %d\n", msg.cost)
+	fmt.Printf("Floor: %d\n", msg.Floor)
+	fmt.Printf("Button: %d\n", msg.Button)
+	fmt.Printf("Cost:   %d\n", msg.Cost)
 	fmt.Println("-----Message end-------\n")
 }

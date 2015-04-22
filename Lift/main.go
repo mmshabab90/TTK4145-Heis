@@ -26,17 +26,17 @@ func main() {
 	deathChan := make(chan string)
 	floorCompleted := queue.Init(floorLamp, deathChan)
 
-	network.Init(orderComplete, deathChan)
-	
 	floor := hw.Init(motorDir, doorOpenLamp, floorLamp)
-
 	eventNewOrder, eventFloorReached := fsm.Init(floor)
 
-	run(eventNewOrder, eventFloorReached)
+	messageChan := make(chan network.Message)
+	addRemoteOrder := make(chan network.RemoteOrder)
+	network.Init(orderComplete, deathChan, messageChan, addRemoteOrder)
+	run(eventNewOrder, eventFloorReached, messageChan)
 }
 
-func run(eventNewOrder <-chan bool,
-	eventFloorReached <-chan int) {
+func run(eventNewOrder <-chan bool, eventFloorReached <-chan int, messageChan <-chan network.Message) {
+	
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
 
@@ -47,6 +47,10 @@ func run(eventNewOrder <-chan bool,
 			eventNewOrder <- true
 		case floor := <-floorChan:
 			eventFloorReached <- floor
+		case msg := <-messageChan:
+			handleMessage(msg)
+		case order := <-addRemoteOrder:
+			queue.AddRemoteOrder(order.Floor, order.Button, order.Addr)
 		}
 	}
 }

@@ -18,11 +18,13 @@ type order struct {
 	// timer   *time.Timer
 }
 
-var deadLift = make(chan string)
-
-func init() {
-	go liftAssigner()
+type RemoteOrder struct {
+	Floor int
+	Button int
+	Addr string
 }
+
+var deadLift = make(chan string)
 
 func waitForDeath(deathChan chan<- string, aliveLifts map[string]*time.Timer, deadAddr string) {
 	<-onlineLifts[deadAddr].C
@@ -32,7 +34,7 @@ func waitForDeath(deathChan chan<- string, aliveLifts map[string]*time.Timer, de
 
 // liftAssigner collects cost values from all lifts, decides which lift gets
 // the order when all lifts in alive-list have answered or after a timeout.
-func liftAssigner() {
+func liftAssigner(addRemoteOrder chan<- RemoteOrder) {
 	assignmentQueue := make(map[order][]reply)
 	for {
 		message := <-costChan
@@ -58,7 +60,7 @@ func liftAssigner() {
 			// newOrder.timer = time.NewTimer(10 * time.Second)
 			// go orderTimer(&newOrder)
 		}
-		evaluateLists(assignmentQueue)
+		evaluateLists(assignmentQueue, addRemoteOrder)
 		/*case newOrder := <-orderTimeoutChan:
 		fmt.Printf("\n\n ORDER TIMED OUT!\n")
 		// newOrder.timeout = true
@@ -66,8 +68,8 @@ func liftAssigner() {
 	}
 }
 
-func split(m message) (order, reply) {
-	return order{floor: m.floor, button: m.button}, reply{cost: m.cost, lift: m.addr}
+func split(m Message) (order, reply) {
+	return order{floor: m.Floor, button: m.Button}, reply{cost: m.Cost, lift: m.Addr}
 }
 
 // evaluateLists goes through the map of orders with associated costs, checks
@@ -75,7 +77,7 @@ func split(m message) (order, reply) {
 // the best candidate for all such orders. The best candidate is added to the
 // shared queue.
 // This is very cryptic and ungood.
-func evaluateLists(que map[order][]reply) {
+func evaluateLists(que map[order][]reply, addRemoteOrder chan<- RemoteOrder) {
 	// Loop thru all lists
 	fmt.Printf("Lists: ")
 	fmt.Println(que)
@@ -104,12 +106,7 @@ func evaluateLists(que map[order][]reply) {
 			// Print winner:
 			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], key.floor+1, key.button)
 			// Assign order key to lift
-			queue.AddRemoteOrder(key.floor, key.button, lowAddr)
-
-			if lowAddr == def.Laddr.String() {
-				fsm.EventExternalOrderGivenToMe()
-			}
-
+			addRemoteOrder <- RemoteOrder{key.floor, key.button, lowAddr}
 			delete(que, key)
 		}
 	}
