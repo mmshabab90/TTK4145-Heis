@@ -224,7 +224,7 @@ func liftAssigner() {
 						newOrder = oldOrder
 					}
 				}
-				fmt.Println("How we crashed yet?")
+				fmt.Println("How we crashed yet?!")
 				// Check if order in queue
 				if value, exist := assignmentQueue[newOrder]; exist {
 					// Check if lift in list of that order
