@@ -2,9 +2,9 @@
 package network
 
 import (
-	"time"
 	def "../config"
 	"fmt"
+	"time"
 )
 
 type reply struct {
@@ -26,18 +26,12 @@ type RemoteOrder struct {
 
 var deadLift = make(chan string)
 
-func waitForDeath(deathChan chan<- string, aliveLifts map[string]*time.Timer, deadAddr string) {
-	<-onlineLifts[deadAddr].C
-	delete(aliveLifts, deadAddr)
-	deathChan <- deadAddr
-}
-
 // liftAssigner collects cost values from all lifts, decides which lift gets
 // the order when all lifts in alive-list have answered or after a timeout.
-func liftAssigner(addRemoteOrder chan<- RemoteOrder) {
+func liftAssigner(addRemoteOrder chan<- RemoteOrder, costMessage <- chan Message, onlineLifts map[string]*time.Timer) {
 	assignmentQueue := make(map[order][]reply)
 	for {
-		message := <-costChan
+		message := <-costMessage
 
 		newOrder, newReply := split(message)
 		// Check if order in queue
@@ -60,7 +54,7 @@ func liftAssigner(addRemoteOrder chan<- RemoteOrder) {
 			// newOrder.timer = time.NewTimer(10 * time.Second)
 			// go orderTimer(&newOrder)
 		}
-		evaluateLists(assignmentQueue, addRemoteOrder)
+		evaluateLists(assignmentQueue, onlineLifts, addRemoteOrder)
 		/*case newOrder := <-orderTimeoutChan:
 		fmt.Printf("\n\n ORDER TIMED OUT!\n")
 		// newOrder.timeout = true
@@ -77,7 +71,7 @@ func split(m Message) (order, reply) {
 // the best candidate for all such orders. The best candidate is added to the
 // shared queue.
 // This is very cryptic and ungood.
-func evaluateLists(que map[order][]reply, addRemoteOrder chan<- RemoteOrder) {
+func evaluateLists(que map[order][]reply, onlineLifts map[string]*time.Timer, addRemoteOrder chan<- RemoteOrder) {
 	// Loop thru all lists
 	fmt.Printf("Lists: ")
 	fmt.Println(que)

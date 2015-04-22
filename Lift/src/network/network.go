@@ -24,14 +24,19 @@ type Message struct {
 
 var receiveChan = make(chan udpMessage)
 var incoming = make(chan Message)
-var outgoing = make(chan Message)
+var Outgoing = make(chan Message)
 
 // Move these out of here:
 const spamInterval = 30 * time.Second
 const resetTime = 120 * time.Second // rename
 
-func Init(floorCompleted <- chan int, deathChan chan<- string, addRemoteOrder chan<- RemoteOrder) {
-	InitMessageHandler(deathChan)
+func Init(
+	floorCompleted <- chan int,
+	deathChan chan<- string,
+	addRemoteOrder chan<- RemoteOrder,
+	costMessage <- chan Message,
+	onlineLifts map[string]*time.Timer) {
+	
 	const localListenPort = 37103
 	const broadcastListenPort = 37104
 	const messageSize = 1024
@@ -45,13 +50,13 @@ func Init(floorCompleted <- chan int, deathChan chan<- string, addRemoteOrder ch
 	go aliveSpammer()
 	go pollIncoming()
 	go pollOutgoing()
-	go liftAssigner(addRemoteOrder)
+	go liftAssigner(addRemoteOrder, costMessage, onlineLifts)
 }
 
 func floorCompleteForwarder(floorCompleted <-chan int) {
 	for {
 		floor := <- floorCompleted
-		outgoing <- Message{
+		Outgoing <- Message{
 			Kind: CompleteOrder,
 			Floor: floor}
 	}
@@ -70,7 +75,7 @@ func pollIncoming() { // merge with pollOutgoing?
 
 func pollOutgoing() {
 	for {
-		msg := <-outgoing
+		msg := <-Outgoing
 
 		PrintMessage(msg)
 
@@ -100,7 +105,7 @@ func aliveSpammer() {
 		Button: -1,
 		Cost: -1}
 	for {
-		outgoing <- alive
+		Outgoing <- alive
 		time.Sleep(spamInterval)
 	}
 }

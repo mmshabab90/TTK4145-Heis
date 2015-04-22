@@ -26,8 +26,10 @@ var eventNewOrder = make(chan bool)
 var eventFloorReached = make(chan int)
 var eventDoorTimeout = make(chan bool)
 
-func Init(startFloor int) (eventNewOrder <-chan bool, eventFloorReached <-chan int) {
-	l := &lift{
+var l *lift
+
+func Init(startFloor int) (eventNewOrder chan<- bool, eventFloorReached chan<- int) {
+	l = &lift{
 		floor: startFloor,
 		dir:   def.DirStop,
 	}
@@ -35,6 +37,14 @@ func Init(startFloor int) (eventNewOrder <-chan bool, eventFloorReached <-chan i
 	go l.run()
 
 	return eventNewOrder, eventFloorReached
+}
+
+func Floor() int {
+	return l.floor
+}
+
+func Dir() int {
+	return l.dir
 }
 
 func (l *lift) run() {
@@ -121,3 +131,4 @@ func open(l *lift) stateFunc {
 		}
 	}
 }
+

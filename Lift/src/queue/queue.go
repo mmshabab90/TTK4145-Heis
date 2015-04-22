@@ -29,12 +29,13 @@ var backup = make(chan bool)
 var floorCompleted = make(chan int)
 var syncChan = make(chan bool)
 
-func Init(setButtonLamp chan<- def.Keypress,
-	deathChan <-chan string) (floorCompleted chan bool) {
+func Init(
+	setButtonLamp chan<- def.Keypress,
+	deathChan <-chan string) (floorCompleted chan int) {
 	go runBackup()
 	go updateLocalQueue()
 	go syncLights(setButtonLamp)
-	go reassignOrders(deathCift)
+	go reassignOrders(deathChan)
 	
 	return floorCompleted
 }
