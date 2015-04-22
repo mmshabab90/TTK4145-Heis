@@ -252,11 +252,11 @@ func liftAssigner() {
 					assignmentQueue[newOrder] = []reply{newReply}
 					go costTimer(&newOrder)
 				}
-				evaluateLists(assignmentQueue)
+				evaluateLists(&assignmentQueue)
 			case newOrder := <-costTimeoutChan:
 				fmt.Printf("\n ORDER TIMED OUT!\n\n")
 				newOrder.timeout = true
-				evaluateLists(assignmentQueue)
+				evaluateLists(&assignmentQueue)
 			}
 		}
 	}()
@@ -275,11 +275,11 @@ func getReply(m defs.Message) reply {
 // the best candidate for all such orders. The best candidate is added to the
 // shared queue.
 // This is very cryptic and ungood.
-func evaluateLists(que map[order][]reply) {
+func evaluateLists(que *(map[order][]reply)) {
 	// Loop thru all lists
 	fmt.Printf("Lists: ")
 	fmt.Println(que)
-	for key, replyList := range que {
+	for key, replyList := range *que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) ||  key.timeout {
 			fmt.Printf("Laddr = %v\n", defs.Laddr)
@@ -318,7 +318,7 @@ func evaluateLists(que map[order][]reply) {
 			fmt.Println("Now we should kill the timer")
 			key.timer.Stop()
 			fmt.Println("Timer killed")
-			delete(que, key)
+			delete(*que, key)
 			// SUPERIMPORTANT: NOTIFY ABOUT EVENT NEW ORDER
 		}
 	}
