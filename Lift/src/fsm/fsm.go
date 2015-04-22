@@ -1,23 +1,22 @@
-// This finite state machine is based on code and ideas presented in Rob
-// Pike's talk 'Lexical Scanning in Go':
+// This finite state machine is based on code and ideas presented in
+// Rob Pike's talk 'Lexical Scanning in Go':
 // https://www.youtube.com/watch?v=HxaD_trXwRE
 package fsm
 
 import (
+	def "../config"
 	"../queue"
 	"log"
-)
-
-const (
-	dirDown int = iota - 1
-	dirStop
-	dirUp
 )
 
 type lift struct {
 	floor int
 	dir   int
 }
+
+// TODO These must be connected to the rest of the system (just placeholders now)
+var motorDir = make(chan int)
+var doorOpenLamp = make(chan bool)
 
 // stateFunc represents the state of the lift
 // as a function that returns the next state.
@@ -30,7 +29,7 @@ var eventDoorTimeout = make(chan bool)
 func Init(startFloor int) (eventNewOrder <-chan bool, eventFloorReached <-chan int) {
 	l := &lift{
 		floor: startFloor,
-		dir:   dirStop,
+		dir:   def.DirStop,
 	}
 
 	go l.run()
@@ -45,8 +44,8 @@ func (l *lift) run() {
 }
 
 func idle(l *lift) stateFunc {
-	l.dir = dirStop
-	motorDir <- dirStop
+	l.dir = def.DirStop
+	motorDir <- def.DirStop
 	doorOpenLamp <- true
 
 	select {
@@ -93,20 +92,20 @@ func moving(l *lift) stateFunc {
 }
 
 func open(l *lift) stateFunc {
-	l.dir = dirStop
-	motorDir <- dirStop
+	l.dir = def.DirStop
+	motorDir <- def.DirStop
 	doorOpenLamp <- true
-	orderComplete <- l.floor
+	// orderComplete <- l.floor // order complete message should be invoked from queue package
 	doorReset <- true
-	queue.RemoveOrdersAt(l.floor) // maybe this should happen via 'orderComplete <- l.floor'
+	queue.LiftArrivedAt(l.floor)
 
 	select {
 
 	case <-eventNewOrder:
-		if queue.ShouldStop() {
-			l.dir = l.dirStop // redundant
+		if queue.ShouldStop(l.floor, l.dir) {
+			l.dir = def.DirStop
 			doorReset <- true
-			queue.RemoveOrdersAt(l.floor)
+			queue.LiftArrivedAt(l.floor)
 		}
 		return open
 
@@ -115,7 +114,7 @@ func open(l *lift) stateFunc {
 		return open
 
 	case <-eventDoorTimeout:
-		if l.dir = queue.ChooseDirection(l.floor, l.dir); l.dir == dirStop {
+		if l.dir = queue.ChooseDirection(l.floor, l.dir); l.dir == def.DirStop {
 			return idle
 		} else {
 			return moving
