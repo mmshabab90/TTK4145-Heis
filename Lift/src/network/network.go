@@ -1,7 +1,6 @@
 package network
 
 import (
-	def "../config"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -59,7 +58,7 @@ func floorCompleteForwarder(floorCompleted <-chan int) {
 func pollIncoming() { // merge with pollOutgoing?
 	for {
 		udpMsg := <- receiveChan
-		msg := new(message)
+		var msg message
 		json.Unmarshal(udpMsg.data[:udpMsg.length], &msg)
 		// acceptance test msg here!
 		msg.addr = udpMsg.raddr
@@ -93,23 +92,27 @@ func pollOutgoing() {
 var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	alive := def.Message{Kind: def.Alive, Floor: -1, Button: -1, Cost: -1}
+	alive := message{
+		kind: alive,
+		floor: -1,
+		button: -1,
+		cost: -1}
 	for {
-		def.Outgoing <- alive
-		time.Sleep(def.SpamInterval)
+		outgoing <- alive
+		time.Sleep(spamInterval)
 	}
 }
 
 func PrintMessage(msg message) {
 	fmt.Printf("\n-----Message start-----\n")
 	switch msg.kind {
-	case def.Alive:
+	case alive:
 		fmt.Println("I'm alive")
-	case def.NewOrder:
+	case newOrder:
 		fmt.Println("New order")
-	case def.CompleteOrder:
+	case completeOrder:
 		fmt.Println("Complete order")
-	case def.Cost:
+	case cost:
 		fmt.Println("Cost:")
 	default:
 		fmt.Println("Invalid message type!\n")
