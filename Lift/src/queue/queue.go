@@ -26,47 +26,57 @@ var remote queue
 
 var updateLocal = make(chan bool)
 var backup = make(chan bool)
-var floorCompleted = make(chan int)
 var syncChan = make(chan bool)
 
 func Init(
 	setButtonLamp chan<- def.Keypress,
-	deathChan <-chan string) (floorCompleted chan int) {
+	deathChan <-chan string,
+	keypressChan chan def.Keypress,
+	eventNewOrder chan bool,
+	floorCompleted chan int) {
+	
 	go runBackup()
 	go updateLocalQueue()
 	go syncLights(setButtonLamp)
-	go reassignOrders(deathChan)
+	go reassignOrders(deathChan, keypressChan)
+	go newKeypress(keypressChan, eventNewOrder)
 	
-	return floorCompleted
+	log.Println("queue.Init() returning...")
+	return
 }
 
-func NewKeypress(key def.Keypress) (notifyFsm bool) { // todo: finish this
-	notifyFsm = false
-	// add order to local if internal and no identical order exists
-	switch key.Button {
-	case def.ButtonIn:
-		if !local.isOrder(key.Floor, key.Button) {
-			local.setOrder(key.Floor, key.Button, orderStatus{true, ""})
-			notifyFsm = true
-		}
-	case def.ButtonDown, def.ButtonUp:
-		if !remote.isOrder(key.Floor, key.Button) {
-			// send on network
+func newKeypress(keypress <- chan def.Keypress, eventNewOrder chan <- bool) () { // todo: finish this
+	for {
+		key := <- keypress
+		log.Printf("Got button %v\n", key)
+		Print()
+		switch key.Button {
+		case def.ButtonIn:
+			log.Println("case button internal")
+			if !local.isOrder(key.Floor, key.Button) {
+				log.Println("order is new, adding...")
+				local.setOrder(key.Floor, key.Button, orderStatus{true, ""})
+				eventNewOrder <- true
+			}
+		case def.ButtonDown, def.ButtonUp:
+			if !remote.isOrder(key.Floor, key.Button) {
+				// send on network
+			}
 		}
 	}
-
-	return notifyFsm
 }
 
 // LiftArrivedAt removed all orders at floor in local and remote queue,
 // and notified the system. (The system should then send a floor complete
 // message on the network.)
-func LiftArrivedAt(floor int) {
+func LiftArrivedAt(floor int, floorCompleted chan int) {
 	for b := 0; b < def.NumButtons; b++ {
 		local.setOrder(floor, b, blankOrder)
 		remote.setOrder(floor, b, blankOrder)
 	}
+	log.Println("LiftArrivedAt(): done wiping orders")
 	floorCompleted <- floor
+	log.Println("sent floorcompleted")
 	backup <- true
 	syncChan <- true
 }
@@ -115,7 +125,7 @@ func ShouldStop(floor, dir int) bool {
 // reassignOrders finds all orders assigned to the given dead lift, removes
 // them from the remote queue, and sends them on the network as new, un-
 // assigned orders.
-func reassignOrders(deathChan <-chan string) {
+func reassignOrders(deathChan <-chan string, keypressChan chan <- def.Keypress) {
 	// loop thru remote queue
 	// remove all orders assigned to the dead lift
 	// send neworder-message for each removed order
@@ -124,7 +134,7 @@ func reassignOrders(deathChan <-chan string) {
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
 				if remote.Q[f][b].Addr == deadAddr {
-					NewKeypress(def.Keypress{f, b})
+					keypressChan <- def.Keypress{f, b}
 				}
 			}
 		}

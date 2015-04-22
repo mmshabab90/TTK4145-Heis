@@ -10,41 +10,55 @@ import (
 )
 
 type lift struct {
-	floor int
-	dir   int
+	floor             int
+	dir               int
+	motorDir          chan<- int
+	doorOpenLamp      chan<- bool
+	floorCompleted    chan<- int
+	doorReset         chan bool
+	eventNewOrder     <-chan bool
+	eventFloorReached <-chan int
+	eventDoorTimeout  <-chan bool
 }
-
-// TODO These must be connected to the rest of the system (just placeholders now)
-var motorDir = make(chan int)
-var doorOpenLamp = make(chan bool)
 
 // stateFunc represents the state of the lift
 // as a function that returns the next state.
 type stateFunc func(*lift) stateFunc
 
-var eventNewOrder = make(chan bool)
-var eventFloorReached = make(chan int)
-var eventDoorTimeout = make(chan bool)
-
 var l *lift
 
-func Init(startFloor int) (eventNewOrder chan<- bool, eventFloorReached chan<- int) {
-	l = &lift{
-		floor: startFloor,
-		dir:   def.DirStop,
-	}
+var eventDoorTimeout = make(chan bool)
 
+func Init(
+	startFloor int,
+	motorDir chan<- int,
+	doorOpenLamp chan<- bool,
+	floorCompleted chan int) (
+	eventNewOrder chan bool,
+	eventFloorReached chan int) {
+
+	eventNewOrder = make(chan bool)
+	eventFloorReached = make(chan int)
+
+	doorReset := make(chan bool)
+
+	l = &lift{
+		floor:             startFloor,
+		dir:               def.DirStop,
+		motorDir:          motorDir,
+		doorOpenLamp:      doorOpenLamp,
+		floorCompleted:    floorCompleted,
+		doorReset:         doorReset,
+		eventNewOrder:     eventNewOrder,
+		eventFloorReached: eventFloorReached,
+		eventDoorTimeout:  eventDoorTimeout,
+	}
+	
+	go startTimer(doorReset, eventDoorTimeout)
 	go l.run()
 
+	log.Println("fsm.Init() returning...")
 	return eventNewOrder, eventFloorReached
-}
-
-func Floor() int {
-	return l.floor
-}
-
-func Dir() int {
-	return l.dir
 }
 
 func (l *lift) run() {
@@ -54,13 +68,14 @@ func (l *lift) run() {
 }
 
 func idle(l *lift) stateFunc {
+	log.Println("State idle")
 	l.dir = def.DirStop
-	motorDir <- def.DirStop
-	doorOpenLamp <- true
-
+	l.motorDir <- def.DirStop
+	l.doorOpenLamp <- false
+	log.Println("State idle will select now")
 	select {
 
-	case <-eventNewOrder:
+	case <-l.eventNewOrder:
 		if queue.ShouldStop(l.floor, l.dir) {
 			return open
 		} else {
@@ -68,26 +83,27 @@ func idle(l *lift) stateFunc {
 			return moving
 		}
 
-	case l.floor = <-eventFloorReached:
+	case l.floor = <-l.eventFloorReached:
 		log.Printf("Makes no sense to arrive at a floor (%v) in state idle.\n", l.floor)
 		return idle
 
-	case <-eventDoorTimeout:
+	case <-l.eventDoorTimeout:
 		log.Printf("Makes no sense to time out door timer when in state idle.\n")
 		return idle
 	}
 }
 
 func moving(l *lift) stateFunc {
-	motorDir <- l.dir
-	doorOpenLamp <- false
+	log.Println("State moving")
+	l.motorDir <- l.dir
+	l.doorOpenLamp <- false
 
 	select {
 
-	case <-eventNewOrder:
+	case <-l.eventNewOrder:
 		return moving
 
-	case l.floor = <-eventFloorReached:
+	case l.floor = <-l.eventFloorReached:
 		if queue.ShouldStop(l.floor, l.dir) {
 			return open
 		} else {
@@ -95,35 +111,36 @@ func moving(l *lift) stateFunc {
 			return moving
 		}
 
-	case <-eventDoorTimeout:
+	case <-l.eventDoorTimeout:
 		log.Println("Makes no sense to time out door timer when in state moving.")
 		return moving
 	}
 }
 
 func open(l *lift) stateFunc {
+	log.Println("State open")
 	l.dir = def.DirStop
-	motorDir <- def.DirStop
-	doorOpenLamp <- true
-	// orderComplete <- l.floor // order complete message should be invoked from queue package
-	doorReset <- true
-	queue.LiftArrivedAt(l.floor)
-
+	l.motorDir <- def.DirStop
+	l.doorOpenLamp <- true
+	l.doorReset <- true
+	queue.LiftArrivedAt(l.floor, l.floorCompleted)
+	log.Println("2349507234623457913845")
+	log.Println("will select")
 	select {
 
-	case <-eventNewOrder:
+	case <-l.eventNewOrder:
 		if queue.ShouldStop(l.floor, l.dir) {
 			l.dir = def.DirStop
-			doorReset <- true
-			queue.LiftArrivedAt(l.floor)
+			l.doorReset <- true
+			queue.LiftArrivedAt(l.floor, l.floorCompleted)
 		}
 		return open
 
-	case l.floor = <-eventFloorReached:
+	case l.floor = <-l.eventFloorReached:
 		log.Printf("Makes no sense to arrive at a floor (%v) in state door open.\n", l.floor)
 		return open
 
-	case <-eventDoorTimeout:
+	case <-l.eventDoorTimeout:
 		if l.dir = queue.ChooseDirection(l.floor, l.dir); l.dir == def.DirStop {
 			return idle
 		} else {
@@ -132,3 +149,10 @@ func open(l *lift) stateFunc {
 	}
 }
 
+func Floor() int {
+	return l.floor
+}
+
+func Dir() int {
+	return l.dir
+}

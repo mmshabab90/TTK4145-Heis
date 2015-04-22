@@ -26,7 +26,7 @@ func Init(motorDir chan int,
 	if !ioInit() {
 		log.Fatalln("hw.Init(): ioInit() failed!")
 	}
-
+	log.Println("ioInit() completed...")
 	// Zero all floor button lamps
 	for f := 0; f < def.NumFloors; f++ {
 		if f != 0 {
@@ -39,15 +39,15 @@ func Init(motorDir chan int,
 	}
 	
 	stopLamp := make(chan bool)
-
-	doorLamp <- false
-	stopLamp <- false
 	
 	// Start reading hw control channels:
 	go setMotorDir(motorDir)
 	go setDoorLamp(doorLamp)
 	go setStopLamp(stopLamp)
 	go setFloorLamp(floorLamp)
+	
+	doorLamp <- false
+	stopLamp <- false
 	
 	// Move to defined state:
 	motorDir <- def.DirDown
@@ -56,7 +56,8 @@ func Init(motorDir chan int,
 	}
 	motorDir <- def.DirStop
 	floorLamp <- floor
-
+	
+	log.Println("hw.Init() returning...")
 	return floor
 }
 

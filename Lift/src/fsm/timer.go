@@ -4,11 +4,9 @@ import (
 	"time"
 )
 
-var doorReset = make(chan bool)
+const doorOpenTime = 1*time.Second
 
-const doorOpenTime = 3*time.Second
-
-func startTimer() {
+func startTimer(doorReset chan bool, eventDoorTimeout chan bool) {
 	timer := time.NewTimer(0)
 	timer.Stop()
 	for {
@@ -21,3 +19,4 @@ func startTimer() {
 		}
 	}
 }
+

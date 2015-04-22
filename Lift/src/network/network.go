@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+	"log"
 )
 
 // Generic network message. No other messages are ever sent on the network.
@@ -51,11 +52,14 @@ func Init(
 	go pollIncoming()
 	go pollOutgoing()
 	go liftAssigner(addRemoteOrder, costMessage, onlineLifts)
+	
+	log.Println("network.Init() returning...")
 }
 
 func floorCompleteForwarder(floorCompleted <-chan int) {
 	for {
 		floor := <- floorCompleted
+		log.Println("floorCompleteForwarder(): got a floor")
 		Outgoing <- Message{
 			Kind: CompleteOrder,
 			Floor: floor}

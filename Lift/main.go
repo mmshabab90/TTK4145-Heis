@@ -19,25 +19,39 @@ var _ = fmt.Println
 var _ = errors.New
 
 var onlineLifts = make(map[string]*time.Timer)
-var resetTime = 30*time.Second
+var resetTime = 30 * time.Second
 
 // var orderTimeoutChan = make(chan order)
 
 func main() {
-	log.Println("Running...")
+	log.Println("##################################################")
 	motorDir := make(chan int)
 	doorOpenLamp := make(chan bool)
 	floorLamp := make(chan int)
 	setButtonLamp := make(chan def.Keypress)
 	deathChan := make(chan string)
-	floorCompleted := queue.Init(setButtonLamp, deathChan)
-
-	floor := hw.Init(motorDir, doorOpenLamp, floorLamp)
-	eventNewOrder, eventFloorReached := fsm.Init(floor)
-
+	keypressChan := make(chan def.Keypress)
 	messageChan := make(chan network.Message)
 	addRemoteOrder := make(chan network.RemoteOrder)
 	costMessage := make(chan network.Message)
+	floorCompleted := make(chan int)
+
+	floor := hw.Init(motorDir,
+		doorOpenLamp,
+		floorLamp)
+
+	eventNewOrder, eventFloorReached := fsm.Init(
+		floor,
+		motorDir,
+		doorOpenLamp
+		floorCompleted)
+
+	queue.Init(
+		setButtonLamp,
+		deathChan,
+		keypressChan,
+		eventNewOrder
+		floorCompleted)
 
 	network.Init(
 		floorCompleted,
@@ -45,32 +59,35 @@ func main() {
 		addRemoteOrder,
 		costMessage,
 		onlineLifts)
-	
+
 	run(
 		eventNewOrder,
 		eventFloorReached,
 		messageChan,
 		deathChan,
 		costMessage,
-		addRemoteOrder)
+		addRemoteOrder,
+		keypressChan)
 }
 
 func run(
-	eventNewOrder chan<- bool,
-	eventFloorReached chan<- int,
+	eventNewOrder chan bool,
+	eventFloorReached chan int,
 	messageChan <-chan network.Message,
-	deathChan chan <- string,
-	costMessage chan <- network.Message,
-	addRemoteOrder <-chan network.RemoteOrder) {
-	
+	deathChan chan<- string,
+	costMessage chan<- network.Message,
+	addRemoteOrder <-chan network.RemoteOrder,
+	keypressChan chan <- def.Keypress) {
+
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
+
+	log.Println("Running...")
 
 	for {
 		select {
 		case key := <-buttonChan:
-			queue.NewKeypress(key)
-			eventNewOrder <- true
+			keypressChan <- key
 		case floor := <-floorChan:
 			eventFloorReached <- floor
 		case msg := <-messageChan:
@@ -81,7 +98,7 @@ func run(
 	}
 }
 
-func handleMessage(deathChan chan <- string, costMessage chan <- network.Message, msg network.Message) {
+func handleMessage(deathChan chan<- string, costMessage chan<- network.Message, msg network.Message) {
 	switch msg.Kind {
 
 	case network.Alive:
@@ -114,8 +131,6 @@ func waitForDeath(deathChan chan<- string, onlineLifts map[string]*time.Timer, d
 	delete(onlineLifts, deadAddr)
 	deathChan <- deadAddr
 }
-
-
 
 func pollButtons() <-chan def.Keypress {
 	c := make(chan def.Keypress)
