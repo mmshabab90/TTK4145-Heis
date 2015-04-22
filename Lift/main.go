@@ -17,21 +17,17 @@ var _ = log.Println
 var _ = fmt.Println
 var _ = errors.New
 
-type keypress struct {
-	button int
-	floor  int
-}
-
-var orderTimeoutChan = make(chan order)
+// var orderTimeoutChan = make(chan order)
 
 func main() {
 	motorDir := make(chan int)
 	doorOpenLamp := make(chan bool)
 	floorLamp := make(chan int)
+	floorCompleted := queue.Init(floorLamp)
 
+	network.Init(orderComplete)
+	
 	floor := hw.Init(motorDir, doorOpenLamp, floorLamp)
-
-	network.Init()
 
 	eventNewOrder, eventFloorReached := fsm.Init(floor)
 
@@ -46,7 +42,7 @@ func run(eventNewOrder <-chan bool,
 	for {
 		select {
 		case key := <-buttonChan:
-			queue.NewKeypress(key.floor, key.button)
+			queue.NewKeypress(key) // todo fix this function to accept type def.Keypress
 			eventNewOrder <- true
 		case floor := <-floorChan:
 			eventFloorReached <- floor
@@ -54,8 +50,8 @@ func run(eventNewOrder <-chan bool,
 	}
 }
 
-func pollButtons() <-chan keypress {
-	c := make(chan keypress)
+func pollButtons() <-chan def.Keypress {
+	c := make(chan def.Keypress)
 
 	go func() {
 		var buttonState [def.NumFloors][def.NumButtons]bool
@@ -69,7 +65,7 @@ func pollButtons() <-chan keypress {
 					}
 					if hw.ReadButton(f, b) {
 						if !buttonState[f][b] {
-							c <- keypress{button: b, floor: f}
+							c <- defKeypress{Floor: f, Button: b}
 						}
 						buttonState[f][b] = true
 					} else {

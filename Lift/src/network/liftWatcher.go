@@ -1,7 +1,10 @@
+// Shitty file name
 package network
 
 import (
 	"time"
+	def "../config"
+	"fmt"
 )
 
 type reply struct {
@@ -20,9 +23,10 @@ func init() {
 }
 
 func waitForDeath(aliveLifts map[string]*time.Timer, deadAddr string) {
-	<-aliveLifts[deadAddr].C
-	delete(aliveLifts, deadAddr)
-	queue.ReassignOrders(deadAddr) // change to channel communication
+	<-onlineLifts[deadAddr].C
+	delete(onlineLifts, deadAddr)
+	//queue.ReassignOrders(deadAddr) // change to channel communication:
+	deadLift <- deadAddr // make someone read this
 }
 
 // liftAssigner collects cost values from all lifts, decides which lift gets
@@ -61,8 +65,8 @@ func liftAssigner() {
 	}
 }
 
-func split(m def.Message) (order, reply) {
-	return order{floor: m.Floor, button: m.Button}, reply{cost: m.Cost, lift: m.Addr}
+func split(m message) (order, reply) {
+	return order{floor: m.floor, button: m.button}, reply{cost: m.cost, lift: m.addr}
 }
 
 // evaluateLists goes through the map of orders with associated costs, checks

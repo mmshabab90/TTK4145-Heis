@@ -9,27 +9,29 @@ import (
 
 // Generic network message. No other messages are ever sent on the network.
 const (
-	Alive int = iota + 1
-	NewOrder
-	CompleteOrder
-	Cost
+	alive int = iota + 1
+	newOrder
+	completeOrder
+	cost
 )
 
-type Message struct {
-	Kind   int
-	Floor  int
-	Button int
-	Cost   int
-	Addr   string
+type message struct {
+	kind   int
+	floor  int
+	button int
+	cost   int
+	addr   string
 }
 
 var receiveChan = make(chan udpMessage)
+var incoming = make(chan message)
+var outgoing = make(chan message)
 
 // Move these out of here:
 const spamInterval = 30 * time.Second
 const resetTime = 120 * time.Second // rename
 
-func Init() {
+func Init(floorCompleted <- chan int) {
 	const localListenPort = 37103
 	const broadcastListenPort = 37104
 	const messageSize = 1024
@@ -39,25 +41,35 @@ func Init() {
 		fmt.Print("UdpInit() error: %s \n", err)
 	}
 
+	go floorCompleteForwarder(floorCompleted)
 	go aliveSpammer()
 	go pollIncoming()
 	go pollOutgoing()
 }
 
+func floorCompleteForwarder(floorCompleted <-chan int) {
+	for {
+		floor := <- floorCompleted
+		outgoing <- message{
+			kind: completeOrder,
+			floor: floor}
+	}
+}
+
 func pollIncoming() { // merge with pollOutgoing?
 	for {
-		udpMsg <- receiveChan
-		msg := new(Message)
-		json.Unmarshal(udpMsg.data[:udpMsg.lenght], &msg)
+		udpMsg := <- receiveChan
+		msg := new(message)
+		json.Unmarshal(udpMsg.data[:udpMsg.length], &msg)
 		// acceptance test msg here!
-		msg.Addr = udpMsg.raddr
+		msg.addr = udpMsg.raddr
 		incoming <- msg
 	}
 }
 
 func pollOutgoing() {
 	for {
-		msg := <-def.Outgoing
+		msg := <-outgoing
 
 		PrintMessage(msg)
 
@@ -88,9 +100,9 @@ func aliveSpammer() {
 	}
 }
 
-func PrintMessage(msg def.Message) {
+func PrintMessage(msg message) {
 	fmt.Printf("\n-----Message start-----\n")
-	switch msg.Kind {
+	switch msg.kind {
 	case def.Alive:
 		fmt.Println("I'm alive")
 	case def.NewOrder:
@@ -102,8 +114,8 @@ func PrintMessage(msg def.Message) {
 	default:
 		fmt.Println("Invalid message type!\n")
 	}
-	fmt.Printf("Floor: %d\n", msg.Floor)
-	fmt.Printf("Button: %d\n", msg.Button)
-	fmt.Printf("Cost:   %d\n", msg.Cost)
+	fmt.Printf("Floor: %d\n", msg.floor)
+	fmt.Printf("Button: %d\n", msg.button)
+	fmt.Printf("Cost:   %d\n", msg.cost)
 	fmt.Println("-----Message end-------\n")
 }

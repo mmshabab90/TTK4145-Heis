@@ -1,45 +1,45 @@
 package network
 
 import (
-	def "../config"
 	"time"
 )
 
-var costChan = make(chan Message) // find better place
+var costChan = make(chan message) // todo find better place
+
+var onlineLifts = make(map[string]*time.Timer)
 
 func init() {
-	aliveLifts := make(map[string]*time.Timer)
-	incoming := make(chan Message)
-	go handleIncoming(incoming, aliveLifts)
+	incoming := make(chan message)
+	go handleIncoming(incoming)
 }
 
-func handleIncoming(incoming <-chan Message, aliveLifts map[string]*time.Timer) {
+func handleIncoming(incoming <-chan message) {
 	for {
 		msg := <-incoming // formerly known as network.ReceiveChan
-		switch msg.Kind {
+		switch msg.kind {
 
-		case Alive:
-			if timer, exist := aliveLifts[msg.Addr]; exist {
-				timer.Timer.Reset(resetTime)
+		case alive:
+			if timer, exist := onlineLifts[msg.addr]; exist {
+				timer.Reset(resetTime)
 			} else {
 				timer := time.NewTimer(resetTime)
-				onlineLifts[msg.Addr] = timer
-				go waitForDeath(aliveLifts, &connection, msg.Addr)
+				onlineLifts[msg.addr] = timer
+				go waitForDeath(onlineLifts, msg.addr)
 			}
 
-		case NewOrder:
-			cost := queue.CalculateCost(msg.Floor, msg.Button,
+		case newOrder:
+			costValue := queue.CalculateCost(msg.floor, msg.button,
 				fsm.Floor(), hw.Floor(), fsm.Direction())
-			def.Outgoing <- Message{
-				Kind:   Cost,
-				Floor:  msg.Floor,
-				Button: msg.Button,
-				Cost:   cost}
+			outgoing <- message{
+				kind:   cost,
+				floor:  msg.floor,
+				button: msg.button,
+				cost:   costValue}
 
-		case CompleteOrder:
-			queue.RemoveRemoteOrdersAt(msg.Floor)
+		case completeOrder:
+			queue.RemoveRemoteOrdersAt(msg.floor)
 
-		case Cost:
+		case cost:
 			costChan <- msg
 		}
 	}

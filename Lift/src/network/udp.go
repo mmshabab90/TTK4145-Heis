@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-	"time"
 )
 
 var baddr *net.UDPAddr //Broadcast address

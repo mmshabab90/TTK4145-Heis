@@ -5,7 +5,6 @@ import (
 	def "../config"
 	"fmt"
 	"log"
-	"time"
 )
 
 var _ = fmt.Printf
@@ -27,23 +26,28 @@ var remote queue
 
 var updateLocal = make(chan bool)
 var backup = make(chan bool)
+var floorCompleted = make(chan int)
+var syncChan = make(chan bool)
 
-func init() {
+func Init(setButtonLamp chan<- def.Keypress) (floorCompleted chan bool) {
 	go runBackup()
 	go updateLocalQueue()
+	go syncLights(setButtonLamp)
+	
+	return floorCompleted
 }
 
-func NewKeypress(floor, button) (notifyFsm bool) { // todo: finish this
+func NewKeypress(key def.Keypress) (notifyFsm bool) { // todo: finish this
 	notifyFsm = false
 	// add order to local if internal and no identical order exists
-	switch button {
+	switch key.Button {
 	case def.ButtonIn:
-		if !local.isOrder(floor, button) {
-			local.setOrder(floor, button, orderStatus{true, ""})
+		if !local.isOrder(key.Floor, key.Button) {
+			local.setOrder(key.Floor, key.Button, orderStatus{true, ""})
 			notifyFsm = true
 		}
-	case def.ButtonDown, button == def.ButtonUp:
-		if !shared.isOrder(floor, button) {
+	case def.ButtonDown, def.ButtonUp:
+		if !remote.isOrder(key.Floor, key.Button) {
 			// send on network
 		}
 	}
@@ -51,12 +55,25 @@ func NewKeypress(floor, button) (notifyFsm bool) { // todo: finish this
 	return notifyFsm
 }
 
+// LiftArrivedAt removed all orders at floor in local and remote queue,
+// and notified the system. (The system should then send a floor complete
+// message on the network.)
+func LiftArrivedAt(floor int) {
+	for b := 0; b < def.NumButtons; b++ {
+		local.setOrder(floor, b, blankOrder)
+		remote.setOrder(floor, b, blankOrder)
+	}
+	floorCompleted <- floor
+	backup <- true
+	syncChan <- true
+}
+
 // AddLocalOrder adds an order to the local queue.
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, ""})
 
 	backup <- true
-	syncLights()
+	syncChan <- true
 }
 
 // AddRemoteOrder adds the given order to the remote queue.
@@ -65,7 +82,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 	updateLocal <- true
 
 	backup <- true
-	syncLights()
+	syncChan <- true
 }
 
 // RemoveRemoteOrdersAt removes all orders at the given floor from the remote
@@ -77,17 +94,7 @@ func RemoveRemoteOrdersAt(floor int) {
 	updateLocal <- true
 
 	backup <- true
-	syncLights()
-}
-
-// RemoveOrdersAt removes all orders at the given floor in local and remote queue.
-func RemoveOrdersAt(floor int) {
-	for b := 0; b < def.NumButtons; b++ {
-		local.setOrder(floor, b, blankOrder)
-		remote.setOrder(floor, b, blankOrder)
-	}
-	SendOrderCompleteMessage(floor) // bad abstraction
-	backup <- true
+	syncChan <- true
 }
 
 // ChooseDirection returns the direction the lift should continue after the
@@ -112,22 +119,10 @@ func ReassignOrders(deadAddr string) {
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
 			if remote.Q[f][b].Addr == deadAddr {
-				remote.setOrder(f, b, blankOrder)
-				reassignMessage := def.Message{
-					Kind:   def.NewOrder,
-					Floor:  f,
-					Button: b}
-				def.Outgoing <- reassignMessage
+				NewKeypress(def.Keypress{f, b})
 			}
 		}
 	}
-}
-
-// SendOrderCompleteMessage communicates to the network that this lift has
-// taken care of orders at the given floor.
-func SendOrderCompleteMessage(floor int) {
-	orderComplete := def.Message{Kind: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
-	def.Outgoing <- orderComplete
 }
 
 // Print prints local and remote queue to screen in a somewhat legible

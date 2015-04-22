@@ -2,8 +2,6 @@ package config
 
 import (
 	"net"
-	"strings"
-	"time"
 )
 
 // Global system constants
@@ -16,11 +14,18 @@ const (
 	ButtonIn
 )
 
-const MaxInt = int(^uint(0) >> 1)
+const (
+	DirDown int = iota - 1
+	DirStop
+	DirUp
+)
 
-// Move these out
-var Outgoing = make(chan Message) // vurder buff
-var SyncLightsChan = make(chan bool)
+type Keypress struct {
+	Floor  int
+	Button int
+}
+
+const MaxInt = int(^uint(0) >> 1)
 
 // Move into network module and pass to other modules
 var Laddr *net.UDPAddr //Local address
