@@ -50,7 +50,7 @@ func AddLocalOrder(storey int, button int) {
 func AddRemoteOrder(storey, button int, addr string) {
 	remote.setOrder(storey, button, orderStatus{true, addr, time.NewTimer(10*time.Second)})
 	fmt.Println("how long can we go without crashing?")	
-	go remote.startTimer(storey, button)	
+	//go remote.startTimer(storey, button)	
 	fmt.Println("we have to find out then i guess my friend")
 	defs.SyncLightsChan <- true
 	updateLocal <- true
@@ -62,7 +62,7 @@ func AddRemoteOrder(storey, button int, addr string) {
 // queue.
 func RemoveRemoteOrdersAt(storey int) {
 	for b := 0; b < defs.NumButtons; b++ {
-		remote.stopTimer(storey, b)
+		//remote.stopTimer(storey, b)
 		remote.setOrder(storey, b, blankOrder)
 	}
 	//Print()
@@ -87,7 +87,7 @@ func ShouldStop(storey, dir int) bool {
 // RemoveOrdersAt removes all orders at the given storey in local and remote queue.
 func RemoveOrdersAt(storey int) {
 	for b := 0; b < defs.NumButtons; b++ {
-		remote.stopTimer(storey, b)
+		//remote.stopTimer(storey, b)
 		local.setOrder(storey, b, blankOrder)
 		remote.setOrder(storey, b, blankOrder)
 	}
