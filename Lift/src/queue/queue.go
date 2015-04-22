@@ -18,9 +18,10 @@ const diskDebug = false
 type orderStatus struct {
 	Active bool
 	Addr   string
+	Timer *time.Timer
 }
 
-var blankOrder = orderStatus{false, ""}
+var blankOrder = orderStatus{false, "", nil}
 
 type queue struct {
 	Q [defs.NumStoreys][defs.NumButtons]orderStatus
@@ -31,6 +32,7 @@ var remote queue
 
 var updateLocal = make(chan bool)
 var backup = make(chan bool)
+var orderStatusTimeoutChan = make(chan orderStatus) //overkill name?
 
 func init() {
 	go runBackup()
@@ -39,14 +41,14 @@ func init() {
 
 // AddLocalOrder adds an order to the local queue.
 func AddLocalOrder(storey int, button int) {
-	local.setOrder(storey, button, orderStatus{true, ""})
+	local.setOrder(storey, button, orderStatus{true, "", nil})
 
 	backup <- true
 }
 
 // AddRemoteOrder adds the given order to the remote queue.
 func AddRemoteOrder(storey, button int, addr string) {
-	remote.setOrder(storey, button, orderStatus{true, addr})
+	remote.setOrder(storey, button, orderStatus{true, addr, nil})
 
 	defs.SyncLightsChan <- true
 	updateLocal <- true
@@ -183,6 +185,15 @@ func Print() {
  * Methods on queue struct:
  */
 
+func (q *queue) startTimer(storey, button int) {
+	<-q.Q[storey][button].Timer.C
+ 	orderStatusTimeoutChan  <- q.Q[storey][button]
+}
+
+func (q *queue) stopTimer(storey, button int) {
+	q.Q[storey][button].Timer.Stop()
+}
+
 func (q *queue) isEmpty() bool {
 	for f := 0; f < defs.NumStoreys; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
@@ -289,7 +300,7 @@ func (q *queue) deepCopy() *queue {
 
 // this should run on a copy of local queue
 func (q *queue) calculateCost(targetStorey, targetButton, prevStorey, currStorey, currDir int) int {
-	q.setOrder(targetStorey, targetButton, orderStatus{true, ""})
+	q.setOrder(targetStorey, targetButton, orderStatus{true, "", nil})
 
 	cost := 0
 	storey := prevStorey
@@ -353,7 +364,7 @@ func updateLocalQueue() {
 			for b := 0; b < defs.NumButtons; b++ {
 				if remote.isActiveOrder(f, b) {
 					if b != defs.ButtonCommand && remote.Q[f][b].Addr == defs.Laddr.String() {
-						local.setOrder(f, b, orderStatus{true, ""})
+						local.setOrder(f, b, orderStatus{true, "", nil})
 					}
 				}
 			}

@@ -27,7 +27,7 @@ var onlineLifts = make(map[string]network.UdpConnection)
 
 var deadChan = make(chan network.UdpConnection)
 var costChan = make(chan defs.Message)
-var orderTimeoutChan = make(chan order)
+var costTimeoutChan = make(chan order)
 
 type reply struct {
 	cost int
@@ -184,9 +184,9 @@ func connectionTimer(connection *network.UdpConnection) {
 	}
 }
 
-func orderTimer(newOrder *order) {
+func costTimer(newOrder *order) {
  	<-newOrder.timer.C
- 	orderTimeoutChan <- *newOrder
+ 	costTimeoutChan <- *newOrder
 }
 
 func (o *order) makeNewOrder(msg defs.Message) {
@@ -238,20 +238,20 @@ func liftAssigner() {
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
 						fmt.Println("Reset the order timer")
-						newOrder.timer.Reset(1 * time.Millisecond)
+						newOrder.timer.Reset(10* time.Millisecond)
 						fmt.Println("Reset of order timer done")
 					}
 				} else {
 					// If order not in queue at all, init order list with it
 					fmt.Println("let's try to make a timer")
-					newOrder.timer = time.NewTimer(1 * time.Millisecond)
+					newOrder.timer = time.NewTimer(10 * time.Millisecond)
 					fmt.Println("Timer created")
 					assignmentQueue[newOrder] = []reply{newReply}
-					go orderTimer(&newOrder)
+					go costTimer(&newOrder)
 				}
 				evaluateLists(assignmentQueue)
-			case newOrder := <-orderTimeoutChan:
-				fmt.Printf("\n\n ORDER TIMED OUT!\n")
+			case newOrder := <-costTimeoutChan:
+				fmt.Printf("\n ORDER TIMED OUT!\n\n")
 				newOrder.timeout = true
 				evaluateLists(assignmentQueue)
 			}
