@@ -73,6 +73,9 @@ func run() {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
+		/*case <- queue.OrderStatusTimeoutChan:
+			fmt.Println("order in queue timed out, reassigning queue")
+			//reassign!*/
 		}
 	}
 }
@@ -224,7 +227,7 @@ func liftAssigner() {
 						newOrder = oldOrder
 					}
 				}
-				fmt.Println("How we crashed yet?!")
+				fmt.Println("Have we crashed yet?!")
 				// Check if order in queue
 				if value, exist := assignmentQueue[newOrder]; exist {
 					// Check if lift in list of that order
@@ -238,13 +241,13 @@ func liftAssigner() {
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
 						fmt.Println("Reset the order timer")
-						newOrder.timer.Reset(10* time.Millisecond)
+						newOrder.timer.Reset(10* time.Second)
 						fmt.Println("Reset of order timer done")
 					}
 				} else {
 					// If order not in queue at all, init order list with it
 					fmt.Println("let's try to make a timer")
-					newOrder.timer = time.NewTimer(10 * time.Millisecond)
+					newOrder.timer = time.NewTimer(10 * time.Second)
 					fmt.Println("Timer created")
 					assignmentQueue[newOrder] = []reply{newReply}
 					go costTimer(&newOrder)

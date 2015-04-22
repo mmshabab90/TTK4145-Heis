@@ -25,8 +25,9 @@ func Init() {
 
 func pollMessages() { // change name to pollOutgoing or something
 	for {
+		fmt.Println("in pollMessages before read")
 		msg := <-defs.MessageChan
-
+		fmt.Println("in pollMessages after read")
 		PrintMessage(msg)
 
 		var i int
