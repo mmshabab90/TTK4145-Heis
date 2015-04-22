@@ -2,7 +2,7 @@ package queue
 
 import (
 	"encoding/gob"
-	"fmt"
+	"log"
 	"os"
 )
 
@@ -20,10 +20,10 @@ func runBackup() {
 	for {
 		<-backup
 		if err := local.saveToDisk(filenameLocal); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		if err := remote.saveToDisk(filenameRemote); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}
 }
@@ -40,7 +40,7 @@ func (q *queue) saveToDisk(filename string) error {
 	}
 
 	if diskDebug {
-		fmt.Printf("Successful save of file %s\n", filename)
+		log.Printf("Successful save of file %s\n", filename)
 	}
 	return nil
 }
@@ -49,7 +49,7 @@ func (q *queue) saveToDisk(filename string) error {
 // saves its contents to the queue it's invoked on if the file is present.
 func (q *queue) loadFromDisk(filename string) error {
 	if _, err := os.Stat(filename); err == nil {
-		fmt.Printf("Backup file %s exists, processing...\n", filename)
+		log.Printf("Backup file %s exists, processing...\n", filename)
 		fi, err := os.Open(filename)
 		if err != nil {
 			return err

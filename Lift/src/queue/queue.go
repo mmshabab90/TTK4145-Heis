@@ -33,10 +33,22 @@ func init() {
 	go updateLocalQueue()
 }
 
-func NewKeypress(floor, button) {
-	// todo write this
-	// add order to local if internal
+func NewKeypress(floor, button) (notifyFsm bool) { // todo: finish this
+	notifyFsm = false
+	// add order to local if internal and no identical order exists
+	switch button {
+	case def.ButtonIn:
+		if !local.isOrder(floor, button) {
+			local.setOrder(floor, button, orderStatus{true, ""})
+			notifyFsm = true
+		}
+	case def.ButtonDown, button == def.ButtonUp:
+		if !shared.isOrder(floor, button) {
+			// send on network
+		}
+	}
 
+	return notifyFsm
 }
 
 // AddLocalOrder adds an order to the local queue.
@@ -125,28 +137,28 @@ func Print() {
 	for f := def.NumFloors - 1; f >= 0; f-- {
 		lifts := "   "
 
-		if local.isActiveOrder(f, def.ButtonUp) {
+		if local.isOrder(f, def.ButtonUp) {
 			fmt.Printf("↑")
 		} else {
 			fmt.Printf(" ")
 		}
-		if local.isActiveOrder(f, def.ButtonIn) {
+		if local.isOrder(f, def.ButtonIn) {
 			fmt.Printf("×")
 		} else {
 			fmt.Printf(" ")
 		}
-		if local.isActiveOrder(f, def.ButtonDown) {
+		if local.isOrder(f, def.ButtonDown) {
 			fmt.Printf("↓   %d  ", f+1)
 		} else {
 			fmt.Printf("    %d  ", f+1)
 		}
-		if remote.isActiveOrder(f, def.ButtonUp) {
+		if remote.isOrder(f, def.ButtonUp) {
 			fmt.Printf("↑")
 			lifts += "(↑ " + remote.Q[f][def.ButtonUp].Addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
-		if remote.isActiveOrder(f, def.ButtonDown) {
+		if remote.isOrder(f, def.ButtonDown) {
 			fmt.Printf("↓")
 			lifts += "(↓ " + remote.Q[f][def.ButtonDown].Addr[12:15] + ")"
 		} else {
@@ -176,14 +188,14 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 	q.Q[floor][button] = status
 }
 
-func (q *queue) isActiveOrder(floor, button int) bool {
+func (q *queue) isOrder(floor, button int) bool {
 	return q.Q[floor][button].Active
 }
 
 func (q *queue) isOrdersAbove(floor int) bool {
 	for f := floor + 1; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			if q.isActiveOrder(f, b) {
+			if q.isOrder(f, b) {
 				return true
 			}
 		}
@@ -194,7 +206,7 @@ func (q *queue) isOrdersAbove(floor int) bool {
 func (q *queue) isOrdersBelow(floor int) bool {
 	for f := 0; f < floor; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			if q.isActiveOrder(f, b) {
+			if q.isOrder(f, b) {
 				return true
 			}
 		}
@@ -236,19 +248,19 @@ func (q *queue) chooseDirection(floor, dir int) int {
 func (q *queue) shouldStop(floor, dir int) bool {
 	switch dir {
 	case def.DirDown:
-		return q.isActiveOrder(floor, def.ButtonDown) ||
-			q.isActiveOrder(floor, def.ButtonIn) ||
+		return q.isOrder(floor, def.ButtonDown) ||
+			q.isOrder(floor, def.ButtonIn) ||
 			floor == 0 ||
 			!q.isOrdersBelow(floor)
 	case def.DirUp:
-		return q.isActiveOrder(floor, def.ButtonUp) ||
-			q.isActiveOrder(floor, def.ButtonIn) ||
+		return q.isOrder(floor, def.ButtonUp) ||
+			q.isOrder(floor, def.ButtonIn) ||
 			floor == def.NumFloors-1 ||
 			!q.isOrdersAbove(floor)
 	case def.DirStop:
-		return q.isActiveOrder(floor, def.ButtonDown) ||
-			q.isActiveOrder(floor, def.ButtonUp) ||
-			q.isActiveOrder(floor, def.ButtonIn)
+		return q.isOrder(floor, def.ButtonDown) ||
+			q.isOrder(floor, def.ButtonUp) ||
+			q.isOrder(floor, def.ButtonIn)
 	default:
 		log.Printf("shouldStop() called with invalid direction %d!\n", dir)
 		return false

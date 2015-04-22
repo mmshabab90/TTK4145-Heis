@@ -2,8 +2,6 @@ package queue
 
 import (
 	def "../config"
-	"fmt"
-	"time"
 )
 
 func updateLocalQueue() {
@@ -18,7 +16,6 @@ func updateLocalQueue() {
 				}
 			}
 		}
-		time.Sleep(time.Millisecond)
 	}
 }
 

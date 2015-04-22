@@ -112,6 +112,7 @@ func open(l *lift) stateFunc {
 
 	case l.floor = <-eventFloorReached:
 		log.Printf("Makes no sense to arrive at a floor (%v) in state door open.\n", l.floor)
+		return open
 
 	case <-eventDoorTimeout:
 		if l.dir = queue.ChooseDirection(l.floor, l.dir); l.dir == dirStop {

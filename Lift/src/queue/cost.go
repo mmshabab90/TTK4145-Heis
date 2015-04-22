@@ -3,6 +3,7 @@ package queue
 import (
 	def "../config"
 	"fmt"
+	"log"
 )
 
 // CalculateCost returns how much effort it is for this lift to carry out
@@ -55,7 +56,7 @@ func incrementFloor(floor, dir int) (int, int) {
 	case def.DirStop:
 		// fmt.Println("incrementFloor(): direction stop, not incremented (this is okay)")
 	default:
-		fmt.Println("incrementFloor(): invalid direction, not incremented")
+		log.Println("incrementFloor(): invalid direction, not incremented")
 	}
 
 	if floor <= 0 && dir == def.DirDown {
