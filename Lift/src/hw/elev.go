@@ -1,8 +1,5 @@
-/*
- *  This file is a golang port of elev.c from the hand out driver
- *  https://github.com/TTK4145/Project
- */
-
+// This file is a golang port of elev.c from the hand out driver
+// https://github.com/TTK4145/Project
 package hw
 
 import (
@@ -24,10 +21,9 @@ var buttonChannelMatrix = [def.NumFloors][def.NumButtons]int{
 	{BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 }
 
-func Init() error {
-	// Init hardware
+func Init() floor int {
 	if !ioInit() {
-		return errors.New("Hardware driver: ioInit() failed!")
+		log.Fatalln("hw.Init(): ioInit() failed!")
 	}
 
 	// Zero all floor button lamps
@@ -44,9 +40,8 @@ func Init() error {
 	SetStopLamp(false)
 	SetDoorOpenLamp(false)
 
-	MoveToDefinedState()
-
-	return nil
+	floor := moveToDefinedState()
+	return
 }
 
 func SetMotorDirection(dirn int) {

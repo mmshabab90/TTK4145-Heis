@@ -3,17 +3,13 @@ package queue
 
 import (
 	def "../config"
-	"encoding/gob"
 	"fmt"
 	"log"
-	"os"
 	"time"
 )
 
 var _ = fmt.Printf
 var _ = log.Printf
-
-const diskDebug = false
 
 type orderStatus struct {
 	Active bool
@@ -37,20 +33,25 @@ func init() {
 	go updateLocalQueue()
 }
 
+func AddKeypressOrder(floor, button) {
+	// todo write this
+}
+
 // AddLocalOrder adds an order to the local queue.
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, ""})
 
 	backup <- true
+	syncLights()
 }
 
 // AddRemoteOrder adds the given order to the remote queue.
 func AddRemoteOrder(floor, button int, addr string) {
 	remote.setOrder(floor, button, orderStatus{true, addr})
-
-	def.SyncLightsChan <- true
 	updateLocal <- true
+
 	backup <- true
+	syncLights()
 }
 
 // RemoveRemoteOrdersAt removes all orders at the given floor from the remote
@@ -59,9 +60,19 @@ func RemoveRemoteOrdersAt(floor int) {
 	for b := 0; b < def.NumButtons; b++ {
 		remote.setOrder(floor, b, blankOrder)
 	}
-
-	def.SyncLightsChan <- true
 	updateLocal <- true
+
+	backup <- true
+	syncLights()
+}
+
+// RemoveOrdersAt removes all orders at the given floor in local and remote queue.
+func RemoveOrdersAt(floor int) {
+	for b := 0; b < def.NumButtons; b++ {
+		local.setOrder(floor, b, blankOrder)
+		remote.setOrder(floor, b, blankOrder)
+	}
+	SendOrderCompleteMessage(floor) // bad abstraction
 	backup <- true
 }
 
@@ -75,33 +86,6 @@ func ChooseDirection(floor, dir int) int {
 // going in the given direction.
 func ShouldStop(floor, dir int) bool {
 	return local.shouldStop(floor, dir)
-}
-
-// RemoveOrdersAt removes all orders at the given floor in local and remote queue.
-func RemoveOrdersAt(floor int) {
-	for b := 0; b < def.NumButtons; b++ {
-		local.setOrder(floor, b, blankOrder)
-		remote.setOrder(floor, b, blankOrder)
-	}
-	SendOrderCompleteMessage(floor) // bad abstraction
-	backup <- true
-}
-
-// IsOrder returns whether there in an order with the given floor and button
-// in the local queue.
-func IsOrder(floor, button int) bool { // Rename to IsLocalOrder
-	return local.isActiveOrder(floor, button)
-}
-
-// Blah blah blah
-func IsLocalEmpty() bool {
-	return local.isEmpty()
-}
-
-// IsRemoteOrder returns true if there is a order with the given floor and
-// button in the remote queue.
-func IsRemoteOrder(floor, button int) bool {
-	return remote.isActiveOrder(floor, button)
 }
 
 // ReassignOrders finds all orders assigned to the given dead lift, removes
@@ -130,14 +114,6 @@ func ReassignOrders(deadAddr string) {
 func SendOrderCompleteMessage(floor int) {
 	orderComplete := def.Message{Kind: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
 	def.Outgoing <- orderComplete
-}
-
-// CalculateCost returns how much effort it is for this lift to carry out
-// the given order. Each sheduled stop and each travel between adjacent
-// floors on the way towards target will add cost 2. Cost 1 is added if the
-// lift starts between floors.
-func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
-	return local.deepCopy().calculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir)
 }
 
 // Print prints local and remote queue to screen in a somewhat legible
@@ -275,147 +251,4 @@ func (q *queue) shouldStop(floor, dir int) bool {
 		log.Printf("shouldStop() called with invalid direction %d!\n", dir)
 		return false
 	}
-}
-
-func (q *queue) deepCopy() *queue {
-	var copy queue
-	for f := 0; f < def.NumFloors; f++ {
-		for b := 0; b < def.NumButtons; b++ {
-			copy.Q[f][b] = q.Q[f][b]
-		}
-	}
-	return &copy
-}
-
-// this should run on a copy of local queue
-func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
-	q.setOrder(targetFloor, targetButton, orderStatus{true, ""})
-
-	cost := 0
-	floor := prevFloor
-	dir := currDir
-
-	if currFloor == -1 {
-		// Between floors, add 1 cost
-		cost++
-	} else if dir != def.DirStop {
-		// At floor, but moving, add 2 cost
-		cost += 2
-	}
-
-	floor, dir = incrementFloor(floor, dir)
-	fmt.Printf("Cost floor sequence: %v →  %v", currFloor, floor)
-
-	for !(floor == targetFloor && q.shouldStop(floor, dir)) {
-		if q.shouldStop(floor, dir) {
-			cost += 2
-			fmt.Printf("(S)")
-		}
-		dir = q.chooseDirection(floor, dir)
-		floor, dir = incrementFloor(floor, dir)
-		cost += 2
-		fmt.Printf(" →  %v", floor)
-	}
-	fmt.Printf(" = cost %v\n", cost)
-	return cost
-}
-
-func incrementFloor(floor, dir int) (int, int) {
-	// fmt.Printf("(incr:f%v d%v)", floor, dir)
-	switch dir {
-	case def.DirDown:
-		floor--
-	case def.DirUp:
-		floor++
-	case def.DirStop:
-		// fmt.Println("incrementFloor(): direction stop, not incremented (this is okay)")
-	default:
-		fmt.Println("incrementFloor(): invalid direction, not incremented")
-	}
-
-	if floor <= 0 && dir == def.DirDown {
-		dir = def.DirUp
-		floor = 0
-	}
-	if floor >= def.NumFloors-1 && dir == def.DirUp {
-		dir = def.DirDown
-		floor = def.NumFloors - 1
-	}
-	return floor, dir
-}
-
-func updateLocalQueue() {
-	fmt.Println("updateLocalQueue() routine running...")
-	for {
-		<-updateLocal
-
-		for f := 0; f < def.NumFloors; f++ {
-			for b := 0; b < def.NumButtons; b++ {
-				if remote.isActiveOrder(f, b) {
-					if b != def.ButtonIn && remote.Q[f][b].Addr == def.Laddr.String() {
-						local.setOrder(f, b, orderStatus{true, ""})
-					}
-				}
-			}
-		}
-		time.Sleep(time.Millisecond)
-	}
-}
-
-// runBackup loads queue data from file if file exists once and saves backups
-// whenever its asked to.
-func runBackup() {
-	filenameLocal := "localQueueBackup"
-	filenameRemote := "remoteQueueBackup"
-
-	local.loadFromDisk(filenameLocal)
-	// remote.loadFromDisk(filenameRemote)
-
-	for {
-		<-backup
-		if err := local.saveToDisk(filenameLocal); err != nil {
-			fmt.Println(err)
-		}
-		if err := remote.saveToDisk(filenameRemote); err != nil {
-			fmt.Println(err)
-		}
-	}
-}
-
-func (q *queue) saveToDisk(filename string) error {
-	fi, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer fi.Close()
-
-	if err := gob.NewEncoder(fi).Encode(q); err != nil {
-		return err
-	}
-
-	if diskDebug {
-		fmt.Printf("Successful save of file %s\n", filename)
-	}
-	return nil
-}
-
-// loadFromDisk checks if a file of the given name is available on disk, and
-// saves its contents to the queue it's invoked on if the file is present.
-func (q *queue) loadFromDisk(filename string) error {
-	if _, err := os.Stat(filename); err == nil {
-		fmt.Printf("Backup file %s exists, processing...\n", filename)
-		fi, err := os.Open(filename)
-		if err != nil {
-			return err
-		}
-		defer fi.Close()
-
-		if err := gob.NewDecoder(fi).Decode(&q); err != nil {
-			return err
-		}
-	}
-
-	// Ny ide: If not empty, event button pressed.
-
-	return nil
 }

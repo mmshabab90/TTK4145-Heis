@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"time"
 )
 
 const debugPrint = false
@@ -25,37 +24,33 @@ type keypress struct {
 
 var orderTimeoutChan = make(chan order)
 
-
 func main() {
 	if err := hw.Init(); err != nil {
 		log.Fatal(err)
 	}
-	fsm.Init()
+
+	eventNewOrder := make(chan bool)
+	eventFloorReached := make(chan int)
+
+	fsm.Init(eventNewOrder, eventFloorReached)
 	network.Init()
 
-	run()
+	run(eventNewOrder)
 }
 
-func run() {
+func run(eventNewOrder <-chan bool,
+	eventFloorReached <-chan int) {
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
 
 	for {
 		select {
-		case keypress := <-buttonChan:
-			switch keypress.button {
-			case def.ButtonIn:
-				fsm.EventInternalButtonPressed(keypress.floor, keypress.button)
-				// replace by EventInternalButtonPressed <- true
-			case def.ButtonUp, def.ButtonDown:
-				fsm.EventExternalButtonPressed(keypress.floor, keypress.button)
-				// replace by EventExternalButtonPressed <- true
-			default:
-				fmt.Println("Invalid keypress.")
-			}
-
+		case key := <-buttonChan:
+			queue.AddKeypressOrder(key.floor, key.button)
+			eventNewOrder <- true
 		case floor := <-floorChan:
-			fsm.EventFloorReached(floor)
+			eventFloorReached <- floor
+		}
 	}
 }
 
@@ -105,4 +100,3 @@ func pollFloors() <-chan int {
 	}()
 	return c
 }
-

@@ -7,19 +7,13 @@ import (
 )
 
 // Global system constants
-const NumButtons = 3
 const NumFloors = 4
+const NumButtons = 3
 
 const (
 	ButtonUp int = iota
 	ButtonDown
 	ButtonIn
-)
-
-const (
-	DirDown int = iota - 1
-	DirStop
-	DirUp
 )
 
 const MaxInt = int(^uint(0) >> 1)
