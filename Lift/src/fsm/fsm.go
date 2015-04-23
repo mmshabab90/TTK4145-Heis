@@ -9,29 +9,29 @@ import (
 	"time"
 )
 
-type stateType int // kill this
-
 const (
-	idle stateType = iota
+	idle int = iota
 	moving
 	doorOpen
 )
 
-var state stateType
-var storey int
-var direction int
-var departDirection int
-
-var doorReset = make(chan bool)
-
 const doorOpenTime = 1 * time.Second
 
-// --------------- PUBLIC: ---------------
+var state int
+var storey int
+var direction int
 
+type Events struct {
+	NewOrder     <-chan bool
+	FloorReached <-chan int
+	DoorTimeout  <-chan bool
+}
+
+var doorReset = make(chan bool)
 var DoorTimeoutChan = make(chan bool)
 
-func Init() {
-	log.Println("FSM Init")
+func Init(e Events) {
+	log.Println("fsm.Init() starting")
 	go startTimer()
 	state = idle
 	direction = defs.DirStop
@@ -39,7 +39,6 @@ func Init() {
 	if storey == -1 {
 		storey = hw.MoveToDefinedState()
 	}
-	departDirection = defs.DirDown
 	go syncLights()
 }
 
@@ -58,7 +57,6 @@ func EventInternalButtonPressed(buttonStorey int, buttonType int) {
 			state = doorOpen
 		case defs.DirUp, defs.DirDown:
 			hw.SetMotorDirection(direction)
-			departDirection = direction
 			state = moving
 		}
 	case doorOpen:
@@ -109,7 +107,6 @@ func EventExternalOrderGivenToMe() {
 			state = doorOpen
 		case defs.DirUp, defs.DirDown:
 			hw.SetMotorDirection(direction)
-			departDirection = direction
 			state = moving
 		}
 	default:
@@ -133,7 +130,6 @@ func EventStoreyReached(newStorey int) {
 			doorReset <- true
 			state = doorOpen
 		} else {
-			departDirection = direction
 		}
 	default:
 		log.Printf("Makes no sense to arrive at a storey in state %s.\n", stateString(state))
@@ -153,7 +149,6 @@ func EventDoorTimeout() { //this happens for each external order
 			state = idle
 		} else {
 			state = moving
-			departDirection = direction
 		}
 	default:
 		log.Fatalf("Makes no sense to time out when not in state door open\n")
@@ -163,10 +158,6 @@ func EventDoorTimeout() { //this happens for each external order
 
 func Direction() int {
 	return direction
-}
-
-func DepartDirection() int {
-	return departDirection
 }
 
 func Storey() int {
@@ -184,49 +175,5 @@ func startTimer() {
 			timer.Stop()
 			EventDoorTimeout()
 		}
-	}
-}
-
-func syncLights() {
-	for {
-		<-defs.SyncLightsChan
-
-		for f := 0; f < defs.NumStoreys; f++ {
-			for b := 0; b < defs.NumButtons; b++ {
-				if (b == defs.ButtonUp && f == defs.NumStoreys-1) ||
-					(b == defs.ButtonDown && f == 0) {
-					continue
-				} else {
-					hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
-				}
-			}
-		}
-		time.Sleep(time.Millisecond)
-	}
-}
-
-func stateString(state stateType) string {
-	switch state {
-	case idle:
-		return "idle"
-	case moving:
-		return "moving"
-	case doorOpen:
-		return "door open"
-	default:
-		return "error: bad state"
-	}
-}
-
-func buttonString(button int) string {
-	switch button {
-	case defs.ButtonUp:
-		return "up"
-	case defs.ButtonDown:
-		return "down"
-	case defs.ButtonCommand:
-		return "command"
-	default:
-		return "error: bad button"
 	}
 }
