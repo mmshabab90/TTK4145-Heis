@@ -30,7 +30,7 @@ type Events struct {
 var doorReset = make(chan bool)
 var DoorTimeoutChan = make(chan bool)
 
-func Init(e Events) {
+func Init() {
 	log.Println("fsm.Init() starting")
 	go startTimer()
 	state = idle
