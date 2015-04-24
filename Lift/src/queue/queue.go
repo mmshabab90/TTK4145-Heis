@@ -54,7 +54,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 	remote.setOrder(floor, button, orderStatus{true, addr, time.NewTimer(10 * time.Second)})
 	//go remote.startTimer(floor, button)
 
-	defs.SyncLightsChan <- true
+	// defs.SyncLightsChan <- true
 	updateLocal <- true
 	newOrder <- true
 	backup <- true
@@ -69,7 +69,7 @@ func RemoveRemoteOrdersAt(floor int) {
 	}
 	//Print()
 
-	defs.SyncLightsChan <- true
+	// defs.SyncLightsChan <- true
 	updateLocal <- true
 	backup <- true
 }
@@ -227,6 +227,7 @@ func (q *queue) isEmpty() bool {
 
 func (q *queue) setOrder(floor, button int, status orderStatus) {
 	q.Q[floor][button] = status
+	defs.SyncLightsChan <- true
 }
 
 func (q *queue) isActiveOrder(floor, button int) bool {

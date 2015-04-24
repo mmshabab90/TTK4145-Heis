@@ -57,6 +57,7 @@ func run(e EventChannels) {
 }
 
 func eventNewOrder() {
+	fmt.Printf("\n\nEvent: New order in state %v.\n", stateString(state))
 	switch state {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
@@ -68,6 +69,7 @@ func eventNewOrder() {
 			state = doorOpen
 		} else {
 			dir = queue.ChooseDirection(floor, dir)
+			hw.SetMotorDirection(dir)
 			state = moving
 		}
 	case moving:
@@ -80,7 +82,7 @@ func eventNewOrder() {
 }
 
 func eventFloorReached(newFloor int) {
-	fmt.Printf("\n\n   ☺      Event floor %d reached in state %s\n", newFloor, stateString(state))
+	fmt.Printf("\n\nEvent: Floor %d reached in state %s\n", newFloor, stateString(state))
 	queue.Print()
 	floor = newFloor
 	hw.SetFloorLamp(floor)
@@ -98,7 +100,7 @@ func eventFloorReached(newFloor int) {
 	default:
 		log.Printf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
 	}
-	defs.SyncLightsChan <- true
+	// defs.SyncLightsChan <- true
 }
 
 func eventDoorTimeout() { //this happens for each external order
@@ -117,5 +119,5 @@ func eventDoorTimeout() { //this happens for each external order
 	default:
 		log.Fatalf("Makes no sense to time out when not in state door open\n")
 	}
-	defs.SyncLightsChan <- true
+	// defs.SyncLightsChan <- true
 }

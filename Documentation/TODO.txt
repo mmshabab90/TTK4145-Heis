@@ -19,3 +19,5 @@ hva om to heiser lever og to heiser har svart med cost, men det ikke er de samme
 cost burde returnere noe høyt om den mislykkes med å rekne ut
 
 døra åpner seg når den får ekterne ordre, fiks dette!
+
+bedre navn på defs og knapper
