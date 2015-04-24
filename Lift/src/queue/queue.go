@@ -54,7 +54,6 @@ func AddRemoteOrder(floor, button int, addr string) {
 	remote.setOrder(floor, button, orderStatus{true, addr, time.NewTimer(10 * time.Second)})
 	//go remote.startTimer(floor, button)
 
-	// defs.SyncLightsChan <- true
 	updateLocal <- true
 	// newOrder <- true
 	backup <- true
@@ -67,9 +66,7 @@ func RemoveRemoteOrdersAt(floor int) {
 		//remote.stopTimer(floor, b)
 		remote.setOrder(floor, b, blankOrder)
 	}
-	//Print()
 
-	// defs.SyncLightsChan <- true
 	updateLocal <- true
 	backup <- true
 }
