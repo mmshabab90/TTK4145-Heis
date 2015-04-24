@@ -104,9 +104,8 @@ func EventExternalOrderGivenToMe() {
 		switch direction = queue.ChooseDirection(storey, direction); direction {
 		case defs.DirStop:
 			hw.SetDoorOpenLamp(true)
-				fmt.Println("in eventExternalOrderGivenToMe debug start")
+			fmt.Println("in eventExternalOrderGivenToMe dir:stop")
 			queue.RemoveOrdersAt(storey) //her tror jeg buggen ligger!
-			fmt.Println("in eventExternalOrderGivenToMe debug stop")
 			doorReset <- true
 			state = doorOpen
 		case defs.DirUp, defs.DirDown:

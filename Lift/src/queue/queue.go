@@ -48,14 +48,12 @@ func AddLocalOrder(storey int, button int) {
 
 // AddRemoteOrder adds the given order to the remote queue.
 func AddRemoteOrder(storey, button int, addr string) {
-	remote.setOrder(storey, button, orderStatus{true, addr, time.NewTimer(10*time.Second)})
-	fmt.Println("how long can we go without crashing?")	
+	remote.setOrder(storey, button, orderStatus{true, addr, time.NewTimer(10*time.Second)})	
 	//go remote.startTimer(storey, button)	
-	fmt.Println("we have to find out then i guess my friend")
+	
 	defs.SyncLightsChan <- true
 	updateLocal <- true
 	backup <- true
-	fmt.Println("Ending task addRemoteOrder")
 }
 
 // RemoveRemoteOrdersAt removes all orders at the given storey from the remote
