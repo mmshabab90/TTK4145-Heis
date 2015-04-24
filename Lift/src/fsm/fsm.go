@@ -75,6 +75,7 @@ func eventNewOrder() {
 		// ignore
 	case doorOpen:
 		if queue.ShouldStop(floor, dir) {
+			fmt.Println("SPAM!")
 			queue.RemoveOrdersAt(floor)
 			//go queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
@@ -90,7 +91,8 @@ func eventFloorReached(newFloor int) {
 	switch state {
 	case moving:
 		if queue.ShouldStop(floor, dir) {
-			hw.SetMotorDirection(def.DirStop)
+			dir = def.DirStop
+			hw.SetMotorDirection(dir)
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			go queue.SendOrderCompleteMessage(floor)
