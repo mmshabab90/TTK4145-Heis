@@ -41,15 +41,19 @@ func Init(newOrderChan chan bool) {
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, "", nil})
 
-	newOrder <- true
+	newOrder <- true //shouldn't this be done in set.order????
 }
 
 // AddRemoteOrder adds an order to the remote queue.
 func AddRemoteOrder(floor, button int, addr string) {
-	//if IsRemoteOrder(floor, button) {
+	alreadyExist := IsRemoteOrder(floor, button) 
 	remote.setOrder(floor, button, orderStatus{true, addr /*time.NewTimer(10 * time.Second)*/, nil})
-	//go remote.startTimer(floor, button)
-	//}
+	if !alreadyExist{
+		fmt.Printf("\n--------------------")
+		fmt.Println("New order timer made")
+		go remote.startTimer(floor, button)
+		fmt.Printf("\n--------------------")
+	}
 	updateLocal <- true
 	// newOrder <- true
 }
@@ -58,7 +62,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 // queue.
 func RemoveRemoteOrdersAt(floor int) {
 	for b := 0; b < def.NumButtons; b++ {
-		//remote.stopTimer(floor, b)
+		remote.stopTimer(floor, b)
 		remote.setOrder(floor, b, blankOrder)
 	}
 
@@ -68,7 +72,7 @@ func RemoveRemoteOrdersAt(floor int) {
 // RemoveOrdersAt removes all orders at the given floor in local and remote queue.
 func RemoveOrdersAt(floor int) {
 	for b := 0; b < def.NumButtons; b++ {
-		//remote.stopTimer(floor, b)
+		remote.stopTimer(floor, b)
 		local.setOrder(floor, b, blankOrder)
 		remote.setOrder(floor, b, blankOrder)
 	}

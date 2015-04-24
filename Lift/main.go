@@ -87,7 +87,7 @@ func poll(e fsm.EventChannels) {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
-			/*case <-queue.OrderStatusTimeoutChan:
+		case <-queue.OrderStatusTimeoutChan:
 			fmt.Println("order in queue timed out, reassigning queue")
 			//reassign!*/
 		}

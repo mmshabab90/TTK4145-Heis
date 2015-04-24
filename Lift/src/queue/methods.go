@@ -4,11 +4,12 @@ import (
 	def "../config"
 	"fmt"
 	"log"
+	"time"
 )
 
 func (q *queue) startTimer(floor, button int) {
 	fmt.Println("run startTimer()")
-	//q.Q[floor][button].Timer = time.NewTimer(10*time.Second)
+	q.Q[floor][button].Timer = time.NewTimer(10*time.Second)
 	<-q.Q[floor][button].Timer.C
 	OrderStatusTimeoutChan <- q.Q[floor][button]
 }
@@ -43,7 +44,7 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 	if q.isActiveOrder(floor, button) == status.Active {
 		return
 	}
-
+	
 	q.Q[floor][button] = status
 	def.SyncLightsChan <- true
 	suggestBackup()
@@ -106,18 +107,21 @@ func (q *queue) chooseDirection(floor, dir int) int {
 	}
 }
 
+// BUG(Whoever): Returns stop also if the lift should turn around, but this
+// is okay(ish) because chooseDirection still returns the direction the lift
+// should move (immediately) after stopping.
 func (q *queue) shouldStop(floor, dir int) bool {
 	switch dir {
 	case def.DirDown:
 		return q.isActiveOrder(floor, def.ButtonDown) ||
 			q.isActiveOrder(floor, def.ButtonCommand) ||
-			floor == 0 //||
-			//!q.isOrdersBelow(floor)
+			floor == 0 ||
+			!q.isOrdersBelow(floor)
 	case def.DirUp:
 		return q.isActiveOrder(floor, def.ButtonUp) ||
 			q.isActiveOrder(floor, def.ButtonCommand) ||
-			floor == def.NumFloors-1 //||
-			//!q.isOrdersAbove(floor)
+			floor == def.NumFloors-1 ||
+			!q.isOrdersAbove(floor)
 	case def.DirStop:
 		return q.isActiveOrder(floor, def.ButtonDown) ||
 			q.isActiveOrder(floor, def.ButtonUp) ||
