@@ -3,17 +3,10 @@ package queue
 
 import (
 	"../defs"
-	"encoding/gob"
 	"fmt"
 	"log"
-	"os"
 	"time"
 )
-
-var _ = fmt.Printf
-var _ = log.Printf
-
-const diskDebug = false
 
 type orderStatus struct {
 	Active bool
@@ -54,7 +47,6 @@ func AddRemoteOrder(floor, button int, addr string) {
 	remote.setOrder(floor, button, orderStatus{true, addr, time.NewTimer(10 * time.Second)})
 	//go remote.startTimer(floor, button)
 
-	// defs.SyncLightsChan <- true
 	updateLocal <- true
 	// newOrder <- true
 	backup <- true
@@ -67,9 +59,7 @@ func RemoveRemoteOrdersAt(floor int) {
 		//remote.stopTimer(floor, b)
 		remote.setOrder(floor, b, blankOrder)
 	}
-	//Print()
 
-	// defs.SyncLightsChan <- true
 	updateLocal <- true
 	backup <- true
 }
@@ -396,62 +386,4 @@ func updateLocalQueue() {
 		}
 		time.Sleep(time.Millisecond)
 	}
-}
-
-// runBackup loads queue data from file if file exists once and saves backups
-// whenever its asked to.
-func runBackup() {
-	filenameLocal := "localQueueBackup"
-	filenameRemote := "remoteQueueBackup"
-
-	local.loadFromDisk(filenameLocal)
-	// remote.loadFromDisk(filenameRemote)
-
-	for {
-		<-backup
-		if err := local.saveToDisk(filenameLocal); err != nil {
-			fmt.Println(err)
-		}
-		if err := remote.saveToDisk(filenameRemote); err != nil {
-			fmt.Println(err)
-		}
-	}
-}
-
-func (q *queue) saveToDisk(filename string) error {
-	fi, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer fi.Close()
-
-	if err := gob.NewEncoder(fi).Encode(q); err != nil {
-		return err
-	}
-
-	if diskDebug {
-		fmt.Printf("Successful save of file %s\n", filename)
-	}
-	return nil
-}
-
-// loadFromDisk checks if a file of the given name is available on disk, and
-// saves its contents to the queue it's invoked on if the file is present.
-func (q *queue) loadFromDisk(filename string) error {
-	if _, err := os.Stat(filename); err == nil {
-		fmt.Printf("Backup file %s exists, processing...\n", filename)
-		fi, err := os.Open(filename)
-		if err != nil {
-			return err
-		}
-		defer fi.Close()
-
-		if err := gob.NewDecoder(fi).Decode(&q); err != nil {
-			return err
-		}
-	}
-
-	// Ny ide: If not empty, event button pressed.
-
-	return nil
 }

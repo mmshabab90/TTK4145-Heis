@@ -99,7 +99,6 @@ func eventFloorReached(newFloor int) {
 	default:
 		log.Printf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
 	}
-	// defs.SyncLightsChan <- true
 }
 
 func eventDoorTimeout() { //this happens for each external order
@@ -118,5 +117,4 @@ func eventDoorTimeout() { //this happens for each external order
 	default:
 		log.Fatalf("Makes no sense to time out when not in state door open\n")
 	}
-	// defs.SyncLightsChan <- true
 }
