@@ -34,8 +34,8 @@ type reply struct {
 	lift string
 }
 type order struct {
-	storey int
-	button int
+	storey  int
+	button  int
 	timeout bool
 	timer   *time.Timer
 }
@@ -73,7 +73,7 @@ func run() {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
-		/*case <- queue.OrderStatusTimeoutChan:
+			/*case <- queue.OrderStatusTimeoutChan:
 			fmt.Println("order in queue timed out, reassigning queue")
 			//reassign!*/
 		}
@@ -188,8 +188,8 @@ func connectionTimer(connection *network.UdpConnection) {
 }
 
 func costTimer(newOrder *order) {
- 	<-newOrder.timer.C
- 	costTimeoutChan <- *newOrder
+	<-newOrder.timer.C
+	costTimeoutChan <- *newOrder
 }
 
 func (o *order) makeNewOrder(msg defs.Message) {
@@ -197,7 +197,7 @@ func (o *order) makeNewOrder(msg defs.Message) {
 	o.button = msg.Button
 }
 
-func (o *order) isSameOrder(other order) bool{
+func (o *order) isSameOrder(other order) bool {
 	if other.storey == o.storey && other.button == o.button {
 		return true
 	} else {
@@ -230,10 +230,6 @@ func liftAssigner() {
 						newOrder = oldOrder
 					}
 				}
-<<<<<<< HEAD
-				
-=======
->>>>>>> 71e7072e3615021e1f668bbe151a3e0c4ea2e14f
 				// Check if order in queue
 				if value, exist := assignmentQueue[newOrder]; exist {
 					// Check if lift in list of that order
@@ -246,7 +242,7 @@ func liftAssigner() {
 					// Add it if not found
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-						newOrder.timer.Reset(10* time.Second)
+						newOrder.timer.Reset(10 * time.Second)
 					}
 				} else {
 					// If order not in queue at all, init order list with it
@@ -283,7 +279,7 @@ func evaluateLists(que *(map[order][]reply)) {
 	fmt.Println(*que)
 	for key, replyList := range *que {
 		// Check if the list is complete
-		if len(replyList) == len(onlineLifts) ||  key.timeout {
+		if len(replyList) == len(onlineLifts) || key.timeout {
 			fmt.Printf("Laddr = %v\n", defs.Laddr)
 			var (
 				lowCost = defs.MaxInt

@@ -18,7 +18,7 @@ const diskDebug = false
 type orderStatus struct {
 	Active bool
 	Addr   string
-	Timer *time.Timer
+	Timer  *time.Timer
 }
 
 var blankOrder = orderStatus{false, "", nil}
@@ -48,21 +48,12 @@ func AddLocalOrder(storey int, button int) {
 
 // AddRemoteOrder adds the given order to the remote queue.
 func AddRemoteOrder(storey, button int, addr string) {
-<<<<<<< HEAD
-	remote.setOrder(storey, button, orderStatus{true, addr, time.NewTimer(10*time.Second)})
+	remote.setOrder(storey, button, orderStatus{true, addr, time.NewTimer(10 * time.Second)})
+	//go remote.startTimer(storey, button)
 
-=======
-	remote.setOrder(storey, button, orderStatus{true, addr, time.NewTimer(10*time.Second)})	
->>>>>>> 71e7072e3615021e1f668bbe151a3e0c4ea2e14f
-	//go remote.startTimer(storey, button)	
-	
 	defs.SyncLightsChan <- true
 	updateLocal <- true
 	backup <- true
-<<<<<<< HEAD
-	
-=======
->>>>>>> 71e7072e3615021e1f668bbe151a3e0c4ea2e14f
 }
 
 // RemoveRemoteOrdersAt removes all orders at the given storey from the remote
@@ -73,7 +64,7 @@ func RemoveRemoteOrdersAt(storey int) {
 		remote.setOrder(storey, b, blankOrder)
 	}
 	//Print()
-	
+
 	defs.SyncLightsChan <- true
 	updateLocal <- true
 	backup <- true
@@ -99,10 +90,6 @@ func RemoveOrdersAt(storey int) {
 		remote.setOrder(storey, b, blankOrder)
 	}
 	SendOrderCompleteMessage(storey) // bad abstraction
-<<<<<<< HEAD
-	
-=======
->>>>>>> 71e7072e3615021e1f668bbe151a3e0c4ea2e14f
 	backup <- true
 }
 
@@ -149,10 +136,6 @@ func ReassignOrders(deadAddr string) {
 func SendOrderCompleteMessage(storey int) {
 	orderComplete := defs.Message{Kind: defs.CompleteOrder, Storey: storey, Button: -1, Cost: -1}
 	defs.MessageChan <- orderComplete
-<<<<<<< HEAD
-
-=======
->>>>>>> 71e7072e3615021e1f668bbe151a3e0c4ea2e14f
 }
 
 // CalculateCost returns how much effort it is for this lift to carry out
@@ -210,12 +193,12 @@ func (q *queue) startTimer(storey, button int) {
 	fmt.Println("run startTimer()")
 	//q.Q[storey][button].Timer = time.NewTimer(10*time.Second)
 	<-q.Q[storey][button].Timer.C
- 	OrderStatusTimeoutChan  <- q.Q[storey][button]
+	OrderStatusTimeoutChan <- q.Q[storey][button]
 }
 
 func (q *queue) stopTimer(storey, button int) {
 	fmt.Println("run stopTimer()")
-	if q.Q[storey][button].Timer != nil  {
+	if q.Q[storey][button].Timer != nil {
 		removed := q.Q[storey][button].Timer.Stop()
 		if removed {
 			fmt.Println("timer removed")
@@ -389,10 +372,6 @@ func incrementStorey(storey, dir int) (int, int) {
 }
 
 func updateLocalQueue() {
-<<<<<<< HEAD
-=======
-	//fmt.Println("updateLocalQueue() routine running...")
->>>>>>> 71e7072e3615021e1f668bbe151a3e0c4ea2e14f
 	for {
 		<-updateLocal
 		for f := 0; f < defs.NumStoreys; f++ {
