@@ -37,9 +37,9 @@ func syncLights() {
 	for {
 		<-defs.SyncLightsChan
 
-		for f := 0; f < defs.NumStoreys; f++ {
+		for f := 0; f < defs.NumFloors; f++ {
 			for b := 0; b < defs.NumButtons; b++ {
-				if (b == defs.ButtonUp && f == defs.NumStoreys-1) ||
+				if (b == defs.ButtonUp && f == defs.NumFloors-1) ||
 					(b == defs.ButtonDown && f == 0) {
 					continue
 				} else {

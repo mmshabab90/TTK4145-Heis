@@ -24,7 +24,7 @@ type orderStatus struct {
 var blankOrder = orderStatus{false, "", nil}
 
 type queue struct {
-	Q [defs.NumStoreys][defs.NumButtons]orderStatus
+	Q [defs.NumFloors][defs.NumButtons]orderStatus
 }
 
 var local queue
@@ -40,28 +40,28 @@ func init() {
 }
 
 // AddLocalOrder adds an order to the local queue.
-func AddLocalOrder(storey int, button int) {
-	local.setOrder(storey, button, orderStatus{true, "", nil})
+func AddLocalOrder(floor int, button int) {
+	local.setOrder(floor, button, orderStatus{true, "", nil})
 
 	backup <- true
 }
 
 // AddRemoteOrder adds the given order to the remote queue.
-func AddRemoteOrder(storey, button int, addr string) {
-	remote.setOrder(storey, button, orderStatus{true, addr, time.NewTimer(10 * time.Second)})
-	//go remote.startTimer(storey, button)
+func AddRemoteOrder(floor, button int, addr string) {
+	remote.setOrder(floor, button, orderStatus{true, addr, time.NewTimer(10 * time.Second)})
+	//go remote.startTimer(floor, button)
 
 	defs.SyncLightsChan <- true
 	updateLocal <- true
 	backup <- true
 }
 
-// RemoveRemoteOrdersAt removes all orders at the given storey from the remote
+// RemoveRemoteOrdersAt removes all orders at the given floor from the remote
 // queue.
-func RemoveRemoteOrdersAt(storey int) {
+func RemoveRemoteOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
-		//remote.stopTimer(storey, b)
-		remote.setOrder(storey, b, blankOrder)
+		//remote.stopTimer(floor, b)
+		remote.setOrder(floor, b, blankOrder)
 	}
 	//Print()
 
@@ -71,32 +71,32 @@ func RemoveRemoteOrdersAt(storey int) {
 }
 
 // ChooseDirection returns the direction the lift should continue after the
-// current storey.
-func ChooseDirection(storey, dir int) int {
-	return local.chooseDirection(storey, dir)
+// current floor.
+func ChooseDirection(floor, dir int) int {
+	return local.chooseDirection(floor, dir)
 }
 
-// ShouldStop returns whether the lift should stop at the given storey, if
+// ShouldStop returns whether the lift should stop at the given floor, if
 // going in the given direction.
-func ShouldStop(storey, dir int) bool {
-	return local.shouldStop(storey, dir)
+func ShouldStop(floor, dir int) bool {
+	return local.shouldStop(floor, dir)
 }
 
-// RemoveOrdersAt removes all orders at the given storey in local and remote queue.
-func RemoveOrdersAt(storey int) {
+// RemoveOrdersAt removes all orders at the given floor in local and remote queue.
+func RemoveOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
-		//remote.stopTimer(storey, b)
-		local.setOrder(storey, b, blankOrder)
-		remote.setOrder(storey, b, blankOrder)
+		//remote.stopTimer(floor, b)
+		local.setOrder(floor, b, blankOrder)
+		remote.setOrder(floor, b, blankOrder)
 	}
-	SendOrderCompleteMessage(storey) // bad abstraction
+	SendOrderCompleteMessage(floor) // bad abstraction
 	backup <- true
 }
 
-// IsOrder returns whether there in an order with the given storey and button
+// IsOrder returns whether there in an order with the given floor and button
 // in the local queue.
-func IsOrder(storey, button int) bool { // Rename to IsLocalOrder
-	return local.isActiveOrder(storey, button)
+func IsOrder(floor, button int) bool { // Rename to IsLocalOrder
+	return local.isActiveOrder(floor, button)
 }
 
 // Blah blah blah
@@ -104,10 +104,10 @@ func IsLocalEmpty() bool {
 	return local.isEmpty()
 }
 
-// IsRemoteOrder returns true if there is a order with the given storey and
+// IsRemoteOrder returns true if there is a order with the given floor and
 // button in the remote queue.
-func IsRemoteOrder(storey, button int) bool {
-	return remote.isActiveOrder(storey, button)
+func IsRemoteOrder(floor, button int) bool {
+	return remote.isActiveOrder(floor, button)
 }
 
 // ReassignOrders finds all orders assigned to the given dead lift, removes
@@ -117,13 +117,13 @@ func ReassignOrders(deadAddr string) {
 	// loop thru remote queue
 	// remove all orders assigned to the dead lift
 	// send neworder-message for each removed order
-	for f := 0; f < defs.NumStoreys; f++ {
+	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
 			if remote.Q[f][b].Addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
 				reassignMessage := defs.Message{
 					Kind:   defs.NewOrder,
-					Storey: f,
+					Floor:  f,
 					Button: b}
 				defs.MessageChan <- reassignMessage
 			}
@@ -132,25 +132,25 @@ func ReassignOrders(deadAddr string) {
 }
 
 // SendOrderCompleteMessage communicates to the network that this lift has
-// taken care of orders at the given storey.
-func SendOrderCompleteMessage(storey int) {
-	orderComplete := defs.Message{Kind: defs.CompleteOrder, Storey: storey, Button: -1, Cost: -1}
+// taken care of orders at the given floor.
+func SendOrderCompleteMessage(floor int) {
+	orderComplete := defs.Message{Kind: defs.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
 	defs.MessageChan <- orderComplete
 }
 
 // CalculateCost returns how much effort it is for this lift to carry out
 // the given order. Each sheduled stop and each travel between adjacent
-// storeys on the way towards target will add cost 2. Cost 1 is added if the
-// lift starts between storeys.
-func CalculateCost(targetStorey, targetButton, prevStorey, currStorey, currDir int) int {
-	return local.deepCopy().calculateCost(targetStorey, targetButton, prevStorey, currStorey, currDir)
+// floors on the way towards target will add cost 2. Cost 1 is added if the
+// lift starts between floors.
+func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
+	return local.deepCopy().calculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir)
 }
 
 // Print prints local and remote queue to screen in a somewhat legible
 // manner.
 func Print() {
 	fmt.Println("Local   Remote")
-	for f := defs.NumStoreys - 1; f >= 0; f-- {
+	for f := defs.NumFloors - 1; f >= 0; f-- {
 		lifts := "   "
 
 		if local.isActiveOrder(f, defs.ButtonUp) {
@@ -189,17 +189,17 @@ func Print() {
  * Methods on queue struct:
  */
 
-func (q *queue) startTimer(storey, button int) {
+func (q *queue) startTimer(floor, button int) {
 	fmt.Println("run startTimer()")
-	//q.Q[storey][button].Timer = time.NewTimer(10*time.Second)
-	<-q.Q[storey][button].Timer.C
-	OrderStatusTimeoutChan <- q.Q[storey][button]
+	//q.Q[floor][button].Timer = time.NewTimer(10*time.Second)
+	<-q.Q[floor][button].Timer.C
+	OrderStatusTimeoutChan <- q.Q[floor][button]
 }
 
-func (q *queue) stopTimer(storey, button int) {
+func (q *queue) stopTimer(floor, button int) {
 	fmt.Println("run stopTimer()")
-	if q.Q[storey][button].Timer != nil {
-		removed := q.Q[storey][button].Timer.Stop()
+	if q.Q[floor][button].Timer != nil {
+		removed := q.Q[floor][button].Timer.Stop()
 		if removed {
 			fmt.Println("timer removed")
 		} else {
@@ -211,7 +211,7 @@ func (q *queue) stopTimer(storey, button int) {
 }
 
 func (q *queue) isEmpty() bool {
-	for f := 0; f < defs.NumStoreys; f++ {
+	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
 			if q.Q[f][b].Active {
 				return false
@@ -221,16 +221,16 @@ func (q *queue) isEmpty() bool {
 	return true
 }
 
-func (q *queue) setOrder(storey, button int, status orderStatus) {
-	q.Q[storey][button] = status
+func (q *queue) setOrder(floor, button int, status orderStatus) {
+	q.Q[floor][button] = status
 }
 
-func (q *queue) isActiveOrder(storey, button int) bool {
-	return q.Q[storey][button].Active
+func (q *queue) isActiveOrder(floor, button int) bool {
+	return q.Q[floor][button].Active
 }
 
-func (q *queue) isOrdersAbove(storey int) bool {
-	for f := storey + 1; f < defs.NumStoreys; f++ {
+func (q *queue) isOrdersAbove(floor int) bool {
+	for f := floor + 1; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
 			if q.isActiveOrder(f, b) {
 				return true
@@ -240,8 +240,8 @@ func (q *queue) isOrdersAbove(storey int) bool {
 	return false
 }
 
-func (q *queue) isOrdersBelow(storey int) bool {
-	for f := 0; f < storey; f++ {
+func (q *queue) isOrdersBelow(floor int) bool {
+	for f := 0; f < floor; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
 			if q.isActiveOrder(f, b) {
 				return true
@@ -251,27 +251,27 @@ func (q *queue) isOrdersBelow(storey int) bool {
 	return false
 }
 
-func (q *queue) chooseDirection(storey, dir int) int {
+func (q *queue) chooseDirection(floor, dir int) int {
 	if q.isEmpty() {
 		return defs.DirStop
 	}
 	switch dir {
 	case defs.DirDown:
-		if q.isOrdersBelow(storey) && storey > 0 {
+		if q.isOrdersBelow(floor) && floor > 0 {
 			return defs.DirDown
 		} else {
 			return defs.DirUp
 		}
 	case defs.DirUp:
-		if q.isOrdersAbove(storey) && storey < defs.NumStoreys-1 {
+		if q.isOrdersAbove(floor) && floor < defs.NumFloors-1 {
 			return defs.DirUp
 		} else {
 			return defs.DirDown
 		}
 	case defs.DirStop:
-		if q.isOrdersAbove(storey) {
+		if q.isOrdersAbove(floor) {
 			return defs.DirUp
-		} else if q.isOrdersBelow(storey) {
+		} else if q.isOrdersBelow(floor) {
 			return defs.DirDown
 		} else {
 			return defs.DirStop
@@ -282,22 +282,22 @@ func (q *queue) chooseDirection(storey, dir int) int {
 	}
 }
 
-func (q *queue) shouldStop(storey, dir int) bool {
+func (q *queue) shouldStop(floor, dir int) bool {
 	switch dir {
 	case defs.DirDown:
-		return q.isActiveOrder(storey, defs.ButtonDown) ||
-			q.isActiveOrder(storey, defs.ButtonCommand) ||
-			storey == 0 ||
-			!q.isOrdersBelow(storey)
+		return q.isActiveOrder(floor, defs.ButtonDown) ||
+			q.isActiveOrder(floor, defs.ButtonCommand) ||
+			floor == 0 ||
+			!q.isOrdersBelow(floor)
 	case defs.DirUp:
-		return q.isActiveOrder(storey, defs.ButtonUp) ||
-			q.isActiveOrder(storey, defs.ButtonCommand) ||
-			storey == defs.NumStoreys-1 ||
-			!q.isOrdersAbove(storey)
+		return q.isActiveOrder(floor, defs.ButtonUp) ||
+			q.isActiveOrder(floor, defs.ButtonCommand) ||
+			floor == defs.NumFloors-1 ||
+			!q.isOrdersAbove(floor)
 	case defs.DirStop:
-		return q.isActiveOrder(storey, defs.ButtonDown) ||
-			q.isActiveOrder(storey, defs.ButtonUp) ||
-			q.isActiveOrder(storey, defs.ButtonCommand)
+		return q.isActiveOrder(floor, defs.ButtonDown) ||
+			q.isActiveOrder(floor, defs.ButtonUp) ||
+			q.isActiveOrder(floor, defs.ButtonCommand)
 	default:
 		log.Printf("shouldStop() called with invalid direction %d!\n", dir)
 		return false
@@ -306,7 +306,7 @@ func (q *queue) shouldStop(storey, dir int) bool {
 
 func (q *queue) deepCopy() *queue {
 	var copy queue
-	for f := 0; f < defs.NumStoreys; f++ {
+	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
 			copy.Q[f][b] = q.Q[f][b]
 		}
@@ -315,66 +315,66 @@ func (q *queue) deepCopy() *queue {
 }
 
 // this should run on a copy of local queue
-func (q *queue) calculateCost(targetStorey, targetButton, prevStorey, currStorey, currDir int) int {
-	q.setOrder(targetStorey, targetButton, orderStatus{true, "", nil})
+func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
+	q.setOrder(targetFloor, targetButton, orderStatus{true, "", nil})
 
 	cost := 0
-	storey := prevStorey
+	floor := prevFloor
 	dir := currDir
 
-	if currStorey == -1 {
-		// Between storeys, add 1 cost
+	if currFloor == -1 {
+		// Between floors, add 1 cost
 		cost++
 	} else if dir != defs.DirStop {
-		// At storey, but moving, add 2 cost
+		// At floor, but moving, add 2 cost
 		cost += 2
 	}
 
-	storey, dir = incrementStorey(storey, dir)
-	fmt.Printf("Cost storey sequence: %v →  %v", currStorey, storey)
+	floor, dir = incrementFloor(floor, dir)
+	fmt.Printf("Cost floor sequence: %v →  %v", currFloor, floor)
 
-	for !(storey == targetStorey && q.shouldStop(storey, dir)) {
-		if q.shouldStop(storey, dir) {
+	for !(floor == targetFloor && q.shouldStop(floor, dir)) {
+		if q.shouldStop(floor, dir) {
 			cost += 2
 			fmt.Printf("(S)")
 		}
-		dir = q.chooseDirection(storey, dir)
-		storey, dir = incrementStorey(storey, dir)
+		dir = q.chooseDirection(floor, dir)
+		floor, dir = incrementFloor(floor, dir)
 		cost += 2
-		fmt.Printf(" →  %v", storey)
+		fmt.Printf(" →  %v", floor)
 	}
 	fmt.Printf(" = cost %v\n", cost)
 	return cost
 }
 
-func incrementStorey(storey, dir int) (int, int) {
-	// fmt.Printf("(incr:f%v d%v)", storey, dir)
+func incrementFloor(floor, dir int) (int, int) {
+	// fmt.Printf("(incr:f%v d%v)", floor, dir)
 	switch dir {
 	case defs.DirDown:
-		storey--
+		floor--
 	case defs.DirUp:
-		storey++
+		floor++
 	case defs.DirStop:
-		// fmt.Println("incrementStorey(): direction stop, not incremented (this is okay)")
+		// fmt.Println("incrementFloor(): direction stop, not incremented (this is okay)")
 	default:
-		fmt.Println("incrementStorey(): invalid direction, not incremented")
+		fmt.Println("incrementFloor(): invalid direction, not incremented")
 	}
 
-	if storey <= 0 && dir == defs.DirDown {
+	if floor <= 0 && dir == defs.DirDown {
 		dir = defs.DirUp
-		storey = 0
+		floor = 0
 	}
-	if storey >= defs.NumStoreys-1 && dir == defs.DirUp {
+	if floor >= defs.NumFloors-1 && dir == defs.DirUp {
 		dir = defs.DirDown
-		storey = defs.NumStoreys - 1
+		floor = defs.NumFloors - 1
 	}
-	return storey, dir
+	return floor, dir
 }
 
 func updateLocalQueue() {
 	for {
 		<-updateLocal
-		for f := 0; f < defs.NumStoreys; f++ {
+		for f := 0; f < defs.NumFloors; f++ {
 			for b := 0; b < defs.NumButtons; b++ {
 				if remote.isActiveOrder(f, b) {
 					if b != defs.ButtonCommand && remote.Q[f][b].Addr == defs.Laddr.String() {

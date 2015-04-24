@@ -10,7 +10,7 @@ func main() {
 	network.Init()
 	message1 := defs.Message{
 		Kind:   defs.Cost,
-		Storey: 0,
+		Floor:  0,
 		Button: 0,
 		Cost:   2}
 

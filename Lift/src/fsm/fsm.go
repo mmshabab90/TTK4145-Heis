@@ -18,7 +18,7 @@ const (
 const doorOpenTime = 1 * time.Second
 
 var state int
-var storey int
+var floor int
 var direction int
 
 type Events struct {
@@ -35,24 +35,24 @@ func Init() {
 	go startTimer()
 	state = idle
 	direction = defs.DirStop
-	storey = hw.Storey()
-	if storey == -1 {
-		storey = hw.MoveToDefinedState()
+	floor = hw.Floor()
+	if floor == -1 {
+		floor = hw.MoveToDefinedState()
 	}
 	go syncLights()
 }
 
-func EventInternalButtonPressed(buttonStorey int, buttonType int) {
-	fmt.Printf("\n\n   ☺      Event internal button (storey %d %s) pressed in state %s\n",
-		buttonStorey, buttonString(buttonType), stateString(state))
+func EventInternalButtonPressed(buttonFloor int, buttonType int) {
+	fmt.Printf("\n\n   ☺      Event internal button (floor %d %s) pressed in state %s\n",
+		buttonFloor, buttonString(buttonType), stateString(state))
 	queue.Print()
 	switch state {
 	case idle:
-		queue.AddLocalOrder(buttonStorey, buttonType)
-		switch direction = queue.ChooseDirection(storey, direction); direction {
+		queue.AddLocalOrder(buttonFloor, buttonType)
+		switch direction = queue.ChooseDirection(floor, direction); direction {
 		case defs.DirStop:
 			hw.SetDoorOpenLamp(true)
-			queue.RemoveOrdersAt(storey)
+			queue.RemoveOrdersAt(floor)
 			doorReset <- true
 			state = doorOpen
 		case defs.DirUp, defs.DirDown:
@@ -60,13 +60,13 @@ func EventInternalButtonPressed(buttonStorey int, buttonType int) {
 			state = moving
 		}
 	case doorOpen:
-		if storey == buttonStorey {
+		if floor == buttonFloor {
 			doorReset <- true
 		} else {
-			queue.AddLocalOrder(buttonStorey, buttonType)
+			queue.AddLocalOrder(buttonFloor, buttonType)
 		}
 	case moving:
-		queue.AddLocalOrder(buttonStorey, buttonType)
+		queue.AddLocalOrder(buttonFloor, buttonType)
 	default:
 		log.Fatalf("State %d is invalid!\n", state)
 	}
@@ -74,14 +74,14 @@ func EventInternalButtonPressed(buttonStorey int, buttonType int) {
 	defs.SyncLightsChan <- true
 }
 
-func EventExternalButtonPressed(buttonStorey int, buttonType int) {
-	fmt.Printf("\n\n   ☺      Event external button (storey %d %s) pressed in state %s\n",
-		buttonStorey, buttonString(buttonType), stateString(state))
+func EventExternalButtonPressed(buttonFloor int, buttonType int) {
+	fmt.Printf("\n\n   ☺      Event external button (floor %d %s) pressed in state %s\n",
+		buttonFloor, buttonString(buttonType), stateString(state))
 	queue.Print()
 	switch state {
 	case idle, doorOpen, moving:
 		// send order on network
-		message := defs.Message{Kind: defs.NewOrder, Storey: buttonStorey, Button: buttonType, Cost: -1}
+		message := defs.Message{Kind: defs.NewOrder, Floor: buttonFloor, Button: buttonType, Cost: -1}
 		defs.MessageChan <- message
 	default:
 		//
@@ -99,10 +99,10 @@ func EventExternalOrderGivenToMe() {
 	}
 	switch state {
 	case idle:
-		switch direction = queue.ChooseDirection(storey, direction); direction {
+		switch direction = queue.ChooseDirection(floor, direction); direction {
 		case defs.DirStop:
 			hw.SetDoorOpenLamp(true)
-			queue.RemoveOrdersAt(storey) //her tror jeg buggen ligger!
+			queue.RemoveOrdersAt(floor) //her tror jeg buggen ligger!
 			doorReset <- true
 			state = doorOpen
 		case defs.DirUp, defs.DirDown:
@@ -127,24 +127,24 @@ func EventNewOrder(floor, button int) {
 	}
 }
 
-func EventStoreyReached(newStorey int) {
-	fmt.Printf("\n\n   ☺      Event storey %d reached in state %s\n", newStorey, stateString(state))
+func EventFloorReached(newFloor int) {
+	fmt.Printf("\n\n   ☺      Event floor %d reached in state %s\n", newFloor, stateString(state))
 	queue.Print()
-	storey = newStorey
-	hw.SetStoreyLamp(storey)
+	floor = newFloor
+	hw.SetFloorLamp(floor)
 	switch state {
 	case moving:
-		if queue.ShouldStop(storey, direction) {
+		if queue.ShouldStop(floor, direction) {
 			hw.SetMotorDirection(defs.DirStop)
 			hw.SetDoorOpenLamp(true)
-			queue.RemoveOrdersAt(storey)
-			go queue.SendOrderCompleteMessage(storey)
+			queue.RemoveOrdersAt(floor)
+			go queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
 			state = doorOpen
 		} else {
 		}
 	default:
-		log.Printf("Makes no sense to arrive at a storey in state %s.\n", stateString(state))
+		log.Printf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
 	}
 	defs.SyncLightsChan <- true
 }
@@ -154,7 +154,7 @@ func EventDoorTimeout() { //this happens for each external order
 	queue.Print()
 	switch state {
 	case doorOpen:
-		direction = queue.ChooseDirection(storey, direction)
+		direction = queue.ChooseDirection(floor, direction)
 		hw.SetDoorOpenLamp(false)
 		hw.SetMotorDirection(direction)
 		if direction == defs.DirStop {
@@ -172,8 +172,8 @@ func Direction() int {
 	return direction
 }
 
-func Storey() int {
-	return storey
+func Floor() int {
+	return floor
 }
 
 func startTimer() {
