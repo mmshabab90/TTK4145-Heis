@@ -44,9 +44,10 @@ func AddLocalOrder(floor int, button int) {
 
 // AddRemoteOrder adds the given order to the remote queue.
 func AddRemoteOrder(floor, button int, addr string) {
-	remote.setOrder(floor, button, orderStatus{true, addr, time.NewTimer(10 * time.Second)})
-	//go remote.startTimer(floor, button)
-
+	if IsRemoteOrder(floor, button) {
+		remote.setOrder(floor, button, orderStatus{true, addr, time.NewTimer(10 * time.Second)})
+		go remote.startTimer(floor, button)
+	}
 	updateLocal <- true
 	// newOrder <- true
 	backup <- true
@@ -56,7 +57,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 // queue.
 func RemoveRemoteOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
-		//remote.stopTimer(floor, b)
+		remote.stopTimer(floor, b)
 		remote.setOrder(floor, b, blankOrder)
 	}
 
@@ -79,7 +80,7 @@ func ShouldStop(floor, dir int) bool {
 // RemoveOrdersAt removes all orders at the given floor in local and remote queue.
 func RemoveOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
-		//remote.stopTimer(floor, b)
+		remote.stopTimer(floor, b)
 		local.setOrder(floor, b, blankOrder)
 		remote.setOrder(floor, b, blankOrder)
 	}
@@ -124,6 +125,7 @@ func ReassignOrders(deadAddr string) {
 		}
 	}
 }
+
 
 // SendOrderCompleteMessage communicates to the network that this lift has
 // taken care of orders at the given floor.

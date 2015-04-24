@@ -15,3 +15,8 @@ bedre navn på defs og knapper
 fjern unødvendige fatal-meldinger
 
 rydd i main!
+
+eksterne lys lyser ikke når vi kjører backup
+
+BUG: hvis man bestiller en ekstern ordre i samme etasje som du er i mens døra er åpen, lyser lyset
+(fix???: ikke send ordre på nettverket hvis du allerede står i den etasjen)
