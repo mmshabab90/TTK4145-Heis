@@ -1,3 +1,5 @@
+// Package fsm implements a finite state machine for one lift.
+// The lift runs based on a queue stored and managed by the queue package.
 package fsm
 
 import (
