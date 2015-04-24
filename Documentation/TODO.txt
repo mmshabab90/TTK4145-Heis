@@ -17,3 +17,5 @@ maybe: reassign alle ordre når det kommer en ny heis på nettverket
 hva om to heiser lever og to heiser har svart med cost, men det ikke er de samme to?
 
 cost burde returnere noe høyt om den mislykkes med å rekne ut
+
+døra åpner seg når den får ekterne ordre, fiks dette!

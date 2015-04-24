@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var ReceiveChan = make(chan udpMessage)
+var ReceiveChan = make(chan udpMessage, 10) //buffered with 10 slots
 
 func Init() {
 	const localListenPort = 37103

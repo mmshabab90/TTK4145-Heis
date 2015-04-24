@@ -24,8 +24,10 @@ const (
 
 const MaxInt = int(^uint(0) >> 1)
 
-const SpamInterval = 30 * time.Second
-const ResetTime = 120 * time.Second
+
+//constants for sending aliveMsg, and detecting deaths
+const SpamInterval = 400 * time.Millisecond
+const ResetTime = 2 * time.Second
 
 const (
 	Alive int = iota + 1
