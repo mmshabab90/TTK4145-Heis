@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"os"
+	"os/signal"
 )
 
 const debugPrint = false
@@ -46,6 +48,9 @@ func main() {
 	}
 	fsm.Init()
 	network.Init()
+	
+	//handle ctrl+c	
+	safeKill()
 
 	liftAssigner()
 	run()
@@ -318,4 +323,16 @@ func evaluateLists(que *(map[order][]reply)) {
 			// SUPERIMPORTANT: NOTIFY ABOUT EVENT NEW ORDER
 		}
 	}
+}
+
+
+//safeKill gets the motor to stop when the program is killed with ctrl+c
+func safeKill() {
+		var c = make(chan os.Signal)
+		signal.Notify(c, os.Interrupt)
+		go func() {
+        	<- c
+        	hw.SetMotorDirection(defs.DirStop)
+        	log.Fatal("[FATAL]\tUser terminated program")
+		}()
 }
