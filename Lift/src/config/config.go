@@ -35,6 +35,12 @@ const (
 	Cost
 )
 
+
+type Keypress struct {
+	Button int
+	Floor  int
+}
+
 // Generic network message. No other messages are ever sent on the network.
 type Message struct {
 	Kind   int

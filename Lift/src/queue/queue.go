@@ -27,7 +27,7 @@ var remote queue
 
 var updateLocal = make(chan bool)
 var backupChan = make(chan bool)
-var OrderStatusTimeoutChan = make(chan orderStatus) //overkill name?
+var OrderStatusTimeoutChan = make(chan def.Keypress) //RENAME THIS!
 var newOrder = make(chan bool)
 
 func Init(newOrderChan chan bool) {
@@ -49,10 +49,10 @@ func AddRemoteOrder(floor, button int, addr string) {
 	alreadyExist := IsRemoteOrder(floor, button) 
 	remote.setOrder(floor, button, orderStatus{true, addr /*time.NewTimer(10 * time.Second)*/, nil})
 	if !alreadyExist{
-		fmt.Printf("\n--------------------")
+		fmt.Printf("\n--------------------\n")
 		fmt.Println("New order timer made")
 		go remote.startTimer(floor, button)
-		fmt.Printf("\n--------------------")
+		fmt.Printf("--------------------\n\n")
 	}
 	updateLocal <- true
 	// newOrder <- true

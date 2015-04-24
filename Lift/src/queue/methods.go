@@ -11,7 +11,7 @@ func (q *queue) startTimer(floor, button int) {
 	fmt.Println("run startTimer()")
 	q.Q[floor][button].Timer = time.NewTimer(10*time.Second)
 	<-q.Q[floor][button].Timer.C
-	OrderStatusTimeoutChan <- q.Q[floor][button]
+	OrderStatusTimeoutChan <- def.Keypress{Button: button, Floor: floor} //bad abstraction?
 }
 
 func (q *queue) stopTimer(floor, button int) {

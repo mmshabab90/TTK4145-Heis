@@ -14,7 +14,8 @@ bedre navn på defs og knapper
 
 fjern unødvendige fatal-meldinger
 
-rydd i main!
+rydd i main!:
+blant annet så er newOrder og liknende i liftAssigner dårlige navn
 
 BUG: hvis man bestiller en ekstern ordre i samme etasje som du er i mens døra er åpen, lyser lyset
 FIXED (i think???)
@@ -22,3 +23,7 @@ FIXED (i think???)
 den greia med at den misser 4. etg. innimellom når den leses fra backup (sjekk json-lengde) (skjer kanskje ikke lengere. Why?)
 
 rydd i config
+
+gjør Laddr string
+
+

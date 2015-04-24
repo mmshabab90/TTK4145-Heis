@@ -20,11 +20,6 @@ var _ = log.Println
 var _ = fmt.Println
 var _ = errors.New
 
-type keypress struct {
-	button int
-	floor  int
-}
-
 var onlineLifts = make(map[string]network.UdpConnection)
 
 var deadChan = make(chan network.UdpConnection)
@@ -72,14 +67,14 @@ func poll(e fsm.EventChannels) {
 	for {
 		select {
 		case keypress := <-buttonChan:
-			switch keypress.button {
+			switch keypress.Button {
 			case def.ButtonCommand:
-				queue.AddLocalOrder(keypress.floor, keypress.button)
+				queue.AddLocalOrder(keypress.Floor, keypress.Button)
 			case def.ButtonUp, def.ButtonDown:
 				def.MessageChan <- def.Message{
 					Kind:   def.NewOrder,
-					Floor:  keypress.floor,
-					Button: keypress.button}
+					Floor:  keypress.Floor,
+					Button: keypress.Button}
 			}
 		case floor := <-floorChan:
 			e.FloorReached <- floor
@@ -87,15 +82,15 @@ func poll(e fsm.EventChannels) {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
-		case <-queue.OrderStatusTimeoutChan:
-			fmt.Println("order in queue timed out, reassigning queue")
-			//reassign!*/
+		case order:= <-queue.OrderStatusTimeoutChan:
+			fmt.Println("order in queue timed out, takes it myself")
+			queue.AddRemoteOrder(order.Floor, order.Button , def.Laddr.String())			
 		}
 	}
 }
 
-func pollButtons() <-chan keypress {
-	c := make(chan keypress)
+func pollButtons() <-chan def.Keypress {
+	c := make(chan def.Keypress)
 
 	go func() {
 		var buttonState [def.NumFloors][def.NumButtons]bool
@@ -109,7 +104,7 @@ func pollButtons() <-chan keypress {
 					}
 					if hw.ReadButton(f, b) {
 						if !buttonState[f][b] {
-							c <- keypress{button: b, floor: f}
+							c <- def.Keypress{Button: b, Floor: f}
 						}
 						buttonState[f][b] = true
 					} else {
@@ -223,6 +218,7 @@ func (o *order) setTimeout(b bool) {
 	o.timeout = b
 }
 
+//bad variable names am bad!
 func liftAssigner(newOrderChan chan bool) {
 	// collect cost values from all lifts
 	// decide which lift gets the order when all lifts
