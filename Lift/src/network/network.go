@@ -25,8 +25,13 @@ func Init() {
 
 func pollMessages() { // change name to pollOutgoing or something
 	for {
+<<<<<<< HEAD
 		msg := <-defs.MessageChan //crashes here for some reason with the orderTimer
 		//PrintMessage(msg)
+=======
+		msg := <-defs.MessageChan
+		PrintMessage(msg)
+>>>>>>> 71e7072e3615021e1f668bbe151a3e0c4ea2e14f
 
 		var i int
 		jsonMsg, err := json.Marshal(msg)

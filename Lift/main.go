@@ -230,7 +230,10 @@ func liftAssigner() {
 						newOrder = oldOrder
 					}
 				}
+<<<<<<< HEAD
 				
+=======
+>>>>>>> 71e7072e3615021e1f668bbe151a3e0c4ea2e14f
 				// Check if order in queue
 				if value, exist := assignmentQueue[newOrder]; exist {
 					// Check if lift in list of that order
