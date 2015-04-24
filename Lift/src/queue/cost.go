@@ -12,7 +12,6 @@ import (
 func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
 	q := local.deepCopy()
 
-	// q.setOrder(targetFloor, targetButton, orderStatus{true, "", nil})
 	q.setOrder(targetFloor, def.ButtonCommand, orderStatus{true, "", nil})
 
 	cost := 0

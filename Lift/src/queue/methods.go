@@ -11,7 +11,7 @@ func (q *queue) startTimer(floor, button int) {
 	fmt.Println("run startTimer()")
 	q.Q[floor][button].Timer = time.NewTimer(10*time.Second)
 	<-q.Q[floor][button].Timer.C
-	OrderStatusTimeoutChan <- def.Keypress{Button: button, Floor: floor} //bad abstraction?
+	OrderTimeoutChan <- def.Keypress{Button: button, Floor: floor} //bad abstraction?
 }
 
 func (q *queue) stopTimer(floor, button int) {
@@ -133,11 +133,11 @@ func (q *queue) shouldStop(floor, dir int) bool {
 }
 
 func (q *queue) deepCopy() *queue {
-	var copy queue
+	var queCopy queue
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			copy.Q[f][b] = q.Q[f][b]
+			queCopy.Q[f][b] = q.Q[f][b]
 		}
 	}
-	return &copy
+	return &queCopy
 }

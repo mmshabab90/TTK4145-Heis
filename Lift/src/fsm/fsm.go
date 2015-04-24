@@ -77,9 +77,7 @@ func eventNewOrder() {
 		// ignore
 	case doorOpen:
 		if queue.ShouldStop(floor, dir) {
-			fmt.Println("SPAM!")
 			queue.RemoveOrdersAt(floor)
-			//go queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
 		}
 	}
@@ -107,7 +105,7 @@ func eventFloorReached(newFloor int) {
 	}
 }
 
-func eventDoorTimeout() { //this happens for each external order
+func eventDoorTimeout() {
 	fmt.Printf("\nEVENT: Door timeout in state %s.\n\n", stateString(state))
 	queue.Print()
 	switch state {

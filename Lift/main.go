@@ -34,7 +34,7 @@ type reply struct {
 	cost int
 	lift string
 }
-type order struct {
+type order struct { //bad name?
 	floor   int
 	button  int
 	timeout bool
@@ -89,7 +89,7 @@ func poll(e fsm.EventChannels) {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
-		case order:= <-queue.OrderStatusTimeoutChan:
+		case order:= <-queue.OrderTimeoutChan:
 			fmt.Println("order in queue timed out, takes it myself")
 			queue.RemoveRemoteOrdersAt(order.Floor)
 			queue.AddRemoteOrder(order.Floor, order.Button , def.Laddr.String())			
@@ -198,7 +198,6 @@ func handleDeadLift(deadAddr string) {
 }
 
 func connectionTimer(connection *network.UdpConnection) {
-	//don't think this needs to be a for-loop
 	<-connection.Timer.C
 	deadChan <- *connection
 }
@@ -206,23 +205,6 @@ func connectionTimer(connection *network.UdpConnection) {
 func costTimer(newOrder *order) {
 	<-newOrder.timer.C
 	costTimeoutChan <- *newOrder
-}
-
-func (o *order) makeNewOrder(msg def.Message) {
-	o.floor = msg.Floor
-	o.button = msg.Button
-}
-
-func (o *order) isSameOrder(other order) bool {
-	if other.floor == o.floor && other.button == o.button {
-		return true
-	} else {
-		return false
-	}
-}
-
-func (o *order) setTimeout(b bool) {
-	o.timeout = b
 }
 
 //bad variable names am bad!
@@ -304,13 +286,6 @@ func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
 			)
 			// Loop thru costs in each complete list
 			for _, reply := range replyList {
-				// ny kost: reply.cost
-				// gammel kost: lowCost
-				// ny ip: reply.lift
-				// gammel ip: lowAddr
-
-				// hvis ny bedre enn gammel: best = ny
-				// hvis ny og gammel like bra og best: ny = lavest ip
 				if reply.cost < lowCost {
 					lowCost = reply.cost
 					lowAddr = reply.lift
@@ -323,16 +298,14 @@ func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
 			}
 			// Print winner:
 			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], key.floor+1, key.button)
+
 			// Assign order key to lift
 			queue.AddRemoteOrder(key.floor, key.button, lowAddr)
 			//queue.PrintQueues()
-			/*if lowAddr == def.Laddr.String() {
-				newOrderChan <- true
-			}*/
+			
 			// Empty list and stop timer
 			key.timer.Stop()
 			delete(*que, key)
-			// SUPERIMPORTANT: NOTIFY ABOUT EVENT NEW ORDER
 		}
 	}
 }
@@ -344,7 +317,26 @@ func safeKill() {
 	go func() {
 		<-c
 		hw.SetMotorDirection(def.DirStop)
-		restart.Run() //vil vi restarte med ctrl+c?
+		//restart.Run() //vil vi restarte med ctrl+c?
 		log.Fatal("[FATAL]\tUser terminated program")
 	}()
+}
+
+// --------------- METHODS FOR ORDER TYPE: ---------------
+
+func (o *order) makeNewOrder(msg def.Message) {
+	o.floor = msg.Floor
+	o.button = msg.Button
+}
+
+func (o *order) isSameOrder(other order) bool {
+	if other.floor == o.floor && other.button == o.button {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (o *order) setTimeout(b bool) {
+	o.timeout = b
 }

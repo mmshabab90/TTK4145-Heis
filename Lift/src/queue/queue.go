@@ -1,4 +1,3 @@
-// This is a complete rewrite of the queue package
 package queue
 
 import (
@@ -27,7 +26,7 @@ var remote queue
 
 var updateLocal = make(chan bool)
 var backupChan = make(chan bool)
-var OrderStatusTimeoutChan = make(chan def.Keypress) //RENAME THIS!
+var OrderTimeoutChan = make(chan def.Keypress)
 var newOrder = make(chan bool)
 
 func Init(newOrderChan chan bool) {
@@ -41,13 +40,13 @@ func Init(newOrderChan chan bool) {
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, "", nil})
 
-	newOrder <- true //shouldn't this be done in set.order????
+	newOrder <- true 
 }
 
 // AddRemoteOrder adds an order to the remote queue.
 func AddRemoteOrder(floor, button int, addr string) {
 	alreadyExist := IsRemoteOrder(floor, button) 
-	remote.setOrder(floor, button, orderStatus{true, addr /*time.NewTimer(10 * time.Second)*/, nil})
+	remote.setOrder(floor, button, orderStatus{true, addr, nil})
 	if !alreadyExist{
 		fmt.Printf("\n--------------------\n")
 		fmt.Println("New order timer made")
@@ -55,7 +54,6 @@ func AddRemoteOrder(floor, button int, addr string) {
 		fmt.Printf("--------------------\n\n")
 	}
 	updateLocal <- true
-	// newOrder <- true
 }
 
 // RemoveRemoteOrdersAt removes all orders at the given floor from the remote
@@ -95,13 +93,13 @@ func ChooseDirection(floor, dir int) int {
 
 // IsLocalOrder returns whether there in an order with the given floor and
 // button in the local queue.
-func IsLocalOrder(floor, button int) bool { // Rename to IsLocalOrder
+func IsLocalOrder(floor, button int) bool { // is this needed?
 	return local.isActiveOrder(floor, button)
 }
 
 // IsRemoteOrder returns true if there is a order with the given floor and
 // button in the remote queue.
-func IsRemoteOrder(floor, button int) bool {
+func IsRemoteOrder(floor, button int) bool { //is this needed?
 	return remote.isActiveOrder(floor, button)
 }
 

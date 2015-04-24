@@ -20,8 +20,8 @@ func suggestBackup() {
 // runBackup loads queue data from file if file exists once, and saves
 // backups whenever its asked to.
 func runBackup() {
-	filenameLocal := "queueBackupFile1"
-	filenameRemote := "queueBackupFile2"
+	filenameLocal := "queueLocalBackupFile"
+	filenameRemote := "queuRemoteBackupFile"
 
 	var backup queue
 	backup.loadFromDisk(filenameLocal)

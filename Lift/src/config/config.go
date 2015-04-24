@@ -13,7 +13,7 @@ const NumFloors = 4
 const (
 	ButtonUp int = iota
 	ButtonDown
-	ButtonCommand // Rename to ButtonInternal or something
+	ButtonCommand //todo: Rename to ButtonInternal or something
 )
 
 const (
@@ -28,13 +28,13 @@ const MaxInt = int(^uint(0) >> 1)
 const SpamInterval = 400 * time.Millisecond
 const ResetTime = 2 * time.Second
 
+//message kind constants
 const (
 	Alive int = iota + 1
 	NewOrder
 	CompleteOrder
 	Cost
 )
-
 
 type Keypress struct {
 	Button int
@@ -50,10 +50,11 @@ type Message struct {
 	Addr   string `json:"-"`
 }
 
-var MessageChan = make(chan Message) // vurder buff
+var MessageChan = make(chan Message) // vurder buff //todo: change name to outgoingMessages or something 
 var SyncLightsChan = make(chan bool)
 
-var Laddr *net.UDPAddr //Local address
+//Local address
+var Laddr *net.UDPAddr //todo: make this string
 
 func LastPartOfIp(ip string) string {
 	return strings.Split(strings.Split(ip, ".")[3], ":")[0]

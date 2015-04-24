@@ -8,6 +8,9 @@ import (
 )
 
 var ReceiveChan = make(chan udpMessage, 10) //buffered with 10 slots
+var sendChan = make(chan udpMessage)
+
+// --------------- PUBLIC: ---------------
 
 func Init() {
 	const localListenPort = 37103
@@ -24,9 +27,9 @@ func Init() {
 	fmt.Println("Network initialized")
 }
 
-func pollMessages() { // change name to pollOutgoing or something
+func pollMessages() { //todo: change name to pollOutgoing or something
 	for {
-		msg := <-def.MessageChan //crashes here for some reason with the orderTimer
+		msg := <-def.MessageChan 
 		//PrintMessage(msg)
 
 		var i int
@@ -45,28 +48,14 @@ func pollMessages() { // change name to pollOutgoing or something
 }
 
 func ParseMessage(udpMessage udpMessage) def.Message {
-	//fmt.Printf("before parse: %s from %s\n", string(udpMessage.data), udpMessage.raddr)
-
 	var message def.Message
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
 
 	message.Addr = udpMessage.raddr
-	//fmt.Printf("ಠ_ಠ after Unmarshal:       %s\n", message.Addr)
+	
 	return message
-}
-
-// --------------- PRIVATE: ---------------
-
-var sendChan = make(chan udpMessage)
-
-func aliveSpammer() {
-	alive := def.Message{Kind: def.Alive, Floor: -1, Button: -1, Cost: -1}
-	for {
-		def.MessageChan <- alive
-		time.Sleep(def.SpamInterval)
-	}
 }
 
 func PrintMessage(msg def.Message) {
@@ -93,3 +82,16 @@ func PrintMessage(msg def.Message) {
 	fmt.Printf("Cost:   %d\n", msg.Cost)
 	fmt.Println("-----Message end-------\n")
 }
+
+// --------------- PRIVATE: ---------------
+
+//aliveSpammer() sends mesges with "alive" at an interval
+func aliveSpammer() {
+	alive := def.Message{Kind: def.Alive, Floor: -1, Button: -1, Cost: -1}
+	for {
+		def.MessageChan <- alive
+		time.Sleep(def.SpamInterval)
+	}
+}
+
+

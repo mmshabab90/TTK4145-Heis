@@ -13,7 +13,7 @@ type UdpConnection struct {
 	Timer *time.Timer
 }
 
-// func Print_udp_message(msg udpMessage) { //should this be private?
+// func Print_udp_message(msg udpMessage) { 
 // 	fmt.Printf("msg:  \n \t raddr = %s \n \t data = %s \n \t length = %v \n", msg.raddr, msg.data, msg.length)
 // }
 
