@@ -10,11 +10,8 @@ import (
 // floors on the way towards target will add cost 2. Cost 1 is added if the
 // lift starts between floors.
 func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
-	return local.deepCopy().calculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir)
-}
+	q := local.deepCopy()
 
-// todo merge into one function
-func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
 	q.setOrder(targetFloor, targetButton, orderStatus{true, "", nil})
 
 	cost := 0
