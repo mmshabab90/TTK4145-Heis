@@ -20,3 +20,5 @@ eksterne lys lyser ikke når vi kjører backup
 
 BUG: hvis man bestiller en ekstern ordre i samme etasje som du er i mens døra er åpen, lyser lyset
 (fix???: ikke send ordre på nettverket hvis du allerede står i den etasjen)
+
+den greia med at den misser 4. etg. innimellom når den leses fra backup (sjekk json-lengde)

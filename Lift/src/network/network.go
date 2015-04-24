@@ -21,6 +21,7 @@ func Init() {
 
 	go aliveSpammer()
 	go pollMessages()
+	fmt.Println("Network initialized")
 }
 
 func pollMessages() { // change name to pollOutgoing or something

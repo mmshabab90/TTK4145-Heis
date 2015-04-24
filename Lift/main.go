@@ -52,15 +52,17 @@ func main() {
 		FloorReached: make(chan int)}
 	fsm.Init(e)
 
-	queue.Init(e.NewOrder)
-
 	network.Init()
+
+	
 
 	//handle ctrl+c
 	safeKill()
 
 	liftAssigner(e.NewOrder)
-	poll(e)
+	go poll(e)
+	queue.Init(e.NewOrder)
+	for{time.Sleep(100*time.Second)}
 }
 
 func poll(e fsm.EventChannels) {
@@ -85,7 +87,7 @@ func poll(e fsm.EventChannels) {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
-		case <-queue.OrderStatusTimeoutChan:
+		/*case <-queue.OrderStatusTimeoutChan:
 			fmt.Println("order in queue timed out, reassigning queue")
 			//reassign!*/
 		}

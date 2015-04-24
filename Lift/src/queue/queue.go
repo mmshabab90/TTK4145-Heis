@@ -24,14 +24,15 @@ var local queue
 var remote queue
 
 var updateLocal = make(chan bool)
-var backup = make(chan bool)
+var backupChan = make(chan bool)
 var OrderStatusTimeoutChan = make(chan orderStatus) //overkill name?
 var newOrder = make(chan bool)
 
 func Init(newOrderChan chan bool) {
 	newOrder = newOrderChan
-	go runBackup()
 	go updateLocalQueue()
+	runBackup()
+	fmt.Println("queue initialized")
 }
 
 // AddLocalOrder adds an order to the local queue.
@@ -39,30 +40,27 @@ func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, "", nil})
 
 	newOrder <- true
-	backup <- true
 }
 
 // AddRemoteOrder adds the given order to the remote queue.
 func AddRemoteOrder(floor, button int, addr string) {
-	if IsRemoteOrder(floor, button) {
-		remote.setOrder(floor, button, orderStatus{true, addr, time.NewTimer(10 * time.Second)})
-		go remote.startTimer(floor, button)
-	}
+	//if IsRemoteOrder(floor, button) {
+	remote.setOrder(floor, button, orderStatus{true, addr, /*time.NewTimer(10 * time.Second)*/ nil})
+		//go remote.startTimer(floor, button)
+	//}
 	updateLocal <- true
 	// newOrder <- true
-	backup <- true
 }
 
 // RemoveRemoteOrdersAt removes all orders at the given floor from the remote
 // queue.
 func RemoveRemoteOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
-		remote.stopTimer(floor, b)
+		//remote.stopTimer(floor, b)
 		remote.setOrder(floor, b, blankOrder)
 	}
 
 	updateLocal <- true
-	backup <- true
 }
 
 // ChooseDirection returns the direction the lift should continue after the
@@ -80,12 +78,13 @@ func ShouldStop(floor, dir int) bool {
 // RemoveOrdersAt removes all orders at the given floor in local and remote queue.
 func RemoveOrdersAt(floor int) {
 	for b := 0; b < defs.NumButtons; b++ {
-		remote.stopTimer(floor, b)
+		//remote.stopTimer(floor, b)
 		local.setOrder(floor, b, blankOrder)
 		remote.setOrder(floor, b, blankOrder)
 	}
 	SendOrderCompleteMessage(floor) // bad abstraction
-	backup <- true
+	
+	suggestBackup()
 }
 
 // IsOrder returns whether there in an order with the given floor and button
@@ -217,16 +216,17 @@ func (q *queue) isEmpty() bool {
 }
 
 func (q *queue) setOrder(floor, button int, status orderStatus) {
+	// Ignore if order to be set is equal to order already in queue.
+	if q.isActiveOrder(floor, button) == status.Active {
+		return
+	}
+
 	q.Q[floor][button] = status
 	defs.SyncLightsChan <- true
-	/*if button == defs.ButtonCommand {
-		newOrder <- true
-	} else if status.Active && status.Addr == defs.Laddr.String() {
-		newOrder <- true
-	}*/
+	suggestBackup()
 }
 
-func (q *queue) isActiveOrder(floor, button int) bool {
+func (q *queue) isActiveOrder(floor, button int) bool { // todo: consider rename
 	return q.Q[floor][button].Active
 }
 
