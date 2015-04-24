@@ -1,9 +1,8 @@
 digraph G {
-	main -> hw;
 	main -> fsm;
-	main -> queue;
+	main -> hw;
 	main -> network;
+	main -> queue;
 	fsm -> hw;
 	fsm -> queue;
-	defs;
 }
