@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"os/exec"
 	"time"
 )
 
@@ -19,6 +20,9 @@ const debugPrint = false
 var _ = log.Println
 var _ = fmt.Println
 var _ = errors.New
+
+//Start a new terminal when restart.Run()
+var restart = exec.Command("gnome-terminal", "-x", "sh", "-c", "go run main.go")
 
 var onlineLifts = make(map[string]network.UdpConnection)
 
@@ -55,7 +59,10 @@ func main() {
 	liftAssigner(e.NewOrder)
 	go poll(e)
 	queue.Init(e.NewOrder)
-	for {
+	
+	
+
+	for { //nicer solution?
 		time.Sleep(100 * time.Second)
 	}
 }
@@ -338,6 +345,7 @@ func safeKill() {
 	go func() {
 		<-c
 		hw.SetMotorDirection(def.DirStop)
+		restart.Run()
 		log.Fatal("[FATAL]\tUser terminated program")
 	}()
 }
