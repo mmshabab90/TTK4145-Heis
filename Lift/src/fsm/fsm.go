@@ -75,6 +75,8 @@ func eventNewOrder() {
 		// ignore
 	case doorOpen:
 		if queue.ShouldStop(floor, dir) {
+			queue.RemoveOrdersAt(floor)
+			//go queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
 		}
 	}

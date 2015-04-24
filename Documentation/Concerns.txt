@@ -1,3 +1,0 @@
-When instances of (defs.Message) are made for sending on the network, they are sometimes made as pointers and sent to (defs.MessageChan) by dereferencing, but sometimes not. Also non-cost messages should probably give cost field value -1 or something.
-
-make ny buffer på nettverkssiden for å unngå gjenbruk

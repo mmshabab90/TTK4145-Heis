@@ -16,9 +16,9 @@ fjern unødvendige fatal-meldinger
 
 rydd i main!
 
-eksterne lys lyser ikke når vi kjører backup
-
 BUG: hvis man bestiller en ekstern ordre i samme etasje som du er i mens døra er åpen, lyser lyset
-(fix???: ikke send ordre på nettverket hvis du allerede står i den etasjen)
+FIXED (i think???)
 
-den greia med at den misser 4. etg. innimellom når den leses fra backup (sjekk json-lengde)
+den greia med at den misser 4. etg. innimellom når den leses fra backup (sjekk json-lengde) (skjer kanskje ikke lengere. Why?)
+
+rydd i config
