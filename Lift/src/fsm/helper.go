@@ -43,10 +43,14 @@ func syncLights() {
 					(b == defs.ButtonDown && f == 0) {
 					continue
 				} else {
-					hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
+					switch b {
+					case defs.ButtonCommand:
+						hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
+					case defs.ButtonUp, ButtonDown:
+						hw.SetButtonLamp(f, b, queue.IsRemoteOrder(f, b))
+					}
 				}
 			}
 		}
-		time.Sleep(time.Millisecond)
 	}
 }
