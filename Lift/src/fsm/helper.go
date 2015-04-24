@@ -4,7 +4,7 @@ import (
 	"../defs"
 	"../hw"
 	"../queue"
-	"time"
+	//"time"
 )
 
 func stateString(state int) string {
@@ -46,7 +46,7 @@ func syncLights() {
 					switch b {
 					case defs.ButtonCommand:
 						hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
-					case defs.ButtonUp, ButtonDown:
+					case defs.ButtonUp, defs.ButtonDown:
 						hw.SetButtonLamp(f, b, queue.IsRemoteOrder(f, b))
 					}
 				}

@@ -132,8 +132,9 @@ func EventNewOrder(floor, button int) {
 	case moving:
 		// ignore
 	case doorOpen:
-		if queue.ShouldStop(floor, dir)
-		doorReset <- true
+		if queue.ShouldStop(floor, dir){
+			doorReset <- true
+		}
 	}
 }
 
