@@ -57,7 +57,7 @@ func run(e EventChannels) {
 }
 
 func eventNewOrder() {
-	fmt.Printf("\n\nEvent: New order in state %v.\n", stateString(state))
+	fmt.Printf("\nEVENT: New order in state %v.\n\n", stateString(state))
 	switch state {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
@@ -68,7 +68,6 @@ func eventNewOrder() {
 			doorReset <- true
 			state = doorOpen
 		} else {
-			dir = queue.ChooseDirection(floor, dir)
 			hw.SetMotorDirection(dir)
 			state = moving
 		}
@@ -82,7 +81,7 @@ func eventNewOrder() {
 }
 
 func eventFloorReached(newFloor int) {
-	fmt.Printf("\n\nEvent: Floor %d reached in state %s\n", newFloor, stateString(state))
+	fmt.Printf("\nEVENT: Floor %d reached in state %s.\n\n", newFloor, stateString(state))
 	queue.Print()
 	floor = newFloor
 	hw.SetFloorLamp(floor)
@@ -104,7 +103,7 @@ func eventFloorReached(newFloor int) {
 }
 
 func eventDoorTimeout() { //this happens for each external order
-	fmt.Printf("\n\n   ☺      Event door timeout in state %s\n", stateString(state))
+	fmt.Printf("\nEVENT: Door timeout in state %s.\n\n", stateString(state))
 	queue.Print()
 	switch state {
 	case doorOpen:

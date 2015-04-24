@@ -69,6 +69,11 @@ func aliveSpammer() {
 }
 
 func PrintMessage(msg defs.Message) {
+
+	if msg.Kind == defs.Alive {
+		return
+	}
+
 	fmt.Printf("\n-----Message start-----\n")
 	switch msg.Kind {
 	case defs.Alive:

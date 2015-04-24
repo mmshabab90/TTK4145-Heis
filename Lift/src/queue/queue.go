@@ -56,7 +56,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 
 	// defs.SyncLightsChan <- true
 	updateLocal <- true
-	newOrder <- true
+	// newOrder <- true
 	backup <- true
 }
 
@@ -228,6 +228,11 @@ func (q *queue) isEmpty() bool {
 func (q *queue) setOrder(floor, button int, status orderStatus) {
 	q.Q[floor][button] = status
 	defs.SyncLightsChan <- true
+	/*if button == defs.ButtonCommand {
+		newOrder <- true
+	} else if status.Active && status.Addr == defs.Laddr.String() {
+		newOrder <- true
+	}*/
 }
 
 func (q *queue) isActiveOrder(floor, button int) bool {
@@ -384,6 +389,7 @@ func updateLocalQueue() {
 				if remote.isActiveOrder(f, b) {
 					if b != defs.ButtonCommand && remote.Q[f][b].Addr == defs.Laddr.String() {
 						local.setOrder(f, b, orderStatus{true, "", nil})
+						newOrder <- true
 					}
 				}
 			}

@@ -143,9 +143,9 @@ func pollFloors() <-chan int {
 
 // consider moving each case into a function
 func handleMessage(message defs.Message) {
-	/*fmt.Println("Received")
+
 	network.PrintMessage(message)
-	fmt.Println()*/
+
 	switch message.Kind {
 	case defs.Alive:
 		if connection, exist := onlineLifts[message.Addr]; exist {
@@ -321,9 +321,9 @@ func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
 			// Assign order key to lift
 			queue.AddRemoteOrder(key.floor, key.button, lowAddr)
 			//queue.PrintQueues()
-			if lowAddr == defs.Laddr.String() {
+			/*if lowAddr == defs.Laddr.String() {
 				newOrderChan <- true
-			}
+			}*/
 			// Empty list
 			key.timer.Stop()
 			delete(*que, key)
