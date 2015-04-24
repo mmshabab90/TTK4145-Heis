@@ -115,6 +115,18 @@ func EventExternalOrderGivenToMe() {
 	defs.SyncLightsChan <- true
 }
 
+func EventNewOrder(floor, button int) {
+	switch state {
+	case idle:
+		dir = queue.ChooseDirection(floor, dir)
+		if dir == defs.DirDown {
+			// todo more here
+		} else {
+			// todo more here
+		}
+	}
+}
+
 func EventStoreyReached(newStorey int) {
 	fmt.Printf("\n\n   ☺      Event storey %d reached in state %s\n", newStorey, stateString(state))
 	queue.Print()
