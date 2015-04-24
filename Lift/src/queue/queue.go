@@ -44,7 +44,7 @@ func AddLocalOrder(floor int, button int) {
 	newOrder <- true
 }
 
-// AddRemoteOrder adds the given order to the remote queue.
+// AddRemoteOrder adds an order to the remote queue.
 func AddRemoteOrder(floor, button int, addr string) {
 	//if IsRemoteOrder(floor, button) {
 	remote.setOrder(floor, button, orderStatus{true, addr /*time.NewTimer(10 * time.Second)*/, nil})
@@ -65,18 +65,6 @@ func RemoveRemoteOrdersAt(floor int) {
 	updateLocal <- true
 }
 
-// ChooseDirection returns the direction the lift should continue after the
-// current floor.
-func ChooseDirection(floor, dir int) int {
-	return local.chooseDirection(floor, dir)
-}
-
-// ShouldStop returns whether the lift should stop at the given floor, if
-// going in the given direction.
-func ShouldStop(floor, dir int) bool {
-	return local.shouldStop(floor, dir)
-}
-
 // RemoveOrdersAt removes all orders at the given floor in local and remote queue.
 func RemoveOrdersAt(floor int) {
 	for b := 0; b < def.NumButtons; b++ {
@@ -84,20 +72,27 @@ func RemoveOrdersAt(floor int) {
 		local.setOrder(floor, b, blankOrder)
 		remote.setOrder(floor, b, blankOrder)
 	}
-	SendOrderCompleteMessage(floor) // bad abstraction
+	SendOrderCompleteMessage(floor) // todo: fix bad abstraction here?
 
 	suggestBackup()
 }
 
-// IsOrder returns whether there in an order with the given floor and button
-// in the local queue.
-func IsOrder(floor, button int) bool { // Rename to IsLocalOrder
-	return local.isActiveOrder(floor, button)
+// ShouldStop returns whether the lift should stop when it reaches the given
+// floor, going in the given direction.
+func ShouldStop(floor, dir int) bool {
+	return local.shouldStop(floor, dir)
 }
 
-// Blah blah blah
-func IsLocalEmpty() bool {
-	return local.isEmpty()
+// ChooseDirection returns the direction the lift should continue after the
+// current floor, going in the given direction.
+func ChooseDirection(floor, dir int) int {
+	return local.chooseDirection(floor, dir)
+}
+
+// IsLocalOrder returns whether there in an order with the given floor and
+// button in the local queue.
+func IsLocalOrder(floor, button int) bool { // Rename to IsLocalOrder
+	return local.isActiveOrder(floor, button)
 }
 
 // IsRemoteOrder returns true if there is a order with the given floor and
@@ -106,22 +101,17 @@ func IsRemoteOrder(floor, button int) bool {
 	return remote.isActiveOrder(floor, button)
 }
 
-// ReassignOrders finds all orders assigned to the given dead lift, removes
-// them from the remote queue, and sends them on the network as new, un-
-// assigned orders.
+// ReassignOrders finds all orders assigned to a dead lift, removes them from
+// the remote queue, and sends them on the network as new, unassigned orders.
 func ReassignOrders(deadAddr string) {
-	// loop thru remote queue
-	// remove all orders assigned to the dead lift
-	// send neworder-message for each removed order
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
 			if remote.Q[f][b].Addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
-				reassignMessage := def.Message{
+				def.MessageChan <- def.Message{
 					Kind:   def.NewOrder,
 					Floor:  f,
 					Button: b}
-				def.MessageChan <- reassignMessage
 			}
 		}
 	}
@@ -132,14 +122,6 @@ func ReassignOrders(deadAddr string) {
 func SendOrderCompleteMessage(floor int) {
 	orderComplete := def.Message{Kind: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
 	def.MessageChan <- orderComplete
-}
-
-// CalculateCost returns how much effort it is for this lift to carry out
-// the given order. Each sheduled stop and each travel between adjacent
-// floors on the way towards target will add cost 2. Cost 1 is added if the
-// lift starts between floors.
-func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
-	return local.deepCopy().calculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir)
 }
 
 // Print prints local and remote queue to screen in a somewhat legible
@@ -166,13 +148,13 @@ func Print() {
 		}
 		if remote.isActiveOrder(f, def.ButtonUp) {
 			fmt.Printf("↑")
-			lifts += "(↑ " + def.LastPartOfIp(remote.Q[f][def.ButtonUp].Addr) + ")"
+			lifts += "(↑ " + remote.Q[f][def.ButtonUp].Addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
 		if remote.isActiveOrder(f, def.ButtonDown) {
 			fmt.Printf("↓")
-			lifts += "(↓ " + def.LastPartOfIp(remote.Q[f][def.ButtonDown].Addr) + ")"
+			lifts += "(↓ " + remote.Q[f][def.ButtonDown].Addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}

@@ -52,7 +52,7 @@ func syncLights() { // todo: probably move to queue
 				} else {
 					switch b {
 					case def.ButtonCommand:
-						hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
+						hw.SetButtonLamp(f, b, queue.IsLocalOrder(f, b))
 					case def.ButtonUp, def.ButtonDown:
 						hw.SetButtonLamp(f, b, queue.IsRemoteOrder(f, b))
 					}
