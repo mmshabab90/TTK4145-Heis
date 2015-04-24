@@ -24,7 +24,6 @@ const (
 
 const MaxInt = int(^uint(0) >> 1)
 
-
 //constants for sending aliveMsg, and detecting deaths
 const SpamInterval = 400 * time.Millisecond
 const ResetTime = 2 * time.Second
@@ -42,7 +41,7 @@ type Message struct {
 	Floor  int
 	Button int
 	Cost   int
-	Addr   string
+	Addr   string `json:"-"`
 }
 
 var MessageChan = make(chan Message) // vurder buff
