@@ -46,34 +46,33 @@ func main() {
 	if err := hw.Init(); err != nil {
 		log.Fatal(err)
 	}
-	fsm.Init()
+
+	e := fsm.EventChannels{
+		NewOrder:     make(chan bool),
+		FloorReached: make(chan int)}
+	fsm.Init(e)
+
+	queue.Init(e.NewOrder)
+
 	network.Init()
 	
 	//handle ctrl+c	
 	safeKill()
 
-	liftAssigner()
-	run()
+	liftAssigner(e.NewOrder)
+	poll(e)
 }
 
-func run() {
+func poll(e fsm.EventChannels) {
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
 
 	for {
 		select {
 		case keypress := <-buttonChan:
-			switch keypress.button {
-			case defs.ButtonCommand:
-				fsm.EventInternalButtonPressed(keypress.floor, keypress.button)
-			case defs.ButtonUp, defs.ButtonDown:
-				fsm.EventExternalButtonPressed(keypress.floor, keypress.button)
-			default:
-				// maybe care about bad button here
-			}
-
+			queue.NewOrder(keypress.floor, keypress.button)
 		case floor := <-floorChan:
-			fsm.EventFloorReached(floor)
+			e.FloorReached <- floor
 		case udpMessage := <-network.ReceiveChan:
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
@@ -214,7 +213,7 @@ func (o *order) setTimeout(b bool) {
 	o.timeout = b
 }
 
-func liftAssigner() {
+func liftAssigner(newOrderChan chan bool) {
 	// collect cost values from all lifts
 	// decide which lift gets the order when all lifts
 	// in alive-list have answered or after a timeout
@@ -255,11 +254,11 @@ func liftAssigner() {
 					assignmentQueue[newOrder] = []reply{newReply}
 					go costTimer(&newOrder)
 				}
-				evaluateLists(&assignmentQueue)
+				evaluateLists(&assignmentQueue, newOrderChan)
 			case newOrder := <-costTimeoutChan:
 				fmt.Printf("\n ORDER TIMED OUT!\n\n")
 				newOrder.setTimeout(true)
-				evaluateLists(&assignmentQueue)
+				evaluateLists(&assignmentQueue, newOrderChan)
 			}
 		}
 	}()
@@ -278,7 +277,7 @@ func getReply(m defs.Message) reply {
 // the best candidate for all such orders. The best candidate is added to the
 // shared queue.
 // This is very cryptic and ungood.
-func evaluateLists(que *(map[order][]reply)) {
+func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
 	// Loop thru all lists
 	fmt.Printf("Lists: ")
 	fmt.Println(*que)
@@ -315,7 +314,7 @@ func evaluateLists(que *(map[order][]reply)) {
 			queue.AddRemoteOrder(key.floor, key.button, lowAddr)
 			//queue.PrintQueues()
 			if lowAddr == defs.Laddr.String() {
-				fsm.EventExternalOrderGivenToMe()
+				newOrderChan <- true
 			}
 			// Empty list
 			key.timer.Stop()

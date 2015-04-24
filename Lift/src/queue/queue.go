@@ -33,16 +33,23 @@ var remote queue
 var updateLocal = make(chan bool)
 var backup = make(chan bool)
 var OrderStatusTimeoutChan = make(chan orderStatus) //overkill name?
+var newOrder = make(chan bool)
 
-func init() {
+func Init(newOrderChan chan bool) {
+	newOrder = newOrderChan
 	go runBackup()
 	go updateLocalQueue()
+}
+
+func NewOrder(floor, button int) {
+	// todo: implement
 }
 
 // AddLocalOrder adds an order to the local queue.
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, "", nil})
 
+	newOrder <- true
 	backup <- true
 }
 
@@ -53,6 +60,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 
 	defs.SyncLightsChan <- true
 	updateLocal <- true
+	newOrder <- true
 	backup <- true
 }
 

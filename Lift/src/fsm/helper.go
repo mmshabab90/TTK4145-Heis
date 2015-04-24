@@ -4,8 +4,15 @@ import (
 	"../defs"
 	"../hw"
 	"../queue"
-	//"time"
 )
+
+func Direction() int {
+	return dir
+}
+
+func Floor() int {
+	return floor
+}
 
 func stateString(state int) string {
 	switch state {
@@ -33,7 +40,7 @@ func buttonString(button int) string {
 	}
 }
 
-func syncLights() {
+func syncLights() { // todo: probably move to queue
 	for {
 		<-defs.SyncLightsChan
 
