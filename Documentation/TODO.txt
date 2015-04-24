@@ -1,14 +1,6 @@
 ﻿Når vi oppdager ting som må fikses, men er opptatte med å fikse noe annet, skriv det i denne filen:
 
-fiks lys-setting:
-eksternt panel skal være likt for alle heisene
-
-fiks opp/ned knapper for én heis:
-F.eks hvis den er på opp til 4 og får en bestilling ned i 3., skal den først opp til 4. før den går til 3.
-
 kommuniser med driver via kanaler
-
-får av og til "Makes no sense to arrive at a floor in state idle", hva skyldes dette?
 
 gi timeout på ordre slik at om noen svar mangler så gjøres det læll
 
@@ -18,8 +10,8 @@ hva om to heiser lever og to heiser har svart med cost, men det ikke er de samme
 
 cost burde returnere noe høyt om den mislykkes med å rekne ut
 
-døra åpner seg når den får ekterne ordre, fiks dette!
-
 bedre navn på defs og knapper
 
 fjern unødvendige fatal-meldinger
+
+rydd i main!
