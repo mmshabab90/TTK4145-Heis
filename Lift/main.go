@@ -9,9 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"time"
 	"os"
 	"os/signal"
+	"time"
 )
 
 const debugPrint = false
@@ -55,8 +55,8 @@ func main() {
 	queue.Init(e.NewOrder)
 
 	network.Init()
-	
-	//handle ctrl+c	
+
+	//handle ctrl+c
 	safeKill()
 
 	liftAssigner(e.NewOrder)
@@ -70,7 +70,15 @@ func poll(e fsm.EventChannels) {
 	for {
 		select {
 		case keypress := <-buttonChan:
-			queue.NewOrder(keypress.floor, keypress.button)
+			switch keypress.button {
+			case defs.ButtonCommand:
+				queue.AddLocalOrder(keypress.floor, keypress.button)
+			case defs.ButtonUp, defs.ButtonDown:
+				defs.MessageChan <- defs.Message{
+					Kind:   defs.NewOrder,
+					Floor:  keypress.floor,
+					Button: keypress.button}
+			}
 		case floor := <-floorChan:
 			e.FloorReached <- floor
 		case udpMessage := <-network.ReceiveChan:
@@ -324,14 +332,13 @@ func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
 	}
 }
 
-
 //safeKill gets the motor to stop when the program is killed with ctrl+c
 func safeKill() {
-		var c = make(chan os.Signal)
-		signal.Notify(c, os.Interrupt)
-		go func() {
-        	<- c
-        	hw.SetMotorDirection(defs.DirStop)
-        	log.Fatal("[FATAL]\tUser terminated program")
-		}()
+	var c = make(chan os.Signal)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		<-c
+		hw.SetMotorDirection(defs.DirStop)
+		log.Fatal("[FATAL]\tUser terminated program")
+	}()
 }

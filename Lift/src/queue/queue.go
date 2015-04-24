@@ -41,10 +41,6 @@ func Init(newOrderChan chan bool) {
 	go updateLocalQueue()
 }
 
-func NewOrder(floor, button int) {
-	// todo: implement
-}
-
 // AddLocalOrder adds an order to the local queue.
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, "", nil})

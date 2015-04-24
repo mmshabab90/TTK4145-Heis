@@ -35,9 +35,7 @@ func Init(e EventChannels) {
 	state = idle
 	dir = defs.DirStop
 	floor = hw.Floor()
-	if floor == -1 {
-		floor = hw.MoveToDefinedState()
-	}
+
 	go syncLights()
 
 	e.DoorTimeout = make(chan bool)
