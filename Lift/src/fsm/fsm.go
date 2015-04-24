@@ -19,7 +19,7 @@ const doorOpenTime = 1 * time.Second
 
 var state int
 var floor int
-var direction int
+var dir int
 
 type Events struct {
 	NewOrder     <-chan bool
@@ -34,7 +34,7 @@ func Init() {
 	log.Println("fsm.Init() starting")
 	go startTimer()
 	state = idle
-	direction = defs.DirStop
+	dir = defs.DirStop
 	floor = hw.Floor()
 	if floor == -1 {
 		floor = hw.MoveToDefinedState()
@@ -49,14 +49,14 @@ func EventInternalButtonPressed(buttonFloor int, buttonType int) {
 	switch state {
 	case idle:
 		queue.AddLocalOrder(buttonFloor, buttonType)
-		switch direction = queue.ChooseDirection(floor, direction); direction {
+		switch dir = queue.ChooseDirection(floor, dir); dir {
 		case defs.DirStop:
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			doorReset <- true
 			state = doorOpen
 		case defs.DirUp, defs.DirDown:
-			hw.SetMotorDirection(direction)
+			hw.SetMotorDirection(dir)
 			state = moving
 		}
 	case doorOpen:
@@ -99,14 +99,14 @@ func EventExternalOrderGivenToMe() {
 	}
 	switch state {
 	case idle:
-		switch direction = queue.ChooseDirection(floor, direction); direction {
+		switch dir = queue.ChooseDirection(floor, dir); dir {
 		case defs.DirStop:
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor) //her tror jeg buggen ligger!
 			doorReset <- true
 			state = doorOpen
 		case defs.DirUp, defs.DirDown:
-			hw.SetMotorDirection(direction)
+			hw.SetMotorDirection(dir)
 			state = moving
 		}
 	default:
@@ -119,11 +119,21 @@ func EventNewOrder(floor, button int) {
 	switch state {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
-		if dir == defs.DirDown {
-			// todo more here
+		if queue.ShouldStop(floor, dir) {
+			hw.SetDoorOpenLamp(true)
+			queue.RemoveOrdersAt(floor)
+			go queue.SendOrderCompleteMessage(floor)
+			doorReset <- true
+			state = doorOpen
 		} else {
-			// todo more here
+			dir = queue.ChooseDirection(floor, dir)
+			state = moving
 		}
+	case moving:
+		// ignore
+	case doorOpen:
+		if queue.ShouldStop(floor, dir)
+		doorReset <- true
 	}
 }
 
@@ -134,7 +144,7 @@ func EventFloorReached(newFloor int) {
 	hw.SetFloorLamp(floor)
 	switch state {
 	case moving:
-		if queue.ShouldStop(floor, direction) {
+		if queue.ShouldStop(floor, dir) {
 			hw.SetMotorDirection(defs.DirStop)
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
@@ -154,10 +164,10 @@ func EventDoorTimeout() { //this happens for each external order
 	queue.Print()
 	switch state {
 	case doorOpen:
-		direction = queue.ChooseDirection(floor, direction)
+		dir = queue.ChooseDirection(floor, dir)
 		hw.SetDoorOpenLamp(false)
-		hw.SetMotorDirection(direction)
-		if direction == defs.DirStop {
+		hw.SetMotorDirection(dir)
+		if dir == defs.DirStop {
 			state = idle
 		} else {
 			state = moving
@@ -169,7 +179,7 @@ func EventDoorTimeout() { //this happens for each external order
 }
 
 func Direction() int {
-	return direction
+	return dir
 }
 
 func Floor() int {
