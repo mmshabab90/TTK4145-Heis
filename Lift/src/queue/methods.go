@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"../defs"
+	def "../config"
 	"fmt"
 	"log"
 )
@@ -28,8 +28,8 @@ func (q *queue) stopTimer(floor, button int) {
 }
 
 func (q *queue) isEmpty() bool {
-	for f := 0; f < defs.NumFloors; f++ {
-		for b := 0; b < defs.NumButtons; b++ {
+	for f := 0; f < def.NumFloors; f++ {
+		for b := 0; b < def.NumButtons; b++ {
 			if q.Q[f][b].Active {
 				return false
 			}
@@ -39,13 +39,13 @@ func (q *queue) isEmpty() bool {
 }
 
 func (q *queue) setOrder(floor, button int, status orderStatus) {
-	// Ignore if order to be set is equal to order already in queue.
+	// Ignore if order to be set is equal to order already in queue:
 	if q.isActiveOrder(floor, button) == status.Active {
 		return
 	}
 
 	q.Q[floor][button] = status
-	defs.SyncLightsChan <- true
+	def.SyncLightsChan <- true
 	suggestBackup()
 }
 
@@ -54,8 +54,8 @@ func (q *queue) isActiveOrder(floor, button int) bool { // todo: consider rename
 }
 
 func (q *queue) isOrdersAbove(floor int) bool {
-	for f := floor + 1; f < defs.NumFloors; f++ {
-		for b := 0; b < defs.NumButtons; b++ {
+	for f := floor + 1; f < def.NumFloors; f++ {
+		for b := 0; b < def.NumButtons; b++ {
 			if q.isActiveOrder(f, b) {
 				return true
 			}
@@ -66,7 +66,7 @@ func (q *queue) isOrdersAbove(floor int) bool {
 
 func (q *queue) isOrdersBelow(floor int) bool {
 	for f := 0; f < floor; f++ {
-		for b := 0; b < defs.NumButtons; b++ {
+		for b := 0; b < def.NumButtons; b++ {
 			if q.isActiveOrder(f, b) {
 				return true
 			}
@@ -77,51 +77,51 @@ func (q *queue) isOrdersBelow(floor int) bool {
 
 func (q *queue) chooseDirection(floor, dir int) int {
 	if q.isEmpty() {
-		return defs.DirStop
+		return def.DirStop
 	}
 	switch dir {
-	case defs.DirDown:
+	case def.DirDown:
 		if q.isOrdersBelow(floor) && floor > 0 {
-			return defs.DirDown
+			return def.DirDown
 		} else {
-			return defs.DirUp
+			return def.DirUp
 		}
-	case defs.DirUp:
-		if q.isOrdersAbove(floor) && floor < defs.NumFloors-1 {
-			return defs.DirUp
+	case def.DirUp:
+		if q.isOrdersAbove(floor) && floor < def.NumFloors-1 {
+			return def.DirUp
 		} else {
-			return defs.DirDown
+			return def.DirDown
 		}
-	case defs.DirStop:
+	case def.DirStop:
 		if q.isOrdersAbove(floor) {
-			return defs.DirUp
+			return def.DirUp
 		} else if q.isOrdersBelow(floor) {
-			return defs.DirDown
+			return def.DirDown
 		} else {
-			return defs.DirStop
+			return def.DirStop
 		}
 	default:
 		log.Printf("ChooseDirection(): called with invalid direction %d, returning stop\n", dir)
-		return defs.DirStop
+		return def.DirStop
 	}
 }
 
 func (q *queue) shouldStop(floor, dir int) bool {
 	switch dir {
-	case defs.DirDown:
-		return q.isActiveOrder(floor, defs.ButtonDown) ||
-			q.isActiveOrder(floor, defs.ButtonCommand) ||
+	case def.DirDown:
+		return q.isActiveOrder(floor, def.ButtonDown) ||
+			q.isActiveOrder(floor, def.ButtonCommand) ||
 			floor == 0 ||
 			!q.isOrdersBelow(floor)
-	case defs.DirUp:
-		return q.isActiveOrder(floor, defs.ButtonUp) ||
-			q.isActiveOrder(floor, defs.ButtonCommand) ||
-			floor == defs.NumFloors-1 ||
+	case def.DirUp:
+		return q.isActiveOrder(floor, def.ButtonUp) ||
+			q.isActiveOrder(floor, def.ButtonCommand) ||
+			floor == def.NumFloors-1 ||
 			!q.isOrdersAbove(floor)
-	case defs.DirStop:
-		return q.isActiveOrder(floor, defs.ButtonDown) ||
-			q.isActiveOrder(floor, defs.ButtonUp) ||
-			q.isActiveOrder(floor, defs.ButtonCommand)
+	case def.DirStop:
+		return q.isActiveOrder(floor, def.ButtonDown) ||
+			q.isActiveOrder(floor, def.ButtonUp) ||
+			q.isActiveOrder(floor, def.ButtonCommand)
 	default:
 		log.Printf("shouldStop() called with invalid direction %d!\n", dir)
 		return false
@@ -130,8 +130,8 @@ func (q *queue) shouldStop(floor, dir int) bool {
 
 func (q *queue) deepCopy() *queue {
 	var copy queue
-	for f := 0; f < defs.NumFloors; f++ {
-		for b := 0; b < defs.NumButtons; b++ {
+	for f := 0; f < def.NumFloors; f++ {
+		for b := 0; b < def.NumButtons; b++ {
 			copy.Q[f][b] = q.Q[f][b]
 		}
 	}
@@ -149,7 +149,7 @@ func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, c
 	if currFloor == -1 {
 		// Between floors, add 1 cost
 		cost++
-	} else if dir != defs.DirStop {
+	} else if dir != def.DirStop {
 		// At floor, but moving, add 2 cost
 		cost += 2
 	}

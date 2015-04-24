@@ -2,7 +2,7 @@
 package queue
 
 import (
-	"../defs"
+	def "../config"
 	"fmt"
 	"log"
 	"time"
@@ -19,7 +19,7 @@ type orderStatus struct {
 var blankOrder = orderStatus{false, "", nil}
 
 type queue struct {
-	Q [defs.NumFloors][defs.NumButtons]orderStatus
+	Q [def.NumFloors][def.NumButtons]orderStatus
 }
 
 var local queue
@@ -57,7 +57,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 // RemoveRemoteOrdersAt removes all orders at the given floor from the remote
 // queue.
 func RemoveRemoteOrdersAt(floor int) {
-	for b := 0; b < defs.NumButtons; b++ {
+	for b := 0; b < def.NumButtons; b++ {
 		//remote.stopTimer(floor, b)
 		remote.setOrder(floor, b, blankOrder)
 	}
@@ -79,7 +79,7 @@ func ShouldStop(floor, dir int) bool {
 
 // RemoveOrdersAt removes all orders at the given floor in local and remote queue.
 func RemoveOrdersAt(floor int) {
-	for b := 0; b < defs.NumButtons; b++ {
+	for b := 0; b < def.NumButtons; b++ {
 		//remote.stopTimer(floor, b)
 		local.setOrder(floor, b, blankOrder)
 		remote.setOrder(floor, b, blankOrder)
@@ -113,15 +113,15 @@ func ReassignOrders(deadAddr string) {
 	// loop thru remote queue
 	// remove all orders assigned to the dead lift
 	// send neworder-message for each removed order
-	for f := 0; f < defs.NumFloors; f++ {
-		for b := 0; b < defs.NumButtons; b++ {
+	for f := 0; f < def.NumFloors; f++ {
+		for b := 0; b < def.NumButtons; b++ {
 			if remote.Q[f][b].Addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
-				reassignMessage := defs.Message{
-					Kind:   defs.NewOrder,
+				reassignMessage := def.Message{
+					Kind:   def.NewOrder,
 					Floor:  f,
 					Button: b}
-				defs.MessageChan <- reassignMessage
+				def.MessageChan <- reassignMessage
 			}
 		}
 	}
@@ -130,8 +130,8 @@ func ReassignOrders(deadAddr string) {
 // SendOrderCompleteMessage communicates to the network that this lift has
 // taken care of orders at the given floor.
 func SendOrderCompleteMessage(floor int) {
-	orderComplete := defs.Message{Kind: defs.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
-	defs.MessageChan <- orderComplete
+	orderComplete := def.Message{Kind: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
+	def.MessageChan <- orderComplete
 }
 
 // CalculateCost returns how much effort it is for this lift to carry out
@@ -146,33 +146,33 @@ func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int)
 // manner.
 func Print() {
 	fmt.Println("Local   Remote")
-	for f := defs.NumFloors - 1; f >= 0; f-- {
+	for f := def.NumFloors - 1; f >= 0; f-- {
 		lifts := "   "
 
-		if local.isActiveOrder(f, defs.ButtonUp) {
+		if local.isActiveOrder(f, def.ButtonUp) {
 			fmt.Printf("↑")
 		} else {
 			fmt.Printf(" ")
 		}
-		if local.isActiveOrder(f, defs.ButtonCommand) {
+		if local.isActiveOrder(f, def.ButtonCommand) {
 			fmt.Printf("×")
 		} else {
 			fmt.Printf(" ")
 		}
-		if local.isActiveOrder(f, defs.ButtonDown) {
+		if local.isActiveOrder(f, def.ButtonDown) {
 			fmt.Printf("↓   %d  ", f+1)
 		} else {
 			fmt.Printf("    %d  ", f+1)
 		}
-		if remote.isActiveOrder(f, defs.ButtonUp) {
+		if remote.isActiveOrder(f, def.ButtonUp) {
 			fmt.Printf("↑")
-			lifts += "(↑ " + defs.LastPartOfIp(remote.Q[f][defs.ButtonUp].Addr) + ")"
+			lifts += "(↑ " + def.LastPartOfIp(remote.Q[f][def.ButtonUp].Addr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
-		if remote.isActiveOrder(f, defs.ButtonDown) {
+		if remote.isActiveOrder(f, def.ButtonDown) {
 			fmt.Printf("↓")
-			lifts += "(↓ " + defs.LastPartOfIp(remote.Q[f][defs.ButtonDown].Addr) + ")"
+			lifts += "(↓ " + def.LastPartOfIp(remote.Q[f][def.ButtonDown].Addr) + ")"
 		} else {
 			fmt.Printf(" ")
 		}
@@ -184,23 +184,23 @@ func Print() {
 func incrementFloor(floor, dir int) (int, int) {
 	// fmt.Printf("(incr:f%v d%v)", floor, dir)
 	switch dir {
-	case defs.DirDown:
+	case def.DirDown:
 		floor--
-	case defs.DirUp:
+	case def.DirUp:
 		floor++
-	case defs.DirStop:
+	case def.DirStop:
 		// fmt.Println("incrementFloor(): direction stop, not incremented (this is okay)")
 	default:
 		fmt.Println("incrementFloor(): invalid direction, not incremented")
 	}
 
-	if floor <= 0 && dir == defs.DirDown {
-		dir = defs.DirUp
+	if floor <= 0 && dir == def.DirDown {
+		dir = def.DirUp
 		floor = 0
 	}
-	if floor >= defs.NumFloors-1 && dir == defs.DirUp {
-		dir = defs.DirDown
-		floor = defs.NumFloors - 1
+	if floor >= def.NumFloors-1 && dir == def.DirUp {
+		dir = def.DirDown
+		floor = def.NumFloors - 1
 	}
 	return floor, dir
 }
@@ -208,10 +208,10 @@ func incrementFloor(floor, dir int) (int, int) {
 func updateLocalQueue() {
 	for {
 		<-updateLocal
-		for f := 0; f < defs.NumFloors; f++ {
-			for b := 0; b < defs.NumButtons; b++ {
+		for f := 0; f < def.NumFloors; f++ {
+			for b := 0; b < def.NumButtons; b++ {
 				if remote.isActiveOrder(f, b) {
-					if b != defs.ButtonCommand && remote.Q[f][b].Addr == defs.Laddr.String() {
+					if b != def.ButtonCommand && remote.Q[f][b].Addr == def.Laddr.String() {
 						local.setOrder(f, b, orderStatus{true, "", nil})
 						newOrder <- true
 					}

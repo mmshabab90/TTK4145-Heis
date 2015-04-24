@@ -1,7 +1,7 @@
 package cost
 
 import (
-	"../defs"
+	def "../config"
 	"fmt"
 	"time"
 )
@@ -19,28 +19,28 @@ var _ = time.Sleep
 // currFloor is the true current floor, as reported by sensors (-1 if between
 // floors)
 // currDir is the true current direction
-func Calculate(queue [defs.NumFloors][defs.NumButtons]bool, targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
+func Calculate(queue [def.NumFloors][def.NumButtons]bool, targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
 	/*
-	fmt.Println("Calculate called with")
-	fmt.Printf("   targetFloor %v\n", targetFloor)
-	fmt.Printf("   targetButton %v\n", targetButton)
-	fmt.Printf("   prevFloor %v\n", prevFloor)
-	fmt.Printf("   currFloor %v\n", currFloor)
-	fmt.Printf("   currDir %v\n", currDir)
+		fmt.Println("Calculate called with")
+		fmt.Printf("   targetFloor %v\n", targetFloor)
+		fmt.Printf("   targetButton %v\n", targetButton)
+		fmt.Printf("   prevFloor %v\n", prevFloor)
+		fmt.Printf("   currFloor %v\n", currFloor)
+		fmt.Printf("   currDir %v\n", currDir)
 	*/
 	floor := prevFloor
 	dir := currDir
 
 	queue[targetFloor][targetButton] = true
-	
+
 	/*
-	var targetDir int
-	if targetButton == defs.ButtonCallDown {
-		targetDir = defs.DirnDown
-	} else if targetButton == defs.ButtonCallUp {
-		targetDir = defs.DirnUp
-	}*/
-	
+		var targetDir int
+		if targetButton == def.ButtonCallDown {
+			targetDir = def.DirnDown
+		} else if targetButton == def.ButtonCallUp {
+			targetDir = def.DirnUp
+		}*/
+
 	//fmt.Printf("  (targetDir %v)\n", targetDir)
 
 	//fmt.Printf("queue: %v\n", queue)
@@ -50,31 +50,31 @@ func Calculate(queue [defs.NumFloors][defs.NumButtons]bool, targetFloor, targetB
 	if currFloor == -1 {
 		cost++
 		floor = increment(floor, dir)
-	} else if currDir != defs.DirnStop {
+	} else if currDir != def.DirnStop {
 		cost += 2
 		floor = increment(floor, dir)
 	}
-	
+
 	//fmt.Printf("floor = %v, dir = %v\n", floor, dir)
 	for !(shouldStop(queue, floor, dir) && floor == targetFloor) {
 		if floor <= 0 {
-			dir = defs.DirnUp
-		} else if floor >= defs.NumFloors-1 {
-			dir = defs.DirnDown
+			dir = def.DirnUp
+		} else if floor >= def.NumFloors-1 {
+			dir = def.DirnDown
 		}
-		
-		if dir == defs.DirnStop {
-			if noOrdersAhead(queue, floor, defs.DirnDown) {
-				dir = defs.DirnUp
-			} else if noOrdersAhead(queue, floor, defs.DirnUp) {
-				dir = defs.DirnDown
+
+		if dir == def.DirnStop {
+			if noOrdersAhead(queue, floor, def.DirnDown) {
+				dir = def.DirnUp
+			} else if noOrdersAhead(queue, floor, def.DirnUp) {
+				dir = def.DirnDown
 			}
 		}
-		
+
 		// if noOrdersAhead(queue, floor, dir) {
 		// 	dir *= -1
 		// }
-		
+
 		if shouldStop(queue, floor, dir) {
 			cost += 2
 		}
@@ -86,11 +86,11 @@ func Calculate(queue [defs.NumFloors][defs.NumButtons]bool, targetFloor, targetB
 	return cost
 }
 
-func noOrdersAhead(queue [defs.NumFloors][defs.NumButtons]bool, floor, dir int) bool {
+func noOrdersAhead(queue [def.NumFloors][def.NumButtons]bool, floor, dir int) bool {
 	//fmt.Printf("noOrdersAhead() running with floor %v and dir %v\n", floor, dir)
 	isOrdersAhead := false
 	for f := floor; isValidFloor(f); f += dir {
-		for b := 0; b < defs.NumButtons; b++ {
+		for b := 0; b < def.NumButtons; b++ {
 			if queue[f][b] {
 				isOrdersAhead = true
 			}
@@ -99,25 +99,25 @@ func noOrdersAhead(queue [defs.NumFloors][defs.NumButtons]bool, floor, dir int) 
 	return !isOrdersAhead
 }
 
-func shouldStop(queue [defs.NumFloors][defs.NumButtons]bool, floor, dir int) bool {
+func shouldStop(queue [def.NumFloors][def.NumButtons]bool, floor, dir int) bool {
 	//fmt.Printf("shouldStop(): floor %v, dir %v\n", floor, dir)
-	if queue[floor][defs.ButtonCommand] {
+	if queue[floor][def.ButtonCommand] {
 		return true
 	}
-	if dir == defs.DirnUp && queue[floor][defs.ButtonCallUp] {
+	if dir == def.DirnUp && queue[floor][def.ButtonCallUp] {
 		return true
 	}
-	if dir == defs.DirnDown && queue[floor][defs.ButtonCallDown] {
+	if dir == def.DirnDown && queue[floor][def.ButtonCallDown] {
 		return true
 	}
-	if floor == 0 && queue[floor][defs.ButtonCallUp] {
+	if floor == 0 && queue[floor][def.ButtonCallUp] {
 		return true
 	}
-	if floor == defs.NumFloors - 1 && queue[floor][defs.ButtonCallDown] {
+	if floor == def.NumFloors-1 && queue[floor][def.ButtonCallDown] {
 		return true
 	}
-	if dir == defs.DirnStop {
-		for b := 0; b < defs.NumButtons; b++ {
+	if dir == def.DirnStop {
+		for b := 0; b < def.NumButtons; b++ {
 			if queue[floor][b] {
 				return true
 			}
@@ -128,14 +128,14 @@ func shouldStop(queue [defs.NumFloors][defs.NumButtons]bool, floor, dir int) boo
 
 func increment(floor int, dir int) int {
 	switch dir {
-		case defs.DirnDown:
-			floor--
-		case defs.DirnUp:
-			floor++
-		case defs.DirnStop:
-			// This is okay.
-		default:
-			fmt.Println("increment(): error: invalid direction, not incremented")
+	case def.DirnDown:
+		floor--
+	case def.DirnUp:
+		floor++
+	case def.DirnStop:
+		// This is okay.
+	default:
+		fmt.Println("increment(): error: invalid direction, not incremented")
 	}
 	return floor
 }
@@ -144,7 +144,7 @@ func isValidFloor(floor int) bool {
 	if floor < 0 {
 		return false
 	}
-	if floor >= defs.NumFloors {
+	if floor >= def.NumFloors {
 		return false
 	}
 	return true

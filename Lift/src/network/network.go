@@ -1,7 +1,7 @@
 package network
 
 import (
-	"../defs"
+	def "../config"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -26,7 +26,7 @@ func Init() {
 
 func pollMessages() { // change name to pollOutgoing or something
 	for {
-		msg := <-defs.MessageChan //crashes here for some reason with the orderTimer
+		msg := <-def.MessageChan //crashes here for some reason with the orderTimer
 		//PrintMessage(msg)
 
 		var i int
@@ -44,10 +44,10 @@ func pollMessages() { // change name to pollOutgoing or something
 	}
 }
 
-func ParseMessage(udpMessage udpMessage) defs.Message {
+func ParseMessage(udpMessage udpMessage) def.Message {
 	//fmt.Printf("before parse: %s from %s\n", string(udpMessage.data), udpMessage.raddr)
 
-	var message defs.Message
+	var message def.Message
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
@@ -62,28 +62,28 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 var sendChan = make(chan udpMessage)
 
 func aliveSpammer() {
-	alive := defs.Message{Kind: defs.Alive, Floor: -1, Button: -1, Cost: -1}
+	alive := def.Message{Kind: def.Alive, Floor: -1, Button: -1, Cost: -1}
 	for {
-		defs.MessageChan <- alive
-		time.Sleep(defs.SpamInterval)
+		def.MessageChan <- alive
+		time.Sleep(def.SpamInterval)
 	}
 }
 
-func PrintMessage(msg defs.Message) {
+func PrintMessage(msg def.Message) {
 
-	if msg.Kind == defs.Alive {
+	if msg.Kind == def.Alive {
 		return
 	}
 
 	fmt.Printf("\n-----Message start-----\n")
 	switch msg.Kind {
-	case defs.Alive:
+	case def.Alive:
 		fmt.Println("I'm alive")
-	case defs.NewOrder:
+	case def.NewOrder:
 		fmt.Println("New order")
-	case defs.CompleteOrder:
+	case def.CompleteOrder:
 		fmt.Println("Complete order")
-	case defs.Cost:
+	case def.Cost:
 		fmt.Println("Cost:")
 	default:
 		fmt.Println("Invalid message type!\n")

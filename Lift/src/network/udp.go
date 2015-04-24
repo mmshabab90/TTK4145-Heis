@@ -1,7 +1,7 @@
 package network
 
 import (
-	"../defs"
+	def "../config"
 	"fmt"
 	"net"
 	"strconv"
@@ -28,11 +28,11 @@ func UdpInit(localListenPort, broadcastListenPort, message_size int, send_ch, re
 	tempConn, err := net.DialUDP("udp4", nil, baddr)
 	defer tempConn.Close()
 	tempAddr := tempConn.LocalAddr()
-	defs.Laddr, err = net.ResolveUDPAddr("udp4", tempAddr.String())
-	defs.Laddr.Port = localListenPort
+	def.Laddr, err = net.ResolveUDPAddr("udp4", tempAddr.String())
+	def.Laddr.Port = localListenPort
 
 	//Creating local listening connections
-	localListenConn, err := net.ListenUDP("udp4", defs.Laddr)
+	localListenConn, err := net.ListenUDP("udp4", def.Laddr)
 	if err != nil {
 		return err
 	}

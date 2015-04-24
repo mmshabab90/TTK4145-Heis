@@ -1,7 +1,7 @@
 package fsm
 
 import (
-	"../defs"
+	def "../config"
 	"../hw"
 	"../queue"
 	"fmt"
@@ -33,7 +33,7 @@ func Init(e EventChannels) {
 	log.Println("fsm.Init() starting")
 
 	state = idle
-	dir = defs.DirStop
+	dir = def.DirStop
 	floor = hw.Floor()
 
 	go syncLights()
@@ -88,7 +88,7 @@ func eventFloorReached(newFloor int) {
 	switch state {
 	case moving:
 		if queue.ShouldStop(floor, dir) {
-			hw.SetMotorDirection(defs.DirStop)
+			hw.SetMotorDirection(def.DirStop)
 			hw.SetDoorOpenLamp(true)
 			queue.RemoveOrdersAt(floor)
 			go queue.SendOrderCompleteMessage(floor)
@@ -109,7 +109,7 @@ func eventDoorTimeout() { //this happens for each external order
 		dir = queue.ChooseDirection(floor, dir)
 		hw.SetDoorOpenLamp(false)
 		hw.SetMotorDirection(dir)
-		if dir == defs.DirStop {
+		if dir == def.DirStop {
 			state = idle
 		} else {
 			state = moving

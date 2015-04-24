@@ -1,7 +1,7 @@
 package fsm
 
 import (
-	"../defs"
+	def "../config"
 	"../hw"
 	"../queue"
 )
@@ -29,11 +29,11 @@ func stateString(state int) string {
 
 func buttonString(button int) string {
 	switch button {
-	case defs.ButtonUp:
+	case def.ButtonUp:
 		return "up"
-	case defs.ButtonDown:
+	case def.ButtonDown:
 		return "down"
-	case defs.ButtonCommand:
+	case def.ButtonCommand:
 		return "command"
 	default:
 		return "error: bad button"
@@ -42,18 +42,18 @@ func buttonString(button int) string {
 
 func syncLights() { // todo: probably move to queue
 	for {
-		<-defs.SyncLightsChan
+		<-def.SyncLightsChan
 
-		for f := 0; f < defs.NumFloors; f++ {
-			for b := 0; b < defs.NumButtons; b++ {
-				if (b == defs.ButtonUp && f == defs.NumFloors-1) ||
-					(b == defs.ButtonDown && f == 0) {
+		for f := 0; f < def.NumFloors; f++ {
+			for b := 0; b < def.NumButtons; b++ {
+				if (b == def.ButtonUp && f == def.NumFloors-1) ||
+					(b == def.ButtonDown && f == 0) {
 					continue
 				} else {
 					switch b {
-					case defs.ButtonCommand:
+					case def.ButtonCommand:
 						hw.SetButtonLamp(f, b, queue.IsOrder(f, b))
-					case defs.ButtonUp, defs.ButtonDown:
+					case def.ButtonUp, def.ButtonDown:
 						hw.SetButtonLamp(f, b, queue.IsRemoteOrder(f, b))
 					}
 				}

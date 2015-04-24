@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"../defs"
+	def "../config"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -21,28 +21,28 @@ func runBackup() {
 	filenameLocal := "queueBackupFile1"
 	filenameRemote := "queueBackupFile2"
 
-	var backup queue 
+	var backup queue
 
 	backup.loadFromDisk(filenameLocal)
 
 	if !backup.isEmpty() {
-		for f := 0; f < defs.NumFloors; f++ {
-			for b := 0; b < defs.NumButtons; b++ {
+		for f := 0; f < def.NumFloors; f++ {
+			for b := 0; b < def.NumButtons; b++ {
 				if backup.isActiveOrder(f, b) {
-					if b == defs.ButtonCommand {
+					if b == def.ButtonCommand {
 						AddLocalOrder(f, b)
 					} else {
-						defs.MessageChan <- defs.Message{
-						Kind:   defs.NewOrder,
-						Floor: 	f,
-						Button: b}
+						def.MessageChan <- def.Message{
+							Kind:   def.NewOrder,
+							Floor:  f,
+							Button: b}
 					}
 				}
 			}
 		}
 	}
 
-	go func(){
+	go func() {
 		for {
 			<-backupChan
 			if err := local.saveToDisk(filenameLocal); err != nil {
