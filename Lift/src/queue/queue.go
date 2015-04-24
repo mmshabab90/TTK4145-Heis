@@ -91,9 +91,7 @@ func RemoveOrdersAt(storey int) {
 		local.setOrder(storey, b, blankOrder)
 		remote.setOrder(storey, b, blankOrder)
 	}
-	fmt.Println("RemoveOrdersAt for complete")
 	SendOrderCompleteMessage(storey) // bad abstraction
-	fmt.Println("is it the sendfunction that does the fuck up?")
 	backup <- true
 }
 
@@ -138,11 +136,8 @@ func ReassignOrders(deadAddr string) {
 // SendOrderCompleteMessage communicates to the network that this lift has
 // taken care of orders at the given storey.
 func SendOrderCompleteMessage(storey int) {
-	fmt.Println("Start sendOrderCompleteMessage")
 	orderComplete := defs.Message{Kind: defs.CompleteOrder, Storey: storey, Button: -1, Cost: -1}
-	fmt.Println("Made the struct")
 	defs.MessageChan <- orderComplete
-	fmt.Println("Stop sendOrderCompleteMessage")
 }
 
 // CalculateCost returns how much effort it is for this lift to carry out
@@ -378,10 +373,9 @@ func incrementStorey(storey, dir int) (int, int) {
 }
 
 func updateLocalQueue() {
-	fmt.Println("updateLocalQueue() routine running...")
+	//fmt.Println("updateLocalQueue() routine running...")
 	for {
 		<-updateLocal
-		fmt.Println("Do we crash in updateLocalQueue()")
 		for f := 0; f < defs.NumStoreys; f++ {
 			for b := 0; b < defs.NumButtons; b++ {
 				if remote.isActiveOrder(f, b) {
@@ -391,7 +385,6 @@ func updateLocalQueue() {
 				}
 			}
 		}
-		fmt.Println("I guess not")
 		time.Sleep(time.Millisecond)
 	}
 }

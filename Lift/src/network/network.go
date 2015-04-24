@@ -25,9 +25,7 @@ func Init() {
 
 func pollMessages() { // change name to pollOutgoing or something
 	for {
-		fmt.Println("in pollMessages before read")
 		msg := <-defs.MessageChan
-		fmt.Println("in pollMessages after read")
 		PrintMessage(msg)
 
 		var i int
@@ -46,7 +44,7 @@ func pollMessages() { // change name to pollOutgoing or something
 }
 
 func ParseMessage(udpMessage udpMessage) defs.Message {
-	fmt.Printf("before parse: %s from %s\n", string(udpMessage.data), udpMessage.raddr)
+	//fmt.Printf("before parse: %s from %s\n", string(udpMessage.data), udpMessage.raddr)
 
 	var message defs.Message
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
@@ -54,7 +52,7 @@ func ParseMessage(udpMessage udpMessage) defs.Message {
 	}
 
 	message.Addr = udpMessage.raddr
-	fmt.Printf("ಠ_ಠ after Unmarshal:       %s\n", message.Addr)
+	//fmt.Printf("ಠ_ಠ after Unmarshal:       %s\n", message.Addr)
 	return message
 }
 

@@ -217,17 +217,14 @@ func liftAssigner() {
 		for {
 			select {
 			case message := <-costChan:
-				fmt.Println("Let's find out where we crash!")
 				//newKey, newReply := split(message) //newKey is actually the worst name ever
 				newOrder.makeNewOrder(message)
-				fmt.Println("I guess we have crashed by now")
 				newReply := getReply(message)
 				for oldOrder := range assignmentQueue {
 					if newOrder.isSameOrder(oldOrder) {
 						newOrder = oldOrder
 					}
 				}
-				fmt.Println("Have we crashed yet?!")
 				// Check if order in queue
 				if value, exist := assignmentQueue[newOrder]; exist {
 					// Check if lift in list of that order
@@ -240,15 +237,11 @@ func liftAssigner() {
 					// Add it if not found
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-						fmt.Println("Reset the order timer")
 						newOrder.timer.Reset(10* time.Second)
-						fmt.Println("Reset of order timer done")
 					}
 				} else {
 					// If order not in queue at all, init order list with it
-					fmt.Println("let's try to make a timer")
 					newOrder.timer = time.NewTimer(10 * time.Second)
-					fmt.Println("Timer created")
 					assignmentQueue[newOrder] = []reply{newReply}
 					go costTimer(&newOrder)
 				}
@@ -315,9 +308,7 @@ func evaluateLists(que *(map[order][]reply)) {
 				fsm.EventExternalOrderGivenToMe()
 			}
 			// Empty list
-			fmt.Println("Now we should kill the timer")
 			key.timer.Stop()
-			fmt.Println("Timer killed")
 			delete(*que, key)
 			// SUPERIMPORTANT: NOTIFY ABOUT EVENT NEW ORDER
 		}
