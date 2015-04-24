@@ -54,7 +54,7 @@ func main() {
 	network.Init()
 
 	//handle ctrl+c
-	safeKill()
+	safeKill() //bad name?
 
 	liftAssigner(e.NewOrder)
 	go poll(e)
@@ -198,10 +198,9 @@ func handleDeadLift(deadAddr string) {
 }
 
 func connectionTimer(connection *network.UdpConnection) {
-	for { //don't think this needs to be a for-loop
-		<-connection.Timer.C
-		deadChan <- *connection
-	}
+	//don't think this needs to be a for-loop
+	<-connection.Timer.C
+	deadChan <- *connection
 }
 
 func costTimer(newOrder *order) {
@@ -330,7 +329,7 @@ func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
 			/*if lowAddr == def.Laddr.String() {
 				newOrderChan <- true
 			}*/
-			// Empty list
+			// Empty list and stop timer
 			key.timer.Stop()
 			delete(*que, key)
 			// SUPERIMPORTANT: NOTIFY ABOUT EVENT NEW ORDER
@@ -345,7 +344,7 @@ func safeKill() {
 	go func() {
 		<-c
 		hw.SetMotorDirection(def.DirStop)
-		restart.Run()
+		restart.Run() //vil vi restarte med ctrl+c?
 		log.Fatal("[FATAL]\tUser terminated program")
 	}()
 }
