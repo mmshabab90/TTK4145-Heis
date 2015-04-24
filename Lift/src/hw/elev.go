@@ -38,13 +38,20 @@ func Init() error {
 		if f != def.NumFloors-1 {
 			SetButtonLamp(f, def.ButtonUp, false)
 		}
-		SetButtonLamp(f, def.ButtonCommand, false)
+		SetButtonLamp(f, def.ButtonIn, false)
 	}
 
 	SetStopLamp(false)
 	SetDoorOpenLamp(false)
 
-	MoveToDefinedState()
+	// Move to defined state
+	SetMotorDirection(def.DirDown)
+	floor := Floor()
+	for floor == -1 {
+		floor = Floor()
+	}
+	SetMotorDirection(def.DirStop)
+	SetFloorLamp(floor)
 
 	return nil
 }
@@ -144,7 +151,7 @@ func SetButtonLamp(floor int, button int, value bool) {
 	}
 	if button != def.ButtonUp &&
 		button != def.ButtonDown &&
-		button != def.ButtonCommand {
+		button != def.ButtonIn {
 		log.Printf("Invalid button %d\n", button)
 		return
 	}
@@ -155,19 +162,6 @@ func SetButtonLamp(floor int, button int, value bool) {
 		ioClearBit(lampChannelMatrix[floor][button])
 	}
 }
-
-func MoveToDefinedState() int {
-	SetMotorDirection(def.DirDown)
-	floor := Floor()
-	for floor == -1 {
-		floor = Floor()
-	}
-	SetMotorDirection(def.DirStop)
-	SetFloorLamp(floor)
-	return floor
-}
-
-// Not used:
 
 func SetStopLamp(value bool) {
 	if value {

@@ -2,8 +2,6 @@ package fsm
 
 import (
 	def "../config"
-	"../hw"
-	"../queue"
 )
 
 func Direction() int {
@@ -33,31 +31,9 @@ func buttonString(button int) string {
 		return "up"
 	case def.ButtonDown:
 		return "down"
-	case def.ButtonCommand:
+	case def.ButtonIn:
 		return "command"
 	default:
 		return "error: bad button"
-	}
-}
-
-func syncLights() { // todo: probably move to queue
-	for {
-		<-def.SyncLightsChan
-
-		for f := 0; f < def.NumFloors; f++ {
-			for b := 0; b < def.NumButtons; b++ {
-				if (b == def.ButtonUp && f == def.NumFloors-1) ||
-					(b == def.ButtonDown && f == 0) {
-					continue
-				} else {
-					switch b {
-					case def.ButtonCommand:
-						hw.SetButtonLamp(f, b, queue.IsLocalOrder(f, b))
-					case def.ButtonUp, def.ButtonDown:
-						hw.SetButtonLamp(f, b, queue.IsRemoteOrder(f, b))
-					}
-				}
-			}
-		}
 	}
 }

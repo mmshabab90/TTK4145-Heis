@@ -38,8 +38,6 @@ func Init(e EventChannels) {
 	dir = def.DirStop
 	floor = hw.Floor()
 
-	go syncLights()
-
 	e.DoorTimeout = make(chan bool)
 	go startDoorTimer(e.DoorTimeout)
 	go run(e)

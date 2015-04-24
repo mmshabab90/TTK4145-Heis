@@ -4,8 +4,8 @@ import (
 	def "../config"
 	"encoding/json"
 	"fmt"
-	"time"
 	"log"
+	"time"
 )
 
 var ReceiveChan = make(chan udpMessage, 10) //buffered with 10 slots
@@ -30,7 +30,7 @@ func Init() {
 
 func pollMessages() { //todo: change name to pollOutgoing or something
 	for {
-		msg := <-def.MessageChan 
+		msg := <-def.OutgoingMsg
 		//PrintMessage(msg)
 
 		var i int
@@ -55,18 +55,18 @@ func ParseMessage(udpMessage udpMessage) def.Message {
 	}
 
 	message.Addr = udpMessage.raddr
-	
+
 	return message
 }
 
 func PrintMessage(msg def.Message) {
 
-	if msg.Kind == def.Alive {
+	if msg.Description == def.Alive {
 		return
 	}
 
 	fmt.Printf("\n-----Message start-----\n")
-	switch msg.Kind {
+	switch msg.Description {
 	case def.Alive:
 		fmt.Println("I'm alive")
 	case def.NewOrder:
@@ -88,11 +88,9 @@ func PrintMessage(msg def.Message) {
 
 //aliveSpammer() sends mesges with "alive" at an interval
 func aliveSpammer() {
-	alive := def.Message{Kind: def.Alive, Floor: -1, Button: -1, Cost: -1}
+	alive := def.Message{Description: def.Alive, Floor: -1, Button: -1, Cost: -1}
 	for {
-		def.MessageChan <- alive
+		def.OutgoingMsg <- alive
 		time.Sleep(def.SpamInterval)
 	}
 }
-
-

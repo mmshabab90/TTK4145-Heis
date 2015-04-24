@@ -1,8 +1,6 @@
 package config
 
 import (
-	"net"
-	"strings"
 	"time"
 )
 
@@ -13,7 +11,7 @@ const NumFloors = 4
 const (
 	ButtonUp int = iota
 	ButtonDown
-	ButtonCommand //todo: Rename to ButtonInternal or something
+	ButtonIn //todo: Rename to ButtonInternal or something
 )
 
 const (
@@ -22,16 +20,14 @@ const (
 	DirUp
 )
 
-const MaxInt = int(^uint(0) >> 1)
-
-//constants for sending aliveMsg, and detecting deaths
+// Constants for sending aliveMsg, and detecting deaths
 const SpamInterval = 400 * time.Millisecond
 const OnlineLiftResetTime = 2 * time.Second //todo: name?
 
-//constant setting the time the elevators wait befor an order times out
-const OrderTime = 10 * time.Second //todo: name? //set this to 30 Seconds after done debuging 
+// Constant setting the time the elevators wait befor an order times out
+const OrderTime = 10 * time.Second //todo: name? //set this to 30 Seconds after done debuging
 
-//message kind constants
+// Message kind constants
 const (
 	Alive int = iota + 1
 	NewOrder
@@ -39,26 +35,22 @@ const (
 	Cost
 )
 
+// Generic network message. No other messages are ever sent on the network.
+type Message struct {
+	Description int
+	Floor       int
+	Button      int
+	Cost        int
+	Addr        string `json:"-"`
+}
+
 type Keypress struct {
 	Button int
 	Floor  int
 }
 
-// Generic network message. No other messages are ever sent on the network.
-type Message struct {
-	Kind   int
-	Floor  int
-	Button int
-	Cost   int
-	Addr   string `json:"-"`
-}
-
-var MessageChan = make(chan Message) // vurder buff //todo: change name to outgoingMessages or something 
+var OutgoingMsg = make(chan Message) // vurder buff
 var SyncLightsChan = make(chan bool)
 
-//Local address
-var Laddr *net.UDPAddr //todo: make this string
-
-func LastPartOfIp(ip string) string {
-	return strings.Split(strings.Split(ip, ".")[3], ":")[0]
-}
+// Local address
+var Laddr string
