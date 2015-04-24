@@ -1,8 +1,9 @@
-/*
- *  This file is a golang port of elev.c from the hand out driver
- *  https://github.com/TTK4145/Project
- */
-
+//
+// This file is a golang port of elev.c from the hand out driver
+// https://github.com/TTK4145/Project
+//
+// Package hw (hardware) is a driver defining I/O operations for the lift
+// models at 'sanntidssalen', NTNU.
 package hw
 
 import (
@@ -46,26 +47,37 @@ func Init() error {
 
 	MoveToDefinedState()
 
+	go setMotorDirection()
+
 	return nil
 }
 
-func SetMotorDirection(dirn int) {
-	if dirn == 0 {
-		ioWriteAnalog(MOTOR, 0)
-	} else if dirn > 0 {
-		ioClearBit(MOTORDIR)
-		ioWriteAnalog(MOTOR, 2800)
-	} else if dirn < 0 {
-		ioSetBit(MOTORDIR)
-		ioWriteAnalog(MOTOR, 2800)
+func setMotorDirection(motorDir <-chan int) {
+	var dir int
+	for {
+		dir = <-motorDir
+		if dir == 0 {
+			ioWriteAnalog(MOTOR, 0)
+		} else if dir > 0 {
+			ioClearBit(MOTORDIR)
+			ioWriteAnalog(MOTOR, 2800)
+		} else if dir < 0 {
+			ioSetBit(MOTORDIR)
+			ioWriteAnalog(MOTOR, 2800)
+		}
 	}
 }
 
-func SetDoorOpenLamp(value bool) {
-	if value {
-		ioSetBit(LIGHT_DOOR_OPEN)
-	} else {
-		ioClearBit(LIGHT_DOOR_OPEN)
+// Todo: I need a channel
+func setDoorLamp() {
+	var value bool
+	for {
+		value = <-doorLamp
+		if value {
+			ioSetBit(LIGHT_DOOR_OPEN)
+		} else {
+			ioClearBit(LIGHT_DOOR_OPEN)
+		}
 	}
 }
 
