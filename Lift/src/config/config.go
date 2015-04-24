@@ -26,7 +26,10 @@ const MaxInt = int(^uint(0) >> 1)
 
 //constants for sending aliveMsg, and detecting deaths
 const SpamInterval = 400 * time.Millisecond
-const ResetTime = 2 * time.Second
+const OnlineLiftResetTime = 2 * time.Second //todo: name?
+
+//constant setting the time the elevators wait befor an order times out
+const OrderTime = 10 * time.Second //todo: name? //set this to 30 Seconds after done debuging 
 
 //message kind constants
 const (

@@ -149,17 +149,17 @@ func pollFloors() <-chan int {
 // consider moving each case into a function
 func handleMessage(message def.Message) {
 
-	network.PrintMessage(message)
+	//network.PrintMessage(message)
 
 	switch message.Kind {
 	case def.Alive:
 		if connection, exist := onlineLifts[message.Addr]; exist {
-			connection.Timer.Reset(def.ResetTime)
+			connection.Timer.Reset(def.OnlineLiftResetTime)
 			if debugPrint {
 				fmt.Printf("Timer reset for IP %s\n", message.Addr)
 			}
 		} else {
-			newConnection := network.UdpConnection{message.Addr, time.NewTimer(def.ResetTime)}
+			newConnection := network.UdpConnection{message.Addr, time.NewTimer(def.OnlineLiftResetTime)}
 			onlineLifts[message.Addr] = newConnection
 			if debugPrint {
 				fmt.Printf("New connection with IP %s\n", message.Addr)

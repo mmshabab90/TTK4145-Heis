@@ -8,23 +8,25 @@ import (
 )
 
 func (q *queue) startTimer(floor, button int) {
-	fmt.Println("run startTimer()")
-	q.Q[floor][button].Timer = time.NewTimer(10*time.Second)
+	//fmt.Println("run startTimer()")
+	q.Q[floor][button].Timer = time.NewTimer(def.OrderTime)
 	<-q.Q[floor][button].Timer.C
 	OrderTimeoutChan <- def.Keypress{Button: button, Floor: floor} //bad abstraction?
 }
 
 func (q *queue) stopTimer(floor, button int) {
-	fmt.Println("run stopTimer()")
+	//fmt.Println("run stopTimer()")
 	if q.Q[floor][button].Timer != nil {
 		removed := q.Q[floor][button].Timer.Stop()
 		if removed {
-			fmt.Println("timer removed")
+			fmt.Printf("\n--------------------\n")
+			fmt.Println("Order timer removed")
+			fmt.Printf("--------------------\n\n")
 		} else {
-			fmt.Println("Timer not removed")
+			fmt.Printf("\n--------------------\n")
+			fmt.Println("Error: Order timer not removed")
+			fmt.Printf("--------------------\n\n")
 		}
-	} else {
-		fmt.Println("Timer was nil")
 	}
 }
 

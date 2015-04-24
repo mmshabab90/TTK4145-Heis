@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+	"log"
 )
 
 var ReceiveChan = make(chan udpMessage, 10) //buffered with 10 slots
@@ -24,7 +25,7 @@ func Init() {
 
 	go aliveSpammer()
 	go pollMessages()
-	fmt.Println("Network initialized")
+	log.Println("Network initialized")
 }
 
 func pollMessages() { //todo: change name to pollOutgoing or something

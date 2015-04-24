@@ -33,7 +33,7 @@ func Init(newOrderChan chan bool) {
 	newOrder = newOrderChan
 	go updateLocalQueue()
 	runBackup()
-	fmt.Println("queue initialized")
+	log.Println("Queue initialized")
 }
 
 // AddLocalOrder adds an order to the local queue.
@@ -48,9 +48,9 @@ func AddRemoteOrder(floor, button int, addr string) {
 	alreadyExist := IsRemoteOrder(floor, button) 
 	remote.setOrder(floor, button, orderStatus{true, addr, nil})
 	if !alreadyExist{
+		go remote.startTimer(floor, button)
 		fmt.Printf("\n--------------------\n")
 		fmt.Println("New order timer made")
-		go remote.startTimer(floor, button)
 		fmt.Printf("--------------------\n\n")
 	}
 	updateLocal <- true
