@@ -84,6 +84,7 @@ func poll(e fsm.EventChannels) {
 			handleDeadLift(connection.Addr)
 		case order:= <-queue.OrderStatusTimeoutChan:
 			fmt.Println("order in queue timed out, takes it myself")
+			queue.RemoveRemoteOrdersAt(order.Floor)
 			queue.AddRemoteOrder(order.Floor, order.Button , def.Laddr.String())			
 		}
 	}
