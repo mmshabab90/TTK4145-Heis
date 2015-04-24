@@ -1,11 +1,11 @@
 package queue
 
 import (
+	"../defs"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
-	"../defs"
 	//"../hw" //NB! ikke gjør dette!
 )
 
@@ -21,9 +21,9 @@ func runBackup() {
 
 	if !local.isEmpty() {
 		log.Println(local)
-		//go syncLightsAfterBackup()  
+		//go syncLightsAfterBackup()
 		defs.SyncLightsChan <- true
-//problemet er at vi setter eksterne lys bare hvis de er i remote queue, hva er den beste måten å fikse dette på?
+		//problemet er at vi setter eksterne lys bare hvis de er i remote queue, hva er den beste måten å fikse dette på?
 		newOrder <- true
 	}
 
@@ -37,7 +37,8 @@ func runBackup() {
 		}
 	}
 }
-//problemet med dette er at syncLights kjøres etter dette, og siden det ikke ligger i remote skrives lysene over. 
+
+//problemet med dette er at syncLights kjøres etter dette, og siden det ikke ligger i remote skrives lysene over.
 /*func syncLightsAfterBackup() { // NB! duplikering av kode!
 	for f := 0; f < defs.NumFloors; f++ {
 		for b := 0; b < defs.NumButtons; b++ {
@@ -50,7 +51,6 @@ func runBackup() {
 		}
 	}
 }*/
-
 
 func (q *queue) saveToDisk(filename string) error {
 

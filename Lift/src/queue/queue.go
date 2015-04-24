@@ -126,7 +126,6 @@ func ReassignOrders(deadAddr string) {
 	}
 }
 
-
 // SendOrderCompleteMessage communicates to the network that this lift has
 // taken care of orders at the given floor.
 func SendOrderCompleteMessage(floor int) {
