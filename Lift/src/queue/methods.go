@@ -137,36 +137,3 @@ func (q *queue) deepCopy() *queue {
 	}
 	return &copy
 }
-
-// this should run on a copy of local queue
-func (q *queue) calculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
-	q.setOrder(targetFloor, targetButton, orderStatus{true, "", nil})
-
-	cost := 0
-	floor := prevFloor
-	dir := currDir
-
-	if currFloor == -1 {
-		// Between floors, add 1 cost
-		cost++
-	} else if dir != def.DirStop {
-		// At floor, but moving, add 2 cost
-		cost += 2
-	}
-
-	floor, dir = incrementFloor(floor, dir)
-	fmt.Printf("Cost floor sequence: %v →  %v", currFloor, floor)
-
-	for !(floor == targetFloor && q.shouldStop(floor, dir)) {
-		if q.shouldStop(floor, dir) {
-			cost += 2
-			fmt.Printf("(S)")
-		}
-		dir = q.chooseDirection(floor, dir)
-		floor, dir = incrementFloor(floor, dir)
-		cost += 2
-		fmt.Printf(" →  %v", floor)
-	}
-	fmt.Printf(" = cost %v\n", cost)
-	return cost
-}
