@@ -30,30 +30,31 @@ func runBackup() {
 	if !backup.isEmpty() {
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
-				if backup.isOrder(f, b) {
-					if b == def.ButtonIn {
-						local.setOrder(f, b, orderStatus{true, "", nil})
-						newOrder <- true
+				if backup.isActiveOrder(f, b) {
+					if b == def.ButtonCommand {
+						AddLocalOrder(f, b)
 					} else {
-						def.OutgoingMsg <- def.Message{
-							Description: def.NewOrder,
-							Floor:       f,
-							Button:      b}
+						def.MessageChan <- def.Message{
+							Kind:   def.NewOrder,
+							Floor:  f,
+							Button: b}
 					}
 				}
 			}
 		}
 	}
 
-	for {
-		<-backupChan
-		if err := local.saveToDisk(filenameLocal); err != nil {
-			log.Println(err)
+	go func() {
+		for {
+			<-backupChan
+			if err := local.saveToDisk(filenameLocal); err != nil {
+				log.Println(err)
+			}
+			if err := remote.saveToDisk(filenameRemote); err != nil {
+				log.Println(err)
+			}
 		}
-		if err := remote.saveToDisk(filenameRemote); err != nil {
-			log.Println(err)
-		}
-	}
+	}()
 }
 
 // saveToDisk saves a queue to disk.

@@ -12,7 +12,7 @@ import (
 func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int) int {
 	q := local.deepCopy()
 
-	q.setOrder(targetFloor, def.ButtonIn, orderStatus{true, "", nil})
+	q.setOrder(targetFloor, def.ButtonCommand, orderStatus{true, "", nil})
 
 	cost := 0
 	floor := prevFloor
@@ -37,7 +37,7 @@ func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int)
 			fmt.Printf("(S)")
 			q.setOrder(floor, def.ButtonUp, blankOrder)
 			q.setOrder(floor, def.ButtonDown, blankOrder)
-			q.setOrder(floor, def.ButtonIn, blankOrder)
+			q.setOrder(floor, def.ButtonCommand, blankOrder)
 		}
 		dir = q.chooseDirection(floor, dir)
 		floor, dir = incrementFloor(floor, dir)

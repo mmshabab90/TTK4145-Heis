@@ -32,34 +32,22 @@ var newOrder = make(chan bool)
 func Init(newOrderChan chan bool) {
 	newOrder = newOrderChan
 	go updateLocalQueue()
-	go runBackup()
-	log.Println("Queue initialized.")
-}
-
-// IsLocalOrder returns whether there in an order with the given floor and
-// button in the local queue.
-func IsLocalOrder(floor, button int) bool {
-	return local.isOrder(floor, button)
-}
-
-// IsRemoteOrder returns true if there is a order with the given floor and
-// button in the remote queue.
-func IsRemoteOrder(floor, button int) bool {
-	return remote.isOrder(floor, button)
+	runBackup()
+	log.Println("Queue initialized")
 }
 
 // AddLocalOrder adds an order to the local queue.
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, "", nil})
 
-	newOrder <- true
+	newOrder <- true 
 }
 
 // AddRemoteOrder adds an order to the remote queue.
 func AddRemoteOrder(floor, button int, addr string) {
-	alreadyExist := remote.isOrder(floor, button)
+	alreadyExist := IsRemoteOrder(floor, button) 
 	remote.setOrder(floor, button, orderStatus{true, addr, nil})
-	if !alreadyExist {
+	if !alreadyExist{
 		go remote.startTimer(floor, button)
 		fmt.Printf("\n--------------------\n")
 		fmt.Println("New order timer made")
@@ -103,6 +91,18 @@ func ChooseDirection(floor, dir int) int {
 	return local.chooseDirection(floor, dir)
 }
 
+// IsLocalOrder returns whether there in an order with the given floor and
+// button in the local queue.
+func IsLocalOrder(floor, button int) bool { // is this needed?
+	return local.isActiveOrder(floor, button)
+}
+
+// IsRemoteOrder returns true if there is a order with the given floor and
+// button in the remote queue.
+func IsRemoteOrder(floor, button int) bool { //is this needed?
+	return remote.isActiveOrder(floor, button)
+}
+
 // ReassignOrders finds all orders assigned to a dead lift, removes them from
 // the remote queue, and sends them on the network as new, unassigned orders.
 func ReassignOrders(deadAddr string) {
@@ -110,10 +110,10 @@ func ReassignOrders(deadAddr string) {
 		for b := 0; b < def.NumButtons; b++ {
 			if remote.Q[f][b].Addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
-				def.OutgoingMsg <- def.Message{
-					Description: def.NewOrder,
-					Floor:       f,
-					Button:      b}
+				def.MessageChan <- def.Message{
+					Kind:   def.NewOrder,
+					Floor:  f,
+					Button: b}
 			}
 		}
 	}
@@ -122,8 +122,8 @@ func ReassignOrders(deadAddr string) {
 // SendOrderCompleteMessage communicates to the network that this lift has
 // taken care of orders at the given floor.
 func SendOrderCompleteMessage(floor int) {
-	orderComplete := def.Message{Description: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
-	def.OutgoingMsg <- orderComplete
+	orderComplete := def.Message{Kind: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
+	def.MessageChan <- orderComplete
 }
 
 // Print prints local and remote queue to screen in a somewhat legible
@@ -133,28 +133,28 @@ func Print() {
 	for f := def.NumFloors - 1; f >= 0; f-- {
 		lifts := "   "
 
-		if local.isOrder(f, def.ButtonUp) {
+		if local.isActiveOrder(f, def.ButtonUp) {
 			fmt.Printf("↑")
 		} else {
 			fmt.Printf(" ")
 		}
-		if local.isOrder(f, def.ButtonIn) {
+		if local.isActiveOrder(f, def.ButtonCommand) {
 			fmt.Printf("×")
 		} else {
 			fmt.Printf(" ")
 		}
-		if local.isOrder(f, def.ButtonDown) {
+		if local.isActiveOrder(f, def.ButtonDown) {
 			fmt.Printf("↓   %d  ", f+1)
 		} else {
 			fmt.Printf("    %d  ", f+1)
 		}
-		if remote.isOrder(f, def.ButtonUp) {
+		if remote.isActiveOrder(f, def.ButtonUp) {
 			fmt.Printf("↑")
 			lifts += "(↑ " + remote.Q[f][def.ButtonUp].Addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
-		if remote.isOrder(f, def.ButtonDown) {
+		if remote.isActiveOrder(f, def.ButtonDown) {
 			fmt.Printf("↓")
 			lifts += "(↓ " + remote.Q[f][def.ButtonDown].Addr[12:15] + ")"
 		} else {
@@ -194,13 +194,14 @@ func updateLocalQueue() {
 		<-updateLocal
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
-				if remote.isOrder(f, b) {
-					if b != def.ButtonIn && remote.Q[f][b].Addr == def.Laddr {
+				if remote.isActiveOrder(f, b) {
+					if b != def.ButtonCommand && remote.Q[f][b].Addr == def.Laddr.String() {
 						local.setOrder(f, b, orderStatus{true, "", nil})
 						newOrder <- true
 					}
 				}
 			}
 		}
+		time.Sleep(time.Millisecond)
 	}
 }

@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
+	"os/exec"
 	"time"
 )
 
@@ -59,6 +59,8 @@ func main() {
 	liftAssigner(e.NewOrder)
 	go poll(e)
 	queue.Init(e.NewOrder)
+	
+	
 
 	for { //nicer solution?
 		time.Sleep(100 * time.Second)
@@ -73,13 +75,13 @@ func poll(e fsm.EventChannels) {
 		select {
 		case keypress := <-buttonChan:
 			switch keypress.Button {
-			case def.ButtonIn:
+			case def.ButtonCommand:
 				queue.AddLocalOrder(keypress.Floor, keypress.Button)
 			case def.ButtonUp, def.ButtonDown:
-				def.OutgoingMsg <- def.Message{
-					Description: def.NewOrder,
-					Floor:       keypress.Floor,
-					Button:      keypress.Button}
+				def.MessageChan <- def.Message{
+					Kind:   def.NewOrder,
+					Floor:  keypress.Floor,
+					Button: keypress.Button}
 			}
 		case floor := <-floorChan:
 			e.FloorReached <- floor
@@ -87,10 +89,10 @@ func poll(e fsm.EventChannels) {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
-		case order := <-queue.OrderTimeoutChan:
+		case order:= <-queue.OrderTimeoutChan:
 			fmt.Println("order in queue timed out, takes it myself")
 			queue.RemoveRemoteOrdersAt(order.Floor)
-			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr)
+			queue.AddRemoteOrder(order.Floor, order.Button , def.Laddr.String())			
 		}
 	}
 }
@@ -149,7 +151,7 @@ func handleMessage(message def.Message) {
 
 	//network.PrintMessage(message)
 
-	switch message.Description {
+	switch message.Kind {
 	case def.Alive:
 		if connection, exist := onlineLifts[message.Addr]; exist {
 			connection.Timer.Reset(def.OnlineLiftResetTime)
@@ -171,12 +173,12 @@ func handleMessage(message def.Message) {
 		cost := queue.CalculateCost(message.Floor, message.Button, fsm.Floor(), hw.Floor(), fsm.Direction())
 
 		costMessage := def.Message{
-			Description: def.Cost,
-			Floor:       message.Floor,
-			Button:      message.Button,
-			Cost:        cost}
+			Kind:   def.Cost,
+			Floor:  message.Floor,
+			Button: message.Button,
+			Cost:   cost}
 		//fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Floor+1, costMessage.Button, costMessage.Cost)
-		def.OutgoingMsg <- costMessage
+		def.MessageChan <- costMessage
 	case def.CompleteOrder:
 		fmt.Println("handleMessage(): CompleteOrder message")
 		// remove from queues
@@ -271,16 +273,15 @@ func getReply(m def.Message) reply {
 // shared queue.
 // This is very cryptic and ungood.
 func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
-	const maxInt = int(^uint(0) >> 1)
 	// Loop thru all lists
 	fmt.Printf("Lists: ")
 	fmt.Println(*que)
 	for key, replyList := range *que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) || key.timeout {
-			fmt.Printf("Laddr = %s\n", def.Laddr)
+			fmt.Printf("Laddr = %v\n", def.Laddr)
 			var (
-				lowCost = maxInt
+				lowCost = def.MaxInt
 				lowAddr string
 			)
 			// Loop thru costs in each complete list
@@ -301,7 +302,7 @@ func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
 			// Assign order key to lift
 			queue.AddRemoteOrder(key.floor, key.button, lowAddr)
 			//queue.PrintQueues()
-
+			
 			// Empty list and stop timer
 			key.timer.Stop()
 			delete(*que, key)
@@ -338,26 +339,4 @@ func (o *order) isSameOrder(other order) bool {
 
 func (o *order) setTimeout(b bool) {
 	o.timeout = b
-}
-
-func syncLights() {
-	for {
-		<-def.SyncLightsChan
-
-		for f := 0; f < def.NumFloors; f++ {
-			for b := 0; b < def.NumButtons; b++ {
-				if (b == def.ButtonUp && f == def.NumFloors-1) ||
-					(b == def.ButtonDown && f == 0) {
-					continue
-				} else {
-					switch b {
-					case def.ButtonIn:
-						hw.SetButtonLamp(f, b, queue.IsLocalOrder(f, b))
-					case def.ButtonUp, def.ButtonDown:
-						hw.SetButtonLamp(f, b, queue.IsRemoteOrder(f, b))
-					}
-				}
-			}
-		}
-	}
 }
