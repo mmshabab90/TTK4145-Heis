@@ -91,13 +91,13 @@ func ChooseDirection(floor, dir int) int {
 // IsLocalOrder returns whether there in an order with the given floor and
 // button in the local queue.
 func IsLocalOrder(floor, button int) bool { // is this needed?
-	return local.isActiveOrder(floor, button)
+	return local.isOrder(floor, button)
 }
 
 // IsRemoteOrder returns true if there is a order with the given floor and
 // button in the remote queue.
 func IsRemoteOrder(floor, button int) bool { //is this needed?
-	return remote.isActiveOrder(floor, button)
+	return remote.isOrder(floor, button)
 }
 
 // ReassignOrders finds all orders assigned to a dead lift, removes them from
@@ -131,31 +131,31 @@ func Print() {
 	for f := def.NumFloors - 1; f >= 0; f-- {
 
 		s1 := ""
-		if local.isActiveOrder(f, def.BtnUp) {
+		if local.isOrder(f, def.BtnUp) {
 			s1 += "↑"
 		} else {
 			s1 += " "
 		}
-		if local.isActiveOrder(f, def.BtnInside) {
+		if local.isOrder(f, def.BtnInside) {
 			s1 += "×"
 		} else {
 			s1 += " "
 		}
 		fmt.Printf(s1)
-		if local.isActiveOrder(f, def.BtnDown) {
+		if local.isOrder(f, def.BtnDown) {
 			fmt.Printf("↓   %d  ", f+1)
 		} else {
 			fmt.Printf("    %d  ", f+1)
 		}
 
 		s2 := "   "
-		if remote.isActiveOrder(f, def.BtnUp) {
+		if remote.isOrder(f, def.BtnUp) {
 			fmt.Printf("↑")
 			s2 += "(↑ " + remote.Q[f][def.BtnUp].Addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
-		if remote.isActiveOrder(f, def.BtnDown) {
+		if remote.isOrder(f, def.BtnDown) {
 			fmt.Printf("↓")
 			s2 += "(↓ " + remote.Q[f][def.BtnDown].Addr[12:15] + ")"
 		} else {
@@ -199,7 +199,7 @@ func updateLocalQueue() {
 		<-updateLocal
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
-				if remote.isActiveOrder(f, b) {
+				if remote.isOrder(f, b) {
 					if b != def.BtnInside && remote.Q[f][b].Addr == def.Laddr {
 						local.setOrder(f, b, orderStatus{true, "", nil})
 						newOrder <- true
@@ -207,6 +207,5 @@ func updateLocalQueue() {
 				}
 			}
 		}
-		time.Sleep(time.Millisecond)
 	}
 }
