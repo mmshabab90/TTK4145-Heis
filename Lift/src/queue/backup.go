@@ -21,7 +21,7 @@ func runBackup() {
 	if !backup.isEmpty() {
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
-				if backup.isActiveOrder(f, b) {
+				if backup.isOrder(f, b) {
 					if b == def.BtnInside {
 						AddLocalOrder(f, b)
 					} else {
