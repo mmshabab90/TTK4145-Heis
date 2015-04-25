@@ -14,8 +14,6 @@ import (
 	"time"
 )
 
-const debugPrint = false
-
 var _ = log.Println
 var _ = fmt.Println
 var _ = errors.New
@@ -49,9 +47,9 @@ func main() {
 	e := fsm.Channels{
 		NewOrder:     make(chan bool),
 		FloorReached: make(chan int),
-		MotorDir:     make(chan int),
-		FloorLamp:    make(chan int),
-		DoorLamp:     make(chan bool),
+		MotorDir:     make(chan int, 10),
+		FloorLamp:    make(chan int, 10),
+		DoorLamp:     make(chan bool, 10),
 	}
 	fsm.Init(e, floor)
 
@@ -92,7 +90,7 @@ func poll(e fsm.Channels) {
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
 		case order := <-queue.OrderTimeoutChan:
-			fmt.Println("order in queue timed out, takes it myself")
+			fmt.Println("Order timeout, I can do it myself!")
 			queue.RemoveRemoteOrdersAt(order.Floor)
 			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr)
 		case dir := <-e.MotorDir:
@@ -162,20 +160,14 @@ func handleMessage(message def.Message) {
 	case def.Alive:
 		if connection, exist := onlineLifts[message.Addr]; exist {
 			connection.Timer.Reset(aliveTimeout)
-			if debugPrint {
-				fmt.Printf("Timer reset for IP %s\n", message.Addr)
-			}
 		} else {
 			newConnection := network.UdpConnection{message.Addr, time.NewTimer(aliveTimeout)}
 			onlineLifts[message.Addr] = newConnection
-			if debugPrint {
-				fmt.Printf("New connection with IP %s\n", message.Addr)
-			}
 			go connectionTimer(&newConnection)
 		}
 	case def.NewOrder:
-		fmt.Printf("handleMessage(): NewOrder message: f=%d b=%d from lift %s\n",
-			message.Floor+1, message.Button, message.Addr[12:15])
+		// log.Printf("handleMessage(): NewOrder message: f=%d b=%d from lift %s\n",
+		//	message.Floor+1, message.Button, message.Addr[12:15])
 
 		cost := queue.CalculateCost(message.Floor, message.Button, fsm.Floor(), hw.Floor(), fsm.Direction())
 
@@ -184,16 +176,12 @@ func handleMessage(message def.Message) {
 			Floor:    message.Floor,
 			Button:   message.Button,
 			Cost:     cost}
-		//fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Floor+1, costMessage.Button, costMessage.Cost)
+		// log.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Floor+1, costMessage.Button, costMessage.Cost)
 		def.OutgoingMsg <- costMessage
 	case def.CompleteOrder:
-		fmt.Println("handleMessage(): CompleteOrder message")
-		// remove from queues
 		queue.RemoveRemoteOrdersAt(message.Floor)
-
-		// prob more to do here
 	case def.Cost:
-		fmt.Printf("handleMessage(): Cost message: f=%d b=%d with cost %d from lift %s\n", message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
+		// log.Printf("handleMessage(): Cost message: f=%d b=%d with cost %d from lift %s\n", message.Floor+1, message.Button, message.Cost, message.Addr[12:15])
 		costChan <- message
 	}
 }
@@ -289,7 +277,6 @@ func evaluateLists(que *(map[order][]reply)) {
 	for order, replyList := range *que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) || order.timeout {
-			fmt.Printf("Laddr = %s\n", def.Laddr)
 			var (
 				lowCost = maxInt
 				lowAddr string
