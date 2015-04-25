@@ -39,56 +39,58 @@ type Channels struct {
 	DoorLamp  chan bool
 	// Door timer
 	doorTimerReset chan bool
+	// Network interaction
+	OutgoingMsg chan def.Message
 }
 
-func Init(c Channels, startFloor int, outgoingMsg chan def.Message) {
+func Init(ch Channels, startFloor int) {
 	state = idle
 	dir = def.DirStop
 	floor = startFloor
 
-	c.doorTimeout = make(chan bool)
-	c.doorTimerReset = make(chan bool)
+	ch.doorTimeout = make(chan bool)
+	ch.doorTimerReset = make(chan bool)
 
-	go doorTimer(c.doorTimeout, c.doorTimerReset)
-	go run(c, outgoingMsg)
+	go doorTimer(ch.doorTimeout, ch.doorTimerReset)
+	go run(ch)
 
 	log.Println(def.ColG, "FSM initialised.", def.ColN)
 }
 
-func run(c Channels, outgoingMsg chan def.Message) {
+func run(ch Channels) {
 	for {
 		select {
-		case <-c.NewOrder:
-			eventNewOrder(c, outgoingMsg)
-		case f := <-c.FloorReached:
-			eventFloorReached(c, f, outgoingMsg)
-		case <-c.doorTimeout:
-			eventDoorTimeout(c)
+		case <-ch.NewOrder:
+			eventNewOrder(ch)
+		case floor := <-ch.FloorReached:
+			eventFloorReached(ch, floor)
+		case <-ch.doorTimeout:
+			eventDoorTimeout(ch)
 		}
 	}
 }
 
-func eventNewOrder(e Channels, outgoingMsg chan def.Message) {
+func eventNewOrder(ch Channels) {
 	log.Printf("%sEVENT: New order in state %v.%s", def.ColY, stateString(state), def.ColN)
 	switch state {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
 		if queue.ShouldStop(floor, dir) {
-			e.DoorLamp <- true
-			queue.RemoveOrdersAt(floor, outgoingMsg)
+			ch.DoorLamp <- true
+			queue.RemoveOrdersAt(floor, ch.OutgoingMsg)
 
-			e.doorTimerReset <- true
+			ch.doorTimerReset <- true
 			state = doorOpen
 		} else {
-			e.MotorDir <- dir
+			ch.MotorDir <- dir
 			state = moving
 		}
 	case moving:
 		// Ignore.
 	case doorOpen:
 		if queue.ShouldStop(floor, dir) {
-			queue.RemoveOrdersAt(floor, outgoingMsg)
-			e.doorTimerReset <- true
+			queue.RemoveOrdersAt(floor, ch.OutgoingMsg)
+			ch.doorTimerReset <- true
 		}
 	default:
 		def.CloseConnectionChan <- true
@@ -97,20 +99,20 @@ func eventNewOrder(e Channels, outgoingMsg chan def.Message) {
 	}
 }
 
-func eventFloorReached(e Channels, newFloor int, outgoingMsg chan def.Message) {
+func eventFloorReached(ch Channels, newFloor int) {
 	log.Printf("%sEVENT: Floor %d reached in state %s.%s", def.ColY, newFloor+1, stateString(state), def.ColN)
 	// queue.Print()
 	floor = newFloor
-	e.FloorLamp <- floor
+	ch.FloorLamp <- floor
 	switch state {
 	case moving:
 		if queue.ShouldStop(floor, dir) {
 			dir = def.DirStop
-			e.MotorDir <- dir
-			e.DoorLamp <- true
-			queue.RemoveOrdersAt(floor, outgoingMsg)
+			ch.MotorDir <- dir
+			ch.DoorLamp <- true
+			queue.RemoveOrdersAt(floor, ch.OutgoingMsg)
 
-			e.doorTimerReset <- true
+			ch.doorTimerReset <- true
 			state = doorOpen
 		}
 	default:
@@ -120,14 +122,14 @@ func eventFloorReached(e Channels, newFloor int, outgoingMsg chan def.Message) {
 	}
 }
 
-func eventDoorTimeout(e Channels) {
+func eventDoorTimeout(ch Channels) {
 	log.Printf("%sEVENT: Door timeout in state %s.%s", def.ColY, stateString(state), def.ColN)
 	// queue.Print()
 	switch state {
 	case doorOpen:
 		dir = queue.ChooseDirection(floor, dir)
-		e.DoorLamp <- false
-		e.MotorDir <- dir
+		ch.DoorLamp <- false
+		ch.MotorDir <- dir
 		if dir == def.DirStop {
 			state = idle
 		} else {

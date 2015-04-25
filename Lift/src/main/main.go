@@ -42,8 +42,9 @@ func main() {
 		MotorDir:     make(chan int, 10),
 		FloorLamp:    make(chan int, 10),
 		DoorLamp:     make(chan bool, 10),
+		OutgoingMsg:  outgoingMsg,
 	}
-	fsm.Init(e, floor, outgoingMsg)
+	fsm.Init(e, floor)
 
 	network.Init(outgoingMsg, incomingMsg)
 
