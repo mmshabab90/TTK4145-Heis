@@ -24,7 +24,7 @@ func UdpInit(localListenPort, broadcastListenPort, message_size int, send_ch, re
 	tempConn, err := net.DialUDP("udp4", nil, baddr)
 	defer tempConn.Close()
 	tempAddr := tempConn.LocalAddr()
-	laddr, err = net.ResolveUDPAddr("udp4", tempAddr.String())
+	laddr, err := net.ResolveUDPAddr("udp4", tempAddr.String())
 	laddr.Port = localListenPort
 	def.Laddr = laddr.String()
 
