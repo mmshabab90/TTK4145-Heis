@@ -8,10 +8,7 @@ import (
 )
 
 func (q *queue) startTimer(floor, button int) {
-	const orderTimeout = 10 * time.Second
-	if orderTimeout != 30*time.Second {
-		log.Println("Remember to change order timeout to 30 seconds")
-	}
+	const orderTimeout = 30 * time.Second
 
 	q.Q[floor][button].Timer = time.NewTimer(orderTimeout)
 	<-q.Q[floor][button].Timer.C
