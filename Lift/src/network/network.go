@@ -11,7 +11,7 @@ import (
 var receiveChan = make(chan udpMessage, 10)
 var sendChan = make(chan udpMessage)
 
-func Init(outgoingMsg, ingoingMsg chan Message) {
+func Init(outgoingMsg, incomingMsg chan Message) {
 	// Ports randomly chosen to reduce likelihood of port collision.
 	const localListenPort = 37103
 	const broadcastListenPort = 37104
@@ -25,7 +25,7 @@ func Init(outgoingMsg, ingoingMsg chan Message) {
 
 	go aliveSpammer()
 	go forwardOutgoing(outgoingMsg)
-	go forwardIngoing(ingoingMsg)
+	go forwardIngoing(incomingMsg)
 
 	log.Println(def.ClrG, "Network initialised.", def.ClrN)
 }
@@ -57,7 +57,7 @@ func forwardOutgoing(outgoingMsg chan def.Message) { //todo: change name to poll
 	}
 }
 
-func forwardIngoing(ingoingMsg chan def.Message)
+func forwardIngoing(incomingMsg chan def.Message)
 	message := <- receiveChan
 	
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
@@ -66,7 +66,7 @@ func forwardIngoing(ingoingMsg chan def.Message)
 
 	message.Addr = udpMessage.raddr
 
-	ingoingMsg <- message
+	incomingMsg <- message
 }
 
 	
