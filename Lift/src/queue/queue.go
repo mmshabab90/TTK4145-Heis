@@ -110,7 +110,7 @@ func ReassignOrders(deadAddr string) {
 		for b := 0; b < def.NumButtons; b++ {
 			if remote.Q[f][b].Addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
-				def.MessageChan <- def.Message{
+				def.OutgoingMsg <- def.Message{
 					Category: def.NewOrder,
 					Floor:    f,
 					Button:   b}
@@ -123,7 +123,7 @@ func ReassignOrders(deadAddr string) {
 // taken care of orders at the given floor.
 func SendOrderCompleteMessage(floor int) {
 	orderComplete := def.Message{Category: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
-	def.MessageChan <- orderComplete
+	def.OutgoingMsg <- orderComplete
 }
 
 // Print prints local and remote queue to screen in a somewhat legible

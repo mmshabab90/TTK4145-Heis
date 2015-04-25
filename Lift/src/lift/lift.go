@@ -77,7 +77,7 @@ func poll(e fsm.EventChannels) {
 			case def.BtnInside:
 				queue.AddLocalOrder(keypress.Floor, keypress.Button)
 			case def.BtnUp, def.BtnDown:
-				def.MessageChan <- def.Message{
+				def.OutgoingMsg <- def.Message{
 					Category: def.NewOrder,
 					Floor:    keypress.Floor,
 					Button:   keypress.Button}
@@ -176,7 +176,7 @@ func handleMessage(message def.Message) {
 			Button:   message.Button,
 			Cost:     cost}
 		//fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Floor+1, costMessage.Button, costMessage.Cost)
-		def.MessageChan <- costMessage
+		def.OutgoingMsg <- costMessage
 	case def.CompleteOrder:
 		fmt.Println("handleMessage(): CompleteOrder message")
 		// remove from queues

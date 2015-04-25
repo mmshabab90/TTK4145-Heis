@@ -20,6 +20,9 @@ const (
 	DirUp
 )
 
+// Local IP address
+var Laddr string
+
 //constants setting the time the elevators wait before, the cost and the order times out
 const OrderTime = 10 * time.Second // todo: name? //set this to 30 Seconds after done debuging
 const CostTime = 10 * time.Second  // todo rename
@@ -46,8 +49,5 @@ type Message struct {
 	Addr     string `json:"-"`
 }
 
-var MessageChan = make(chan Message) // vurder buff //todo: rename outgoing/outbox (and move?)
+var OutgoingMsg = make(chan Message) // vurder buff //todo: rename outgoing/outbox (and move?)
 var SyncLightsChan = make(chan bool) // todo move!
-
-// Local IP address
-var Laddr string

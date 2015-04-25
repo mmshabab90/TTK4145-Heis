@@ -34,7 +34,7 @@ func runBackup() {
 					if b == def.BtnInside {
 						AddLocalOrder(f, b)
 					} else {
-						def.MessageChan <- def.Message{
+						def.OutgoingMsg <- def.Message{
 							Category: def.NewOrder,
 							Floor:    f,
 							Button:   b}

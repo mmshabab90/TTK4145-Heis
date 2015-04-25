@@ -24,13 +24,13 @@ func Init() {
 	}
 
 	go aliveSpammer()
-	go pollMessages()
+	go forwardOutgoing()
 	log.Println("Network initialized")
 }
 
-func pollMessages() { //todo: change name to pollOutgoing or something
+func forwardOutgoing() { //todo: change name to pollOutgoing or something
 	for {
-		msg := <-def.MessageChan
+		msg := <-def.OutgoingMsg
 		//PrintMessage(msg)
 
 		var i int
@@ -90,7 +90,7 @@ func aliveSpammer() {
 	const spamInterval = 400 * time.Millisecond
 	alive := def.Message{Category: def.Alive, Floor: -1, Button: -1, Cost: -1}
 	for {
-		def.MessageChan <- alive
+		def.OutgoingMsg <- alive
 		time.Sleep(spamInterval)
 	}
 }
