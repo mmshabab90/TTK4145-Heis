@@ -3,6 +3,5 @@ digraph G {
 	main -> hw;
 	main -> network;
 	main -> queue;
-	fsm -> hw;
 	fsm -> queue;
 }
