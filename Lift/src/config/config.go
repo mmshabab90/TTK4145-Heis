@@ -43,3 +43,7 @@ type Message struct {
 
 var OutgoingMsg = make(chan Message, 10) // vurder buff //todo: rename outgoing/outbox (and move?)
 var SyncLightsChan = make(chan bool)     // todo move!
+var CloseConnectionChan = make(chan bool)
+
+//Start a new terminal when restart.Run()
+var Restart = exec.Command("gnome-terminal", "-x", "sh", "-c", "lift")

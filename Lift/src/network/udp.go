@@ -43,6 +43,7 @@ func udpInit(localListenPort, broadcastListenPort, message_size int, send_ch, re
 
 	go udp_receive_server(localListenConn, broadcastListenConn, message_size, receive_ch)
 	go udp_transmit_server(localListenConn, broadcastListenConn, send_ch)
+	go udp_connection_closer(localListenConn, broadcastListenConn)
 
 	//	fmt.Printf("Generating local address: \t Network(): %s \t String(): %s \n", laddr.Network(), laddr.String())
 	//	fmt.Printf("Generating broadcast address: \t Network(): %s \t String(): %s \n", baddr.Network(), baddr.String())
@@ -139,4 +140,10 @@ func udp_connection_reader(conn *net.UDPConn, message_size int, rcv_ch chan udpM
 		}
 		rcv_ch <- udpMessage{raddr: raddr.String(), data: buf, length: n}
 	}
+}
+
+func udp_connection_closer(lconn, bconn *net.UDPConn) {
+	<- def.CloseConnectionChan
+	lconn.Close()
+	bconn.Close()
 }
