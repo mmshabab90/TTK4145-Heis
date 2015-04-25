@@ -2,6 +2,7 @@ package queue
 
 import (
 	def "config"
+	"log"
 )
 
 // CalculateCost returns how much effort it is for this lift to carry out

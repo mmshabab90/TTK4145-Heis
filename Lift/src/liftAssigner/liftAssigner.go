@@ -4,7 +4,6 @@ package liftAssigner
 
 import (
 	def "config"
-	"fmt"
 	"log"
 	"queue"
 	"time"
@@ -103,8 +102,6 @@ func chooseBestLift(que *(map[order][]reply), numberOfOnlineLifts *int, orderTim
 					}
 				}
 			}
-			// Print winner:
-			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], order.floor+1, order.button)
 
 			// Assign order to lift
 			queue.AddRemoteOrder(order.floor, order.button, lowAddr)
@@ -119,16 +116,6 @@ func chooseBestLift(que *(map[order][]reply), numberOfOnlineLifts *int, orderTim
 func costTimer(newOrder *order, timeout chan *order) {
 	<-newOrder.timer.C
 	timeout <- newOrder
-}
-
-// --------------- METHODS FOR ORDER TYPE: ---------------
-
-func (o *order) isSameOrder(other order) bool {
-	if other.floor == o.floor && other.button == o.button {
-		return true
-	} else {
-		return false
-	}
 }
 
 func equal(o1, o2 order) bool {
