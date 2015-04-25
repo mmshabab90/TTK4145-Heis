@@ -162,33 +162,6 @@ func Print() {
 	fmt.Printf(def.ColN)
 }
 
-func incrementFloor(floor, dir int) (int, int) {
-	// fmt.Printf("(incr:f%v d%v)", floor, dir)
-	switch dir {
-	case def.DirDown:
-		floor--
-	case def.DirUp:
-		floor++
-	case def.DirStop:
-		// fmt.Println("incrementFloor(): direction stop, not incremented (this is okay)")
-	default:
-		//komenter inn dette når vi vil kjøre restarts
-		def.CloseConnectionChan <- true
-		def.Restart.Run()
-		log.Fatalln("incrementFloor(): invalid direction, not incremented")
-	}
-
-	if floor <= 0 && dir == def.DirDown {
-		dir = def.DirUp
-		floor = 0
-	}
-	if floor >= def.NumFloors-1 && dir == def.DirUp {
-		dir = def.DirDown
-		floor = def.NumFloors - 1
-	}
-	return floor, dir
-}
-
 func updateLocalQueue() {
 	for {
 		<-updateLocal
