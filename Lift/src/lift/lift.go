@@ -48,7 +48,11 @@ func main() {
 
 	e := fsm.Channels{
 		NewOrder:     make(chan bool),
-		FloorReached: make(chan int)}
+		FloorReached: make(chan int),
+		MotorDir:     make(chan int),
+		FloorLamp:    make(chan int),
+		DoorLamp:     make(chan bool),
+	}
 	fsm.Init(e, floor)
 
 	network.Init()
@@ -91,6 +95,12 @@ func poll(e fsm.Channels) {
 			fmt.Println("order in queue timed out, takes it myself")
 			queue.RemoveRemoteOrdersAt(order.Floor)
 			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr)
+		case dir := <-e.MotorDir:
+			hw.SetMotorDirection(dir)
+		case floor := <-e.FloorLamp:
+			hw.SetFloorLamp(floor)
+		case value := <-e.DoorLamp:
+			hw.SetDoorOpenLamp(value)
 		}
 	}
 }

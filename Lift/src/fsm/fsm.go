@@ -129,7 +129,9 @@ func eventDoorTimeout(e Channels) {
 	case doorOpen:
 		dir = queue.ChooseDirection(floor, dir)
 		hw.SetDoorOpenLamp(false)
+		// e.DoorLamp <- true
 		hw.SetMotorDirection(dir)
+		// e.MotorDir <- dir
 		if dir == def.DirStop {
 			state = idle
 		} else {

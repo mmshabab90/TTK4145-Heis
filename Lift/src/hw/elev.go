@@ -24,10 +24,10 @@ var buttonChannelMatrix = [def.NumFloors][def.NumButtons]int{
 	{BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 }
 
-func Init() error {
+func Init() (int, error) {
 	// Init hardware
 	if !ioInit() {
-		return errors.New("Hardware driver: ioInit() failed!")
+		return -1, errors.New("Hardware driver: ioInit() failed!")
 	}
 
 	// Zero all floor button lamps
@@ -44,9 +44,16 @@ func Init() error {
 	SetStopLamp(false)
 	SetDoorOpenLamp(false)
 
-	MoveToDefinedState()
+	// Move to defined state
+	SetMotorDirection(def.DirDown)
+	floor := Floor()
+	for floor == -1 {
+		floor = Floor()
+	}
+	SetMotorDirection(def.DirStop)
+	SetFloorLamp(floor)
 
-	return nil
+	return floor, nil
 }
 
 func SetMotorDirection(dirn int) {
@@ -154,17 +161,6 @@ func SetButtonLamp(floor int, button int, value bool) {
 	} else {
 		ioClearBit(lampChannelMatrix[floor][button])
 	}
-}
-
-func MoveToDefinedState() int {
-	SetMotorDirection(def.DirDown)
-	floor := Floor()
-	for floor == -1 {
-		floor = Floor()
-	}
-	SetMotorDirection(def.DirStop)
-	SetFloorLamp(floor)
-	return floor
 }
 
 // Not used:
