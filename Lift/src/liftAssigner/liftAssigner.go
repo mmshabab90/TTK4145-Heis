@@ -1,10 +1,10 @@
 package liftAssigner
 
-import(
+import (
+	def "config"
+	"fmt"
 	"queue"
 	"time"
-	"fmt"
-	def "config"
 )
 
 var costTimeoutChan = make(chan order)
@@ -17,69 +17,65 @@ type order struct { //bad name?
 	floor   int
 	button  int
 	timeout bool
-	timer   *time.Timer 	
+	timer   *time.Timer
 }
 
 // Run collect cost values from all lifts
 // decide which lift gets the order when all lifts
 // in alive-list have answered or after a timeout
-func Run(costChan chan def.Message, numberOfOnlineLifts *int) {	
-	go func() {
-		assignmentQueue := make(map[order][]reply)
-		const costReplyTimeout = 10 * time.Second
-		var newOrder order
-		for {
-			select {
-			case message := <-costChan:
-				newOrder.makeNewOrder(message)
-				newReply := getReply(message)
+func Run(costChan chan def.Message, numberOfOnlineLifts *int) {
+	assignmentQueue := make(map[order][]reply)
+	const costReplyTimeout = 10 * time.Second
+	var newOrder order
+	for {
+		select {
+		case message := <-costChan:
+			newOrder.makeNewOrder(message)
+			newReply := getReply(message)
 
-				for oldOrder := range assignmentQueue { //todo: make this more goood?
-					if newOrder.isSameOrder(oldOrder) {
-						newOrder = oldOrder
-					}
+			for oldOrder := range assignmentQueue { //todo: make this more goood?
+				if newOrder.isSameOrder(oldOrder) {
+					newOrder = oldOrder
 				}
-				// Check if order in queue
-				if value, exist := assignmentQueue[newOrder]; exist {
-					// Check if lift in list of that order
-					found := false
-					for _, e := range value {
-						if e == newReply {
-							found = true
-						}
-					}
-					// Add it if not found
-					if !found {
-						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-						newOrder.timer.Reset(costReplyTimeout)
-					}
-				} else {
-					// If order not in queue at all, init order list with it
-					newOrder.timer = time.NewTimer(costReplyTimeout)
-					assignmentQueue[newOrder] = []reply{newReply}
-					go costTimer(&newOrder)
-				}
-				evaluateLists(&assignmentQueue, numberOfOnlineLifts)
-
-			case newOrder := <-costTimeoutChan:
-				fmt.Printf("\n COST TIMED OUT!\n\n")
-				newOrder.setTimeout(true)
-				evaluateLists(&assignmentQueue, numberOfOnlineLifts)
 			}
+			// Check if order in queue
+			if value, exist := assignmentQueue[newOrder]; exist {
+				// Check if lift in list of that order
+				found := false
+				for _, e := range value {
+					if e == newReply {
+						found = true
+					}
+				}
+				// Add it if not found
+				if !found {
+					assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
+					newOrder.timer.Reset(costReplyTimeout)
+				}
+			} else {
+				// If order not in queue at all, init order list with it
+				newOrder.timer = time.NewTimer(costReplyTimeout)
+				assignmentQueue[newOrder] = []reply{newReply}
+				go costTimer(&newOrder)
+			}
+			evaluateLists(&assignmentQueue, numberOfOnlineLifts)
+
+		case newOrder := <-costTimeoutChan:
+			fmt.Printf("\n COST TIMED OUT!\n\n")
+			newOrder.setTimeout(true)
+			evaluateLists(&assignmentQueue, numberOfOnlineLifts)
 		}
-	}()
+	}
 }
 
 // evaluateLists goes through the map of orders with associated costs,
-// checks if any orders have received answers from all live lifts or the 
-// timer has timed out, and finds the best candidate for all such orders. 
+// checks if any orders have received answers from all live lifts or the
+// timer has timed out, and finds the best candidate for all such orders.
 //The best candidate is added to the shared queue.
 // This is very cryptic and ungood. // todo don't admit this
 func evaluateLists(que *(map[order][]reply), numberOfOnlineLifts *int) {
 	const maxInt = int(^uint(0) >> 1)
 	// Loop through all lists
-	fmt.Printf("Lists: ")
-	fmt.Println(*que)
 	for order, replyList := range *que {
 		// Check if the list is complete
 		if len(replyList) == *numberOfOnlineLifts || order.timeout {

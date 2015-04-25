@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"fsm"
 	"hw"
+	"liftAssigner"
 	"log"
 	"network"
 	"os"
 	"os/signal"
 	"queue"
 	"time"
-	"liftAssigner"
 )
 
 var _ = log.Println
@@ -45,10 +45,10 @@ func main() {
 
 	network.Init()
 
-	//handle ctrl+c
-	safeKill() //bad name?
+	// Handle CTRL+C
+	go safeKill() //bad name?
 
-	liftAssigner.Run(costChan, &numberOfOnlineLifts)
+	go liftAssigner.Run(costChan, &numberOfOnlineLifts)
 	go poll(e)
 	queue.Init(e.NewOrder)
 
@@ -189,13 +189,11 @@ func connectionTimer(connection *network.UdpConnection) {
 	deadChan <- *connection
 }
 
-//safeKill gets the motor to stop when the program is killed with ctrl+c
+// safeKill stops the motor if the program is killed with CTRL+C.
 func safeKill() {
 	var c = make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
-	go func() {
-		<-c
-		hw.SetMotorDirection(def.DirStop)
-		log.Fatal("User terminated program")
-	}()
+	<-c
+	hw.SetMotorDirection(def.DirStop)
+	log.Fatal("User terminated program")
 }
