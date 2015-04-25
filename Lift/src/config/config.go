@@ -24,8 +24,7 @@ const (
 var Laddr string
 
 //constants setting the time the elevators wait before, the cost and the order times out
-const OrderTime = 10 * time.Second // todo: name? //set this to 30 Seconds after done debuging
-const CostTime = 10 * time.Second  // todo rename
+const CostTime = 10 * time.Second // todo rename
 
 //message kind constants
 const (

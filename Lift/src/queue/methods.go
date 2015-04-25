@@ -8,10 +8,14 @@ import (
 )
 
 func (q *queue) startTimer(floor, button int) {
-	//fmt.Println("run startTimer()")
-	q.Q[floor][button].Timer = time.NewTimer(def.OrderTime)
+	const orderTimeout = 10 * time.Second
+	if orderTimeout != 30*time.Second {
+		log.Println("Remember to change order timeout to 30 seconds")
+	}
+
+	q.Q[floor][button].Timer = time.NewTimer(orderTimeout)
 	<-q.Q[floor][button].Timer.C
-	OrderTimeoutChan <- def.Keypress{Button: button, Floor: floor} //bad abstraction?
+	OrderTimeoutChan <- def.Keypress{Button: button, Floor: floor} // todo: bad abstraction?
 }
 
 func (q *queue) stopTimer(floor, button int) {
