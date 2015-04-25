@@ -1,9 +1,5 @@
 package config
 
-import (
-	"time"
-)
-
 // Global system constants
 const NumButtons = 3
 const NumFloors = 4
