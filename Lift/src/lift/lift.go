@@ -268,20 +268,19 @@ func getReply(m def.Message) reply {
 // if any orders have received answers from all live lifts, and finds the
 // the best candidate for all such orders. The best candidate is added to the
 // shared queue.
-// This is very cryptic and ungood.
+// This is very cryptic and ungood. // todo don't admit this
 func evaluateLists(que *(map[order][]reply)) {
 	const maxInt = int(^uint(0) >> 1)
-	// Loop thru all lists
+	// Loop through all lists
 	fmt.Printf("Lists: ")
 	fmt.Println(*que)
 	for order, replyList := range *que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) || order.timeout {
-			var (
-				lowCost = maxInt
-				lowAddr string
-			)
-			// Loop thru costs in each complete list
+			var lowCost = maxInt
+			var lowAddr string
+
+			// Loop through costs in each complete list
 			for _, reply := range replyList {
 				if reply.cost < lowCost {
 					lowCost = reply.cost

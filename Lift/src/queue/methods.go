@@ -2,7 +2,6 @@ package queue
 
 import (
 	def "config"
-	"fmt"
 	"log"
 	"time"
 )
@@ -16,18 +15,8 @@ func (q *queue) startTimer(floor, button int) {
 }
 
 func (q *queue) stopTimer(floor, button int) {
-	//fmt.Println("run stopTimer()")
 	if q.Q[floor][button].Timer != nil {
-		removed := q.Q[floor][button].Timer.Stop()
-		if removed {
-			fmt.Printf("\n--------------------\n")
-			fmt.Println("Order timer removed")
-			fmt.Printf("--------------------\n\n")
-		} else {
-			fmt.Printf("\n--------------------\n")
-			fmt.Println("Error: Order timer not removed")
-			fmt.Printf("--------------------\n\n")
-		}
+		q.Q[floor][button].Timer.Stop()
 	}
 }
 
@@ -43,7 +32,7 @@ func (q *queue) isEmpty() bool {
 }
 
 func (q *queue) setOrder(floor, button int, status orderStatus) {
-	// Ignore if order to be set is equal to order already in queue:
+	// Ignore if order to be set is equal to order already in queue.
 	if q.isActiveOrder(floor, button) == status.Active {
 		return
 	}
