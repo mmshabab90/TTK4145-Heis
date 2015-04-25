@@ -33,7 +33,7 @@ func (q *queue) isEmpty() bool {
 
 func (q *queue) setOrder(floor, button int, status orderStatus) {
 	// Ignore if order to be set is equal to order already in queue.
-	if q.isActiveOrder(floor, button) == status.Active {
+	if q.isOrder(floor, button) == status.Active {
 		return
 	}
 
@@ -43,14 +43,14 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 	Print()
 }
 
-func (q *queue) isActiveOrder(floor, button int) bool { // todo: consider rename
+func (q *queue) isOrder(floor, button int) bool { // todo: consider rename
 	return q.Q[floor][button].Active
 }
 
 func (q *queue) isOrdersAbove(floor int) bool {
 	for f := floor + 1; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			if q.isActiveOrder(f, b) {
+			if q.isOrder(f, b) {
 				return true
 			}
 		}
@@ -61,7 +61,7 @@ func (q *queue) isOrdersAbove(floor int) bool {
 func (q *queue) isOrdersBelow(floor int) bool {
 	for f := 0; f < floor; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			if q.isActiveOrder(f, b) {
+			if q.isOrder(f, b) {
 				return true
 			}
 		}
@@ -106,19 +106,19 @@ func (q *queue) chooseDirection(floor, dir int) int {
 func (q *queue) shouldStop(floor, dir int) bool {
 	switch dir {
 	case def.DirDown:
-		return q.isActiveOrder(floor, def.BtnDown) ||
-			q.isActiveOrder(floor, def.BtnInside) ||
+		return q.isOrder(floor, def.BtnDown) ||
+			q.isOrder(floor, def.BtnInside) ||
 			floor == 0 ||
 			!q.isOrdersBelow(floor)
 	case def.DirUp:
-		return q.isActiveOrder(floor, def.BtnUp) ||
-			q.isActiveOrder(floor, def.BtnInside) ||
+		return q.isOrder(floor, def.BtnUp) ||
+			q.isOrder(floor, def.BtnInside) ||
 			floor == def.NumFloors-1 ||
 			!q.isOrdersAbove(floor)
 	case def.DirStop:
-		return q.isActiveOrder(floor, def.BtnDown) ||
-			q.isActiveOrder(floor, def.BtnUp) ||
-			q.isActiveOrder(floor, def.BtnInside)
+		return q.isOrder(floor, def.BtnDown) ||
+			q.isOrder(floor, def.BtnUp) ||
+			q.isOrder(floor, def.BtnInside)
 	default:
 		log.Printf("shouldStop() called with invalid direction %d!\n", dir)
 		return false
