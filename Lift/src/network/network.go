@@ -27,7 +27,7 @@ func Init(outgoingMsg, incomingMsg chan def.Message) {
 	go forwardOutgoing(outgoingMsg)
 	go forwardIncoming(incomingMsg)
 
-	log.Println(def.ClrG, "Network initialised.", def.ClrN)
+	log.Println(def.ColG, "Network initialised.", def.ColN)
 }
 
 // aliveSpammer  sends messages on the network to periodically notify

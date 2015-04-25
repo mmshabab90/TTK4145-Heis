@@ -64,7 +64,7 @@ func Run(costReply <-chan def.Message, numberOfOnlineLifts *int) {
 			chooseBestLift(&assignmentQueue, numberOfOnlineLifts, false)
 
 		case <-timeout:
-			log.Println(def.ClrR, "COST TIMED OUT!", def.ClrN)
+			log.Println(def.ColR, "COST TIMED OUT!", def.ColN)
 			chooseBestLift(&assignmentQueue, numberOfOnlineLifts, true)
 		}
 	}

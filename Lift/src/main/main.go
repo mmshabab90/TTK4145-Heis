@@ -84,7 +84,7 @@ func eventHandler(c fsm.Channels) {
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
 		case order := <-queue.OrderTimeoutChan:
-			log.Println(def.ClrR, "Order timeout, I can do it myself!", def.ClrN)
+			log.Println(def.ColR, "Order timeout, I can do it myself!", def.ColN)
 			queue.RemoveRemoteOrdersAt(order.Floor)
 			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr)
 		case dir := <-c.MotorDir:
@@ -158,7 +158,7 @@ func handleMessage(message def.Message) { // consider moving each case into a fu
 			onlineLifts[message.Addr] = newConnection
 			numberOfOnlineLifts = len(onlineLifts)
 			go connectionTimer(&newConnection)
-			log.Printf("%sConnection to IP %s established!%s", def.ClrG, message.Addr[0:15], def.ClrN)
+			log.Printf("%sConnection to IP %s established!%s", def.ColG, message.Addr[0:15], def.ColN)
 		}
 	case def.NewOrder:
 		// log.Printf("handleMessage(): NewOrder message: f=%d b=%d from lift %s\n",
@@ -184,7 +184,7 @@ func handleMessage(message def.Message) { // consider moving each case into a fu
 // handleDeadLift removes the lift that have timed out from the onlineLifts
 // and reassigns the dead lifts orders
 func handleDeadLift(deadAddr string) {
-	log.Printf("%sConnection to IP %s is dead!%s", def.ClrR, deadAddr[0:15], def.ClrN)
+	log.Printf("%sConnection to IP %s is dead!%s", def.ColR, deadAddr[0:15], def.ColN)
 	delete(onlineLifts, deadAddr)
 	numberOfOnlineLifts = len(onlineLifts)
 	queue.ReassignOrders(deadAddr, outgoingMsg)
@@ -202,7 +202,7 @@ func safeKill() {
 	signal.Notify(c, os.Interrupt)
 	<-c
 	hw.SetMotorDirection(def.DirStop)
-	log.Fatal(def.ClrR, "User terminated program", def.ClrN)
+	log.Fatal(def.ColR, "User terminated program", def.ColN)
 }
 
 func syncLights() {

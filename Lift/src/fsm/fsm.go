@@ -52,7 +52,7 @@ func Init(c Channels, startFloor int, outgoingMsg chan def.Message) {
 	go doorTimer(c.doorTimeout, c.doorTimerReset)
 	go run(c, outgoingMsg)
 
-	log.Println(def.ClrG, "FSM initialised.", def.ClrN)
+	log.Println(def.ColG, "FSM initialised.", def.ColN)
 }
 
 func run(c Channels, outgoingMsg chan def.Message) {
@@ -69,13 +69,13 @@ func run(c Channels, outgoingMsg chan def.Message) {
 }
 
 func eventNewOrder(e Channels, outgoingMsg chan def.Message) {
-	log.Printf("%sEVENT: New order in state %v.%s", def.ClrY, stateString(state), def.ClrN)
+	log.Printf("%sEVENT: New order in state %v.%s", def.ColY, stateString(state), def.ColN)
 	switch state {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
 		if queue.ShouldStop(floor, dir) {
 			e.DoorLamp <- true
-			queue.RemoveOrdersAt(floor, outgoingMsg)		
+			queue.RemoveOrdersAt(floor, outgoingMsg)
 
 			e.doorTimerReset <- true
 			state = doorOpen
@@ -98,7 +98,7 @@ func eventNewOrder(e Channels, outgoingMsg chan def.Message) {
 }
 
 func eventFloorReached(e Channels, newFloor int, outgoingMsg chan def.Message) {
-	log.Printf("%sEVENT: Floor %d reached in state %s.%s", def.ClrY, newFloor+1, stateString(state), def.ClrN)
+	log.Printf("%sEVENT: Floor %d reached in state %s.%s", def.ColY, newFloor+1, stateString(state), def.ColN)
 	// queue.Print()
 	floor = newFloor
 	e.FloorLamp <- floor
@@ -121,7 +121,7 @@ func eventFloorReached(e Channels, newFloor int, outgoingMsg chan def.Message) {
 }
 
 func eventDoorTimeout(e Channels) {
-	log.Printf("%sEVENT: Door timeout in state %s.%s", def.ClrY, stateString(state), def.ClrN)
+	log.Printf("%sEVENT: Door timeout in state %s.%s", def.ColY, stateString(state), def.ColN)
 	// queue.Print()
 	switch state {
 	case doorOpen:

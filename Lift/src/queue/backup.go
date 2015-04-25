@@ -67,7 +67,7 @@ func (q *queue) saveToDisk(filename string) error {
 // saves its contents to a queue if the file is present.
 func (q *queue) loadFromDisk(filename string) error {
 	if _, err := os.Stat(filename); err == nil {
-		log.Println(def.ClrG, "Backup file found, processing...", def.ClrN)
+		log.Println(def.ColG, "Backup file found, processing...", def.ColN)
 
 		data, err := ioutil.ReadFile(filename)
 		if err != nil {

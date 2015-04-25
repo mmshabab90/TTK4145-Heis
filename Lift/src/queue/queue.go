@@ -33,7 +33,7 @@ func Init(newOrderChan chan bool, outgoingMsg chan def.Message) {
 	newOrder = newOrderChan
 	go updateLocalQueue()
 	runBackup(outgoingMsg)
-	log.Println(def.ClrG, "Queue initialised.", def.ClrN)
+	log.Println(def.ColG, "Queue initialised.", def.ColN)
 }
 
 // AddLocalOrder adds an order to the local queue.
@@ -121,7 +121,7 @@ func ReassignOrders(deadAddr string, outgoingMsg chan<- def.Message) {
 // Print prints local and remote queue to screen in a somewhat legible
 // manner.
 func Print() {
-	fmt.Printf(def.ClrC)
+	fmt.Printf(def.ColC)
 	fmt.Println("Local   Remote")
 	for f := def.NumFloors - 1; f >= 0; f-- {
 
@@ -159,7 +159,7 @@ func Print() {
 		fmt.Printf("%s", s2)
 		fmt.Println()
 	}
-	fmt.Printf(def.ClrN)
+	fmt.Printf(def.ColN)
 }
 
 func incrementFloor(floor, dir int) (int, int) {
