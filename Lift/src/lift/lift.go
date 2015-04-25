@@ -91,7 +91,7 @@ func poll(e fsm.EventChannels) {
 		case order := <-queue.OrderTimeoutChan:
 			fmt.Println("order in queue timed out, takes it myself")
 			queue.RemoveRemoteOrdersAt(order.Floor)
-			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr.String())
+			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr)
 		}
 	}
 }
@@ -279,7 +279,7 @@ func evaluateLists(que *(map[order][]reply)) {
 	for order, replyList := range *que {
 		// Check if the list is complete
 		if len(replyList) == len(onlineLifts) || order.timeout {
-			fmt.Printf("Laddr = %v\n", def.Laddr)
+			fmt.Printf("Laddr = %s\n", def.Laddr)
 			var (
 				lowCost = def.MaxInt
 				lowAddr string

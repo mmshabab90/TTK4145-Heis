@@ -195,7 +195,7 @@ func updateLocalQueue() {
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
 				if remote.isActiveOrder(f, b) {
-					if b != def.BtnInside && remote.Q[f][b].Addr == def.Laddr.String() {
+					if b != def.BtnInside && remote.Q[f][b].Addr == def.Laddr {
 						local.setOrder(f, b, orderStatus{true, "", nil})
 						newOrder <- true
 					}

@@ -21,7 +21,6 @@ const (
 	DirUp
 )
 
-const MaxInt = int(^uint(0) >> 1)
 
 //constants for sending aliveMsg, and detecting deaths
 const SpamInterval = 400 * time.Millisecond
@@ -56,5 +55,3 @@ type Message struct {
 var MessageChan = make(chan Message) // vurder buff //todo: change name to outgoingMessages or something
 var SyncLightsChan = make(chan bool)
 
-//Local address
-var Laddr *net.UDPAddr //todo: make this string
