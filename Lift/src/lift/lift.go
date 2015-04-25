@@ -214,6 +214,7 @@ func liftAssigner(newOrderChan chan bool) {
 	// lifts make the same choice every time
 	go func() {
 		assignmentQueue := make(map[order][]reply)
+		const costReplyTimeout = 10 * time.Second
 		var newOrder order
 		for {
 			select {
@@ -239,11 +240,11 @@ func liftAssigner(newOrderChan chan bool) {
 					// Add it if not found
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-						newOrder.timer.Reset(def.CostTime)
+						newOrder.timer.Reset(costReplyTimeout)
 					}
 				} else {
 					// If order not in queue at all, init order list with it
-					newOrder.timer = time.NewTimer(def.CostTime)
+					newOrder.timer = time.NewTimer(costReplyTimeout)
 					assignmentQueue[newOrder] = []reply{newReply}
 					go costTimer(&newOrder)
 				}

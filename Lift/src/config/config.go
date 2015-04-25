@@ -23,9 +23,6 @@ const (
 // Local IP address
 var Laddr string
 
-//constants setting the time the elevators wait before, the cost and the order times out
-const CostTime = 10 * time.Second // todo rename
-
 //message kind constants
 const (
 	Alive int = iota + 1
