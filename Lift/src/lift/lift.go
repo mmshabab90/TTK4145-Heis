@@ -40,7 +40,8 @@ type order struct { //bad name?
 
 func main() {
 	if err := hw.Init(); err != nil {
-		//def.Restart.Run()
+		/*//komenter inn dette når vi vil kjøre restarts
+		def.Restart.Run()*/
 		log.Fatal(err)
 	}
 
