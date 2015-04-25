@@ -3,11 +3,11 @@
 package fsm
 
 import (
-	def "../config"
-	"../hw"
-	"../queue"
+	def "config"
 	"fmt"
+	"hw"
 	"log"
+	"queue"
 	"time"
 )
 

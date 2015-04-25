@@ -1,11 +1,11 @@
 package network
 
 import (
-	def "../config"
+	def "config"
 	"encoding/json"
 	"fmt"
-	"time"
 	"log"
+	"time"
 )
 
 var ReceiveChan = make(chan udpMessage, 10) //buffered with 10 slots
@@ -30,7 +30,7 @@ func Init() {
 
 func pollMessages() { //todo: change name to pollOutgoing or something
 	for {
-		msg := <-def.MessageChan 
+		msg := <-def.MessageChan
 		//PrintMessage(msg)
 
 		var i int
@@ -55,7 +55,7 @@ func ParseMessage(udpMessage udpMessage) def.Message {
 	}
 
 	message.Addr = udpMessage.raddr
-	
+
 	return message
 }
 
@@ -94,5 +94,3 @@ func aliveSpammer() {
 		time.Sleep(def.SpamInterval)
 	}
 }
-
-

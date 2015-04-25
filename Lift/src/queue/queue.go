@@ -1,7 +1,7 @@
 package queue
 
 import (
-	def "../config"
+	def "config"
 	"fmt"
 	"log"
 	"time"
@@ -40,14 +40,14 @@ func Init(newOrderChan chan bool) {
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, "", nil})
 
-	newOrder <- true 
+	newOrder <- true
 }
 
 // AddRemoteOrder adds an order to the remote queue.
 func AddRemoteOrder(floor, button int, addr string) {
-	alreadyExist := IsRemoteOrder(floor, button) 
+	alreadyExist := IsRemoteOrder(floor, button)
 	remote.setOrder(floor, button, orderStatus{true, addr, nil})
-	if !alreadyExist{
+	if !alreadyExist {
 		go remote.startTimer(floor, button)
 		fmt.Printf("\n--------------------\n")
 		fmt.Println("New order timer made")

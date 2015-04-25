@@ -1,7 +1,7 @@
 package queue
 
 import (
-	def "../config"
+	def "config"
 	"fmt"
 	"log"
 	"time"
@@ -46,7 +46,7 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 	if q.isActiveOrder(floor, button) == status.Active {
 		return
 	}
-	
+
 	q.Q[floor][button] = status
 	def.SyncLightsChan <- true
 	suggestBackup()

@@ -1,9 +1,9 @@
 package fsm
 
 import (
-	def "../config"
-	"../hw"
-	"../queue"
+	def "config"
+	"hw"
+	"queue"
 )
 
 func Direction() int {

@@ -6,7 +6,7 @@
 package hw
 
 import (
-	def "../config"
+	def "config"
 	"errors"
 	"log"
 )

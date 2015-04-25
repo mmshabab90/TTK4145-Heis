@@ -1,17 +1,17 @@
 package main
 
 import (
-	def "./src/config"
-	"./src/fsm"
-	"./src/hw"
-	"./src/network"
-	"./src/queue"
+	def "config"
 	"errors"
 	"fmt"
+	"fsm"
+	"hw"
 	"log"
+	"network"
 	"os"
-	"os/signal"
 	"os/exec"
+	"os/signal"
+	"queue"
 	"time"
 )
 
@@ -59,8 +59,6 @@ func main() {
 	liftAssigner(e.NewOrder)
 	go poll(e)
 	queue.Init(e.NewOrder)
-	
-	
 
 	for { //nicer solution?
 		time.Sleep(100 * time.Second)
@@ -89,10 +87,10 @@ func poll(e fsm.EventChannels) {
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
-		case order:= <-queue.OrderTimeoutChan:
+		case order := <-queue.OrderTimeoutChan:
 			fmt.Println("order in queue timed out, takes it myself")
 			queue.RemoveRemoteOrdersAt(order.Floor)
-			queue.AddRemoteOrder(order.Floor, order.Button , def.Laddr.String())			
+			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr.String())
 		}
 	}
 }
@@ -302,7 +300,7 @@ func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
 			// Assign order key to lift
 			queue.AddRemoteOrder(key.floor, key.button, lowAddr)
 			//queue.PrintQueues()
-			
+
 			// Empty list and stop timer
 			key.timer.Stop()
 			delete(*que, key)

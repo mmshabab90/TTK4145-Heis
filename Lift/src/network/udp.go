@@ -1,7 +1,7 @@
 package network
 
 import (
-	def "../config"
+	def "config"
 	"fmt"
 	"net"
 	"strconv"
@@ -13,7 +13,7 @@ type UdpConnection struct {
 	Timer *time.Timer
 }
 
-// func Print_udp_message(msg udpMessage) { 
+// func Print_udp_message(msg udpMessage) {
 // 	fmt.Printf("msg:  \n \t raddr = %s \n \t data = %s \n \t length = %v \n", msg.raddr, msg.data, msg.length)
 // }
 

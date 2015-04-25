@@ -1,7 +1,7 @@
 package queue
 
 import (
-	def "../config"
+	def "config"
 	"encoding/json"
 	"io/ioutil"
 	"log"
