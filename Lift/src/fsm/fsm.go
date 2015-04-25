@@ -5,7 +5,6 @@ package fsm
 import (
 	def "config"
 	"fmt"
-	"hw"
 	"log"
 	"queue"
 	"time"
@@ -69,15 +68,15 @@ func eventNewOrder(e Channels) {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
 		if queue.ShouldStop(floor, dir) {
-			hw.SetDoorOpenLamp(true)
-			// e.DoorLamp <- true
+			// hw.SetDoorOpenLamp(true)
+			e.DoorLamp <- true
 			queue.RemoveOrdersAt(floor)
 			go queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
 			state = doorOpen
 		} else {
-			hw.SetMotorDirection(dir)
-			// e.MotorDir <- dir
+			// hw.SetMotorDirection(dir)
+			e.MotorDir <- dir
 			state = moving
 		}
 	case moving:
@@ -99,15 +98,16 @@ func eventFloorReached(e Channels, newFloor int) {
 	fmt.Printf("\nEVENT: Floor %d reached in state %s.\n\n", newFloor, stateString(state))
 	queue.Print()
 	floor = newFloor
-	hw.SetFloorLamp(floor)
+	// hw.SetFloorLamp(floor)
+	e.FloorLamp <- floor
 	switch state {
 	case moving:
 		if queue.ShouldStop(floor, dir) {
 			dir = def.DirStop
-			hw.SetMotorDirection(dir)
-			// e.MotorDir <- dir
-			hw.SetDoorOpenLamp(true)
-			// e.DoorLamp <- true
+			// hw.SetMotorDirection(dir)
+			e.MotorDir <- dir
+			// hw.SetDoorOpenLamp(true)
+			e.DoorLamp <- true
 			queue.RemoveOrdersAt(floor)
 			go queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
@@ -128,10 +128,10 @@ func eventDoorTimeout(e Channels) {
 	switch state {
 	case doorOpen:
 		dir = queue.ChooseDirection(floor, dir)
-		hw.SetDoorOpenLamp(false)
-		// e.DoorLamp <- true
-		hw.SetMotorDirection(dir)
-		// e.MotorDir <- dir
+		// hw.SetDoorOpenLamp(false)
+		e.DoorLamp <- false
+		// hw.SetMotorDirection(dir)
+		e.MotorDir <- dir
 		if dir == def.DirStop {
 			state = idle
 		} else {
