@@ -174,6 +174,7 @@ func incrementFloor(floor, dir int) (int, int) {
 		floor++
 	case def.DirStop:
 	default:
+		def.CloseConnectionChan <- true
 		def.Restart.Run()
 		log.Fatalln("incrementFloor(): invalid direction, not incremented")
 	}

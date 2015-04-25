@@ -81,6 +81,7 @@ func eventNewOrder() {
 			doorReset <- true
 		}
 	default:
+		def.CloseConnectionChan <- true
 		def.Restart.Run()
 		log.Fatalf("This state doesn't exist")
 	}
@@ -104,6 +105,7 @@ func eventFloorReached(newFloor int) {
 		} else {
 		}
 	default:
+		def.CloseConnectionChan <- true
 		def.Restart.Run()
 		log.Fatalf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
 	}
@@ -123,6 +125,7 @@ func eventDoorTimeout() {
 			state = moving
 		}
 	default:
+		def.CloseConnectionChan <- true
 		def.Restart.Run()
 		log.Fatalf("Makes no sense to time out when not in state door open\n")
 	}

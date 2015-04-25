@@ -56,6 +56,7 @@ type Message struct {
 
 var MessageChan = make(chan Message) // vurder buff //todo: change name to outgoingMessages or something
 var SyncLightsChan = make(chan bool)
+var CloseConnectionChan = make(chan bool)
 
 //Local address
 var Laddr *net.UDPAddr //todo: make this string

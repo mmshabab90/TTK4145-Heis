@@ -40,6 +40,7 @@ type order struct { //bad name?
 
 func main() {
 	if err := hw.Init(); err != nil {
+		def.CloseConnectionChan <- true
 		def.Restart.Run()
 		log.Fatal(err)
 	}

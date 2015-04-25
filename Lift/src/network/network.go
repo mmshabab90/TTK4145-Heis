@@ -18,9 +18,9 @@ func Init() {
 	const broadcastListenPort = 37104
 	const messageSize = 1024
 
-	err := UdpInit(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
+	err := udpInit(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
 	if err != nil {
-		fmt.Print("UdpInit() error: %s \n", err)
+		log.Fatalf("UdpInit() error: %s \n", err)
 	}
 
 	go aliveSpammer()
