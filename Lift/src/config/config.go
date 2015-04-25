@@ -27,8 +27,9 @@ const MaxInt = int(^uint(0) >> 1)
 const SpamInterval = 400 * time.Millisecond
 const OnlineLiftResetTime = 2 * time.Second //todo: name?
 
-//constant setting the time the elevators wait befor an order times out
+//constants setting the time the elevators wait before, the cost and the order times out
 const OrderTime = 10 * time.Second //todo: name? //set this to 30 Seconds after done debuging
+const CostTime = 10 * time.Second
 
 //message kind constants
 const (
