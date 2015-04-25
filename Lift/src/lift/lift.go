@@ -9,7 +9,6 @@ import (
 	"log"
 	"network"
 	"os"
-	"os/exec"
 	"os/signal"
 	"queue"
 	"time"
@@ -21,8 +20,6 @@ var _ = log.Println
 var _ = fmt.Println
 var _ = errors.New
 
-//Start a new terminal when restart.Run()
-var restart = exec.Command("gnome-terminal", "-x", "sh", "-c", "lift")
 
 var onlineLifts = make(map[string]network.UdpConnection)
 
@@ -43,7 +40,7 @@ type order struct { //bad name?
 
 func main() {
 	if err := hw.Init(); err != nil {
-		restart.Run()
+		def.Restart.Run()
 		log.Fatal(err)
 	}
 
@@ -223,7 +220,7 @@ func liftAssigner(newOrderChan chan bool) {
 				newOrder.makeNewOrder(message)
 				newReply := getReply(message)
 
-				for oldOrder := range assignmentQueue {
+				for oldOrder := range assignmentQueue { //todo: make this more goood?
 					if newOrder.isSameOrder(oldOrder) {
 						newOrder = oldOrder
 					}

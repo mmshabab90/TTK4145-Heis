@@ -81,6 +81,9 @@ func eventNewOrder() {
 			doorReset <- true
 		}
 	}
+	default:
+		def.Restart.Run()
+		log.Fatalf("This state doesn't exist")
 }
 
 func eventFloorReached(newFloor int) {
@@ -101,7 +104,8 @@ func eventFloorReached(newFloor int) {
 		} else {
 		}
 	default:
-		log.Printf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
+		def.Restart.Run()
+		log.Fatalf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
 	}
 }
 
@@ -119,6 +123,7 @@ func eventDoorTimeout() {
 			state = moving
 		}
 	default:
+		def.Restart.Run()
 		log.Fatalf("Makes no sense to time out when not in state door open\n")
 	}
 }

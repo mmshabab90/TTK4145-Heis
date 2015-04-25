@@ -3,6 +3,7 @@ package config
 import (
 	"net"
 	"time"
+	"os/exec"
 )
 
 // Global system constants
@@ -58,3 +59,7 @@ var SyncLightsChan = make(chan bool)
 
 //Local address
 var Laddr *net.UDPAddr //todo: make this string
+
+//Start a new terminal when restart.Run()
+var Restart = exec.Command("gnome-terminal", "-x", "sh", "-c", "lift")
+
