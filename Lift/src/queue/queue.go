@@ -173,9 +173,9 @@ func incrementFloor(floor, dir int) (int, int) {
 	case def.DirUp:
 		floor++
 	case def.DirStop:
-		// fmt.Println("incrementFloor(): direction stop, not incremented (this is okay)")
 	default:
-		fmt.Println("incrementFloor(): invalid direction, not incremented")
+		def.Restart.Run()
+		log.Fatalln("incrementFloor(): invalid direction, not incremented")
 	}
 
 	if floor <= 0 && dir == def.DirDown {

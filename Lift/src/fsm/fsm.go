@@ -80,10 +80,10 @@ func eventNewOrder() {
 			queue.RemoveOrdersAt(floor)
 			doorReset <- true
 		}
-	}
 	default:
 		def.Restart.Run()
 		log.Fatalf("This state doesn't exist")
+	}
 }
 
 func eventFloorReached(newFloor int) {
