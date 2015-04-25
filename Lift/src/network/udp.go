@@ -13,6 +13,14 @@ type UdpConnection struct {
 	Timer *time.Timer
 }
 
+var baddr *net.UDPAddr //Broadcast address
+
+type udpMessage struct {
+	raddr  string //if receiving raddr=senders address, if sending raddr should be set to "broadcast" or an ip:port
+	data   []byte
+	length int //length of received data, in #bytes // N/A for sending
+}
+
 func udpInit(localListenPort, broadcastListenPort, message_size int, send_ch, receive_ch chan udpMessage) (err error) {
 	//Generating broadcast address
 	baddr, err = net.ResolveUDPAddr("udp4", "255.255.255.255:"+strconv.Itoa(broadcastListenPort))
@@ -48,16 +56,6 @@ func udpInit(localListenPort, broadcastListenPort, message_size int, send_ch, re
 	//	fmt.Printf("Generating local address: \t Network(): %s \t String(): %s \n", laddr.Network(), laddr.String())
 	//	fmt.Printf("Generating broadcast address: \t Network(): %s \t String(): %s \n", baddr.Network(), baddr.String())
 	return err
-}
-
-// --------------- PRIVATE: ---------------
-
-var baddr *net.UDPAddr //Broadcast address
-
-type udpMessage struct {
-	raddr  string //if receiving raddr=senders address, if sending raddr should be set to "broadcast" or an ip:port
-	data   []byte
-	length int //length of received data, in #bytes // N/A for sending
 }
 
 func udp_transmit_server(lconn, bconn *net.UDPConn, send_ch chan udpMessage) {
