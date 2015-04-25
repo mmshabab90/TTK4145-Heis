@@ -2,7 +2,6 @@ package config
 
 import (
 	"net"
-	"strings"
 	"time"
 )
 
@@ -29,7 +28,7 @@ const SpamInterval = 400 * time.Millisecond
 const OnlineLiftResetTime = 2 * time.Second //todo: name?
 
 //constant setting the time the elevators wait befor an order times out
-const OrderTime = 10 * time.Second //todo: name? //set this to 30 Seconds after done debuging 
+const OrderTime = 10 * time.Second //todo: name? //set this to 30 Seconds after done debuging
 
 //message kind constants
 const (
@@ -53,12 +52,8 @@ type Message struct {
 	Addr   string `json:"-"`
 }
 
-var MessageChan = make(chan Message) // vurder buff //todo: change name to outgoingMessages or something 
+var MessageChan = make(chan Message) // vurder buff //todo: change name to outgoingMessages or something
 var SyncLightsChan = make(chan bool)
 
 //Local address
 var Laddr *net.UDPAddr //todo: make this string
-
-func LastPartOfIp(ip string) string {
-	return strings.Split(strings.Split(ip, ".")[3], ":")[0]
-}
