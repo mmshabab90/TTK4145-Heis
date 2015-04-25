@@ -46,8 +46,6 @@ func Init(c Channels, startFloor int) {
 	dir = def.DirStop
 	floor = startFloor
 
-	go syncLights()
-
 	c.doorTimeout = make(chan bool)
 	c.doorTimerReset = make(chan bool)
 

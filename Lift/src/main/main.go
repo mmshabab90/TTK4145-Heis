@@ -47,10 +47,13 @@ func main() {
 
 	go liftAssigner.Run(costChan, &numberOfOnlineLifts)
 	go eventHandler(e)
+	go syncLights()
+
 	queue.Init(e.NewOrder)
 
 	// Handle CTRL+C
 	go safeKill() //bad name?
+
 	for {         //nicer solution?
 		time.Sleep(100 * time.Second)
 	}
@@ -197,4 +200,26 @@ func safeKill() {
 	<-c
 	hw.SetMotorDirection(def.DirStop)
 	log.Fatal("User terminated program")
+}
+
+func syncLights() {
+	for {
+		<-def.SyncLightsChan
+
+		for f := 0; f < def.NumFloors; f++ {
+			for b := 0; b < def.NumButtons; b++ {
+				if (b == def.BtnUp && f == def.NumFloors-1) ||
+					(b == def.BtnDown && f == 0) {
+					continue
+				} else {
+					switch b {
+					case def.BtnInside:
+						hw.SetButtonLamp(f, b, queue.IsLocalOrder(f, b))
+					case def.BtnUp, def.BtnDown:
+						hw.SetButtonLamp(f, b, queue.IsRemoteOrder(f, b))
+					}
+				}
+			}
+		}
+	}
 }
