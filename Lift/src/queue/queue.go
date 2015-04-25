@@ -118,13 +118,6 @@ func ReassignOrders(deadAddr string, outgoingMsg chan<- def.Message) {
 	}
 }
 
-// SendOrderCompleteMessage communicates to the network that this lift has
-// taken care of orders at the given floor.
-/*func SendOrderCompleteMessage(floor int) {
-	orderComplete := def.Message{Category: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
-	def.OutgoingMsg <- orderComplete
-}*/
-
 // Print prints local and remote queue to screen in a somewhat legible
 // manner.
 func Print() {
