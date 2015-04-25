@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-var costTimeoutChan = make(chan order)
-
 type reply struct {
 	cost int
 	lift string
@@ -19,6 +17,8 @@ type order struct { //bad name?
 	timeout bool
 	timer   *time.Timer
 }
+
+var costTimeoutChan = make(chan order)
 
 // Run collect cost values from all lifts
 // decide which lift gets the order when all lifts
@@ -77,7 +77,7 @@ func evaluateLists(que *(map[order][]reply), numberOfOnlineLifts *int) {
 	const maxInt = int(^uint(0) >> 1)
 	// Loop through all lists
 	for order, replyList := range *que {
-		// Check if the list is complete
+		// Check if the list is complete or the timer has timed out
 		if len(replyList) == *numberOfOnlineLifts || order.timeout {
 			var lowCost = maxInt
 			var lowAddr string
@@ -97,7 +97,7 @@ func evaluateLists(que *(map[order][]reply), numberOfOnlineLifts *int) {
 			// Print winner:
 			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], order.floor+1, order.button)
 
-			// Assign order key to lift
+			// Assign order to lift
 			queue.AddRemoteOrder(order.floor, order.button, lowAddr)
 
 			// Empty list and stop timer
