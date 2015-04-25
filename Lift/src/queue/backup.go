@@ -8,15 +8,6 @@ import (
 	"os"
 )
 
-// suggestBackup tells the backup routine to make a new backup if the channel
-// backupChan does not currently block.
-func suggestBackup() {
-	select {
-	case backupChan <- true:
-	default:
-	}
-}
-
 // runBackup loads queue data from file if file exists once, and saves
 // backups whenever its asked to.
 func runBackup() {
@@ -46,7 +37,7 @@ func runBackup() {
 
 	go func() {
 		for {
-			<-backupChan
+			<-takeBackup
 			if err := local.saveToDisk(filenameLocal); err != nil {
 				log.Println(err)
 			}
@@ -76,7 +67,7 @@ func (q *queue) saveToDisk(filename string) error {
 // saves its contents to a queue if the file is present.
 func (q *queue) loadFromDisk(filename string) error {
 	if _, err := os.Stat(filename); err == nil {
-		log.Printf("Backup file %s exists, processing...\n", filename)
+		log.Println(def.ClrG, "Backup file found, processing...", def.ClrN)
 
 		data, err := ioutil.ReadFile(filename)
 		if err != nil {

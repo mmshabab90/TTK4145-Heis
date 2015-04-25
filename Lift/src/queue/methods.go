@@ -39,7 +39,7 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 
 	q.Q[floor][button] = status
 	def.SyncLightsChan <- true
-	suggestBackup()
+	takeBackup <- true
 	Print()
 }
 

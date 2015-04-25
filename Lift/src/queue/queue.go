@@ -11,7 +11,7 @@ var _ = log.Println
 
 type orderStatus struct {
 	Active bool
-	Addr   string      // maybe `json:"-"`
+	Addr   string      `json:"-"`
 	Timer  *time.Timer `json:"-"`
 }
 
@@ -25,7 +25,7 @@ var local queue
 var remote queue
 
 var updateLocal = make(chan bool)
-var backupChan = make(chan bool, 10)
+var takeBackup = make(chan bool, 10)
 var OrderTimeoutChan = make(chan def.Keypress)
 var newOrder = make(chan bool)
 
@@ -33,7 +33,7 @@ func Init(newOrderChan chan bool) {
 	newOrder = newOrderChan
 	go updateLocalQueue()
 	runBackup()
-	log.Println("Queue initialized")
+	log.Println(def.ClrG, "Queue initialised.", def.ClrN)
 }
 
 // AddLocalOrder adds an order to the local queue.
@@ -73,7 +73,7 @@ func RemoveOrdersAt(floor int) {
 	}
 	SendOrderCompleteMessage(floor) // todo: fix bad abstraction here?
 
-	suggestBackup()
+	takeBackup <- true
 }
 
 // ShouldStop returns whether the lift should stop when it reaches the given
