@@ -11,8 +11,8 @@ var _ = log.Println
 
 type orderStatus struct {
 	Active bool
-	Addr   string
-	Timer  *time.Timer
+	Addr   string      // maybe `json:"-"`
+	Timer  *time.Timer `json:"-"`
 }
 
 var blankOrder = orderStatus{false, "", nil}
@@ -25,7 +25,7 @@ var local queue
 var remote queue
 
 var updateLocal = make(chan bool)
-var backupChan = make(chan bool)
+var backupChan = make(chan bool, 10)
 var OrderTimeoutChan = make(chan def.Keypress)
 var newOrder = make(chan bool)
 
