@@ -49,7 +49,7 @@ func main() {
 	go safeKill() //bad name?
 
 	go liftAssigner.Run(costChan, &numberOfOnlineLifts)
-	go poll(e)
+	go eventHandler(e)
 	queue.Init(e.NewOrder)
 
 	for { //nicer solution?
@@ -57,7 +57,7 @@ func main() {
 	}
 }
 
-func poll(e fsm.Channels) {
+func eventHandler(e fsm.Channels) {
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
 
@@ -142,8 +142,7 @@ func pollFloors() <-chan int {
 	return c
 }
 
-// consider moving each case into a function
-func handleMessage(message def.Message) {
+func handleMessage(message def.Message) { // consider moving each case into a function
 	const aliveTimeout = 2 * time.Second
 
 	switch message.Category {
@@ -177,13 +176,16 @@ func handleMessage(message def.Message) {
 	}
 }
 
+// handleDeadLift removes the lift that have timed out from the onlineLifts
+// and reassigns the dead lifts orders
 func handleDeadLift(deadAddr string) {
-	fmt.Printf("Connection to IP %s is dead!\n", deadAddr)
+	fmt.Printf("Connection to IP %s is dead!\n", deadAddr) //print this in read?
 	delete(onlineLifts, deadAddr)
 	numberOfOnlineLifts = len(onlineLifts)
 	queue.ReassignOrders(deadAddr)
 }
 
+// connectionTimer is a go-routine for detecting that lifts aren't on the network anymore 1
 func connectionTimer(connection *network.UdpConnection) {
 	<-connection.Timer.C
 	deadChan <- *connection
