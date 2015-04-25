@@ -49,5 +49,5 @@ type Message struct {
 	Addr     string `json:"-"`
 }
 
-var OutgoingMsg = make(chan Message) // vurder buff //todo: rename outgoing/outbox (and move?)
-var SyncLightsChan = make(chan bool) // todo move!
+var OutgoingMsg = make(chan Message, 10) // vurder buff //todo: rename outgoing/outbox (and move?)
+var SyncLightsChan = make(chan bool)     // todo move!
