@@ -183,7 +183,7 @@ func handleMessage(message def.Message) { // consider moving each case into a fu
 // handleDeadLift removes the lift that have timed out from the onlineLifts
 // and reassigns the dead lifts orders
 func handleDeadLift(deadAddr string) {
-	fmt.Printf("Connection to IP %s is dead!\n", deadAddr) //print this in read?
+	log.Printf("%sConnection to IP %s is dead!\n%s", def.ClrR, deadAddr[0:11], def.ClrN) //print this in read?
 	delete(onlineLifts, deadAddr)
 	numberOfOnlineLifts = len(onlineLifts)
 	queue.ReassignOrders(deadAddr, outgoingMsg)
