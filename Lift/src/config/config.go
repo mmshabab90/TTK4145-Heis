@@ -49,7 +49,7 @@ var SyncLightsChan = make(chan bool) // todo move!
 var CloseConnectionChan = make(chan bool)
 
 // Start a new terminal when restart.Run()
-var Restart = exec.Command("gnome-terminal", "-x", "sh", "-c", "lift")
+var Restart = exec.Command("gnome-terminal", "-x", "sh", "-c", "main")
 
 // Colours for printing to console
 const Col0 = "\x1b[30;1m" // Dark grey
