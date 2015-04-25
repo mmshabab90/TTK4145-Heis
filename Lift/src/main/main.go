@@ -51,7 +51,7 @@ func main() {
 	go eventHandler(e)
 	go syncLights()
 
-	queue.Init(e.NewOrder)
+	queue.Init(e.NewOrder, outgoingMsg)
 
 	// Handle CTRL+C
 	go safeKill() //bad name?
@@ -186,7 +186,7 @@ func handleDeadLift(deadAddr string) {
 	fmt.Printf("Connection to IP %s is dead!\n", deadAddr) //print this in read?
 	delete(onlineLifts, deadAddr)
 	numberOfOnlineLifts = len(onlineLifts)
-	queue.ReassignOrders(deadAddr)
+	queue.ReassignOrders(deadAddr, outgoingMsg)
 }
 
 // connectionTimer is a go-routine for detecting that lifts aren't on the network anymore 1

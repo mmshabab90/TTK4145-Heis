@@ -29,10 +29,10 @@ var takeBackup = make(chan bool, 10)
 var OrderTimeoutChan = make(chan def.Keypress)
 var newOrder = make(chan bool)
 
-func Init(newOrderChan chan bool) {
+func Init(newOrderChan chan bool, outgoingMsg chan def.Message) {
 	newOrder = newOrderChan
 	go updateLocalQueue()
-	runBackup()
+	runBackup(outgoingMsg)
 	log.Println(def.ClrG, "Queue initialised.", def.ClrN)
 }
 
@@ -102,12 +102,12 @@ func IsRemoteOrder(floor, button int) bool { //is this needed?
 
 // ReassignOrders finds all orders assigned to a dead lift, removes them from
 // the remote queue, and sends them on the network as new, unassigned orders.
-func ReassignOrders(deadAddr string) {
+func ReassignOrders(deadAddr string, outgoingMsg chan<- def.Message) {
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
 			if remote.Q[f][b].Addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
-				def.OutgoingMsg <- def.Message{
+				outgoingMsg <- def.Message{
 					Category: def.NewOrder,
 					Floor:    f,
 					Button:   b}

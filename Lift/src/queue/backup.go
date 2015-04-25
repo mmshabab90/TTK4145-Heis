@@ -10,7 +10,7 @@ import (
 
 // runBackup loads queue data from file if file exists once, and saves
 // backups whenever its asked to.
-func runBackup() {
+func runBackup(outgoingMsg chan<- def.Message) {
 	filenameLocal := "queueLocalBackupFile"
 	filenameRemote := "queuRemoteBackupFile"
 
@@ -25,7 +25,7 @@ func runBackup() {
 					if b == def.BtnInside {
 						AddLocalOrder(f, b)
 					} else {
-						def.OutgoingMsg <- def.Message{
+						outgoingMsg <- def.Message{
 							Category: def.NewOrder,
 							Floor:    f,
 							Button:   b}

@@ -11,19 +11,19 @@ import (
 var receiveChan = make(chan udpMessage, 10)
 var sendChan = make(chan udpMessage)
 
-func Init(outgoingMsg, incomingMsg chan Message) {
+func Init(outgoingMsg, incomingMsg chan def.Message) {
 	// Ports randomly chosen to reduce likelihood of port collision.
 	const localListenPort = 37103
 	const broadcastListenPort = 37104
 
 	const messageSize = 1024
 
-	err := udpInit(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
+	err := udpInit(localListenPort, broadcastListenPort, messageSize, sendChan, receiveChan)
 	if err != nil {
 		fmt.Print("UdpInit() error: %v \n", err)
 	}
 
-	go aliveSpammer()
+	go aliveSpammer(outgoingMsg)
 	go forwardOutgoing(outgoingMsg)
 	go forwardIngoing(incomingMsg)
 
@@ -32,11 +32,11 @@ func Init(outgoingMsg, incomingMsg chan Message) {
 
 // aliveSpammer  sends messages on the network to periodically notify
 // all lifts that this lift is still online ("alive").
-func aliveSpammer() {
+func aliveSpammer(outgoingMsg chan<- def.Message) {
 	const spamInterval = 400 * time.Millisecond
 	alive := def.Message{Category: def.Alive, Floor: -1, Button: -1, Cost: -1}
 	for {
-		def.OutgoingMsg <- alive
+		outgoingMsg <- alive
 		time.Sleep(spamInterval)
 	}
 }
@@ -46,7 +46,7 @@ func aliveSpammer() {
 // as JSON.
 func forwardOutgoing(outgoingMsg chan def.Message) { //todo: change name to pollOutgoing or something
 	for {
-		msg := <-def.OutgoingMsg
+		msg := <-outgoingMsg
 
 		jsonMsg, err := json.Marshal(msg)
 		if err != nil {
@@ -57,9 +57,10 @@ func forwardOutgoing(outgoingMsg chan def.Message) { //todo: change name to poll
 	}
 }
 
-func forwardIngoing(incomingMsg chan def.Message)
-	message := <- receiveChan
-	
+func forwardIngoing(incomingMsg chan def.Message) {
+	udpMessage := <-receiveChan
+	var message def.Message
+
 	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
 		fmt.Printf("json.Unmarshal error: %s\n", err)
 	}
@@ -68,9 +69,6 @@ func forwardIngoing(incomingMsg chan def.Message)
 
 	incomingMsg <- message
 }
-
-	
-
 
 func ParseMessage(udpMessage udpMessage) def.Message {
 	var message def.Message
