@@ -72,17 +72,6 @@ func forwardIncoming(incomingMsg chan def.Message) {
 	}
 }
 
-func ParseMessage(udpMessage udpMessage) def.Message {
-	var message def.Message
-	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
-		fmt.Printf("json.Unmarshal error: %s\n", err)
-	}
-
-	message.Addr = udpMessage.raddr
-
-	return message
-}
-
 func PrintMessage(msg def.Message) {
 
 	if msg.Category == def.Alive {
