@@ -43,6 +43,7 @@ type order struct { //bad name?
 
 func main() {
 	if err := hw.Init(); err != nil {
+		restart.Run()
 		log.Fatal(err)
 	}
 
@@ -257,9 +258,9 @@ func liftAssigner(newOrderChan chan bool) {
 	}()
 }
 
-func split(m def.Message) (order, reply) {
+/*func split(m def.Message) (order, reply) {
 	return order{floor: m.Floor, button: m.Button}, reply{cost: m.Cost, lift: m.Addr}
-}
+}*/ //isn't used anymore
 
 func getReply(m def.Message) reply {
 	return reply{cost: m.Cost, lift: m.Addr}
