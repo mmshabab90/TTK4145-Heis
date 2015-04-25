@@ -12,7 +12,7 @@ var ReceiveChan = make(chan udpMessage, 10)
 var sendChan = make(chan udpMessage)
 
 func Init() {
-	// Ports randomly chosen to reduce likelihood of collision.
+	// Ports randomly chosen to reduce likelihood of port collision.
 	const localListenPort = 37103
 	const broadcastListenPort = 37104
 
