@@ -147,18 +147,17 @@ func pollFloors() <-chan int {
 
 // consider moving each case into a function
 func handleMessage(message def.Message) {
-
-	//network.PrintMessage(message)
+	const aliveTimeout = 2 * time.Second
 
 	switch message.Category {
 	case def.Alive:
 		if connection, exist := onlineLifts[message.Addr]; exist {
-			connection.Timer.Reset(def.OnlineLiftResetTime)
+			connection.Timer.Reset(aliveTimeout)
 			if debugPrint {
 				fmt.Printf("Timer reset for IP %s\n", message.Addr)
 			}
 		} else {
-			newConnection := network.UdpConnection{message.Addr, time.NewTimer(def.OnlineLiftResetTime)}
+			newConnection := network.UdpConnection{message.Addr, time.NewTimer(aliveTimeout)}
 			onlineLifts[message.Addr] = newConnection
 			if debugPrint {
 				fmt.Printf("New connection with IP %s\n", message.Addr)
@@ -273,6 +272,7 @@ func getReply(m def.Message) reply {
 // shared queue.
 // This is very cryptic and ungood.
 func evaluateLists(que *(map[order][]reply)) {
+	const maxInt = int(^uint(0) >> 1)
 	// Loop thru all lists
 	fmt.Printf("Lists: ")
 	fmt.Println(*que)
@@ -281,7 +281,7 @@ func evaluateLists(que *(map[order][]reply)) {
 		if len(replyList) == len(onlineLifts) || order.timeout {
 			fmt.Printf("Laddr = %s\n", def.Laddr)
 			var (
-				lowCost = def.MaxInt
+				lowCost = maxInt
 				lowAddr string
 			)
 			// Loop thru costs in each complete list

@@ -20,15 +20,9 @@ const (
 	DirUp
 )
 
-const MaxInt = int(^uint(0) >> 1) // todo move away
-
-//constants for sending aliveMsg, and detecting deaths
-const SpamInterval = 400 * time.Millisecond
-const OnlineLiftResetTime = 2 * time.Second //todo: name?
-
 //constants setting the time the elevators wait before, the cost and the order times out
-const OrderTime = 10 * time.Second //todo: name? //set this to 30 Seconds after done debuging
-const CostTime = 10 * time.Second
+const OrderTime = 10 * time.Second // todo: name? //set this to 30 Seconds after done debuging
+const CostTime = 10 * time.Second  // todo rename
 
 //message kind constants
 const (
@@ -52,8 +46,8 @@ type Message struct {
 	Addr     string `json:"-"`
 }
 
-var MessageChan = make(chan Message) // vurder buff //todo: change name to outgoingMessages or something
-var SyncLightsChan = make(chan bool)
+var MessageChan = make(chan Message) // vurder buff //todo: rename outgoing/outbox (and move?)
+var SyncLightsChan = make(chan bool) // todo move!
 
 // Local IP address
 var Laddr string

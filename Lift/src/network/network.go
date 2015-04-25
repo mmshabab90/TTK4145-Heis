@@ -84,13 +84,13 @@ func PrintMessage(msg def.Message) {
 	fmt.Println("-----Message end-------\n")
 }
 
-// --------------- PRIVATE: ---------------
-
-//aliveSpammer() sends mesges with "alive" at an interval
+// aliveSpammer  sends messages on the network to periodically notify
+// all lifts that this lift is still online ("alive").
 func aliveSpammer() {
+	const spamInterval = 400 * time.Millisecond
 	alive := def.Message{Category: def.Alive, Floor: -1, Button: -1, Cost: -1}
 	for {
 		def.MessageChan <- alive
-		time.Sleep(def.SpamInterval)
+		time.Sleep(spamInterval)
 	}
 }
