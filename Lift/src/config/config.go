@@ -1,5 +1,7 @@
 package config
 
+import "os/exec"
+
 // Global system constants
 const NumButtons = 3
 const NumFloors = 4
