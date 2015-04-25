@@ -24,6 +24,8 @@ var numberOfOnlineLifts int
 
 var deadChan = make(chan network.UdpConnection)
 var costChan = make(chan def.Message)
+var outgoingMsg = make(chan def.Message, 10)
+var ingoingMsg = make(chan def.Message, 10)
 
 func main() {
 	var floor int
@@ -43,7 +45,7 @@ func main() {
 	}
 	fsm.Init(e, floor)
 
-	network.Init()
+	network.Init(outgoingMsg, ingoingMsg)
 
 	go liftAssigner.Run(costChan, &numberOfOnlineLifts)
 	go eventHandler(e)
@@ -77,7 +79,7 @@ func eventHandler(c fsm.Channels) {
 			}
 		case floor := <-floorChan:
 			c.FloorReached <- floor
-		case udpMessage := <-network.ReceiveChan:
+		case udpMessage := <-ingoingMsg:
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)

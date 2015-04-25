@@ -8,10 +8,10 @@ import (
 	"time"
 )
 
-var ReceiveChan = make(chan udpMessage, 10)
+var receiveChan = make(chan udpMessage, 10)
 var sendChan = make(chan udpMessage)
 
-func Init() {
+func Init(outgoingMsg, ingoingMsg chan Message) {
 	// Ports randomly chosen to reduce likelihood of port collision.
 	const localListenPort = 37103
 	const broadcastListenPort = 37104
@@ -24,7 +24,8 @@ func Init() {
 	}
 
 	go aliveSpammer()
-	go forwardOutgoing()
+	go forwardOutgoing(outgoingMsg)
+	go forwardIngoing(ingoingMsg)
 
 	log.Println(def.ClrG, "Network initialised.", def.ClrN)
 }
@@ -43,7 +44,7 @@ func aliveSpammer() {
 // forwardOutgoing continuosly checks for messages to be sent on the network
 // by reading the OutgoingMsg channel. Each message read is sent to the udp file
 // as JSON.
-func forwardOutgoing() { //todo: change name to pollOutgoing or something
+func forwardOutgoing(outgoingMsg chan def.Message) { //todo: change name to pollOutgoing or something
 	for {
 		msg := <-def.OutgoingMsg
 
@@ -55,6 +56,21 @@ func forwardOutgoing() { //todo: change name to pollOutgoing or something
 		sendChan <- udpMessage{raddr: "broadcast", data: jsonMsg, length: len(jsonMsg)}
 	}
 }
+
+func forwardIngoing(ingoingMsg chan def.Message)
+	message := <- receiveChan
+	
+	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
+		fmt.Printf("json.Unmarshal error: %s\n", err)
+	}
+
+	message.Addr = udpMessage.raddr
+
+	ingoingMsg <- message
+}
+
+	
+
 
 func ParseMessage(udpMessage udpMessage) def.Message {
 	var message def.Message
