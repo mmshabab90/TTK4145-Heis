@@ -1,0 +1,19 @@
+ChooseDirection(floor, dir)
+	requestDirection <- struct{floor, dir}
+	dir = <- giveDirection
+
+ShouldStop(floor, dir)
+	requestShouldStop <- struct{floor, dir}
+	shouldStop := <-giveShouldStop
+
+RemoveOrdersAt(floor)
+	removeOrdersAt <- floor
+
+SendOrderCompleteMessage(floor)
+	Easy
+
+RemoveOrdersAt(floor)
+	Easy
+
+Print()
+	Easy
