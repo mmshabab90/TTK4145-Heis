@@ -32,8 +32,6 @@ type EventChannels struct {
 var doorReset = make(chan bool)
 
 func Init(e EventChannels) {
-	log.Println("fsm.Init() starting")
-
 	state = idle
 	dir = def.DirStop
 	floor = hw.Floor()
@@ -43,6 +41,8 @@ func Init(e EventChannels) {
 	e.DoorTimeout = make(chan bool)
 	go startDoorTimer(e.DoorTimeout)
 	go run(e)
+
+	log.Println("fsm initialized")
 }
 
 func run(e EventChannels) {

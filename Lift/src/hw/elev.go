@@ -46,6 +46,8 @@ func Init() error {
 
 	MoveToDefinedState()
 
+	log.Println("Hardware initialized")
+
 	return nil
 }
 
