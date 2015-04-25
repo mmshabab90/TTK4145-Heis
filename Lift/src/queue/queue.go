@@ -65,13 +65,15 @@ func RemoveRemoteOrdersAt(floor int) {
 }
 
 // RemoveOrdersAt removes all orders at the given floor in local and remote queue.
-func RemoveOrdersAt(floor int) {
+func RemoveOrdersAt(floor int, outgoingMsg chan def.Message) {
 	for b := 0; b < def.NumButtons; b++ {
 		remote.stopTimer(floor, b)
 		local.setOrder(floor, b, blankOrder)
 		remote.setOrder(floor, b, blankOrder)
 	}
-	SendOrderCompleteMessage(floor) // todo: fix bad abstraction here?
+
+	orderComplete := def.Message{Category: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
+	outgoingMsg <- orderComplete
 
 	takeBackup <- true
 }
@@ -118,10 +120,10 @@ func ReassignOrders(deadAddr string, outgoingMsg chan<- def.Message) {
 
 // SendOrderCompleteMessage communicates to the network that this lift has
 // taken care of orders at the given floor.
-func SendOrderCompleteMessage(floor int) {
+/*func SendOrderCompleteMessage(floor int) {
 	orderComplete := def.Message{Category: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
 	def.OutgoingMsg <- orderComplete
-}
+}*/
 
 // Print prints local and remote queue to screen in a somewhat legible
 // manner.

@@ -43,7 +43,7 @@ func main() {
 		FloorLamp:    make(chan int, 10),
 		DoorLamp:     make(chan bool, 10),
 	}
-	fsm.Init(e, floor)
+	fsm.Init(e, floor, outgoingMsg)
 
 	network.Init(outgoingMsg, incomingMsg)
 
@@ -72,15 +72,15 @@ func eventHandler(c fsm.Channels) {
 			case def.BtnInside:
 				queue.AddLocalOrder(keypress.Floor, keypress.Button)
 			case def.BtnUp, def.BtnDown:
-				def.OutgoingMsg <- def.Message{
+				outgoingMsg <- def.Message{
 					Category: def.NewOrder,
 					Floor:    keypress.Floor,
 					Button:   keypress.Button}
 			}
 		case floor := <-floorChan:
 			c.FloorReached <- floor
-		case udpMessage := <-incomingMsg:
-			handleMessage(network.ParseMessage(udpMessage))
+		case message := <-incomingMsg:
+			handleMessage(message)
 		case connection := <-deadChan:
 			handleDeadLift(connection.Addr)
 		case order := <-queue.OrderTimeoutChan:
@@ -171,7 +171,7 @@ func handleMessage(message def.Message) { // consider moving each case into a fu
 			Button:   message.Button,
 			Cost:     cost}
 		// log.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Floor+1, costMessage.Button, costMessage.Cost)
-		def.OutgoingMsg <- costMessage
+		outgoingMsg <- costMessage
 	case def.CompleteOrder:
 		queue.RemoveRemoteOrdersAt(message.Floor)
 	case def.Cost:

@@ -41,7 +41,7 @@ type Channels struct {
 	doorTimerReset chan bool
 }
 
-func Init(c Channels, startFloor int) {
+func Init(c Channels, startFloor int, outgoingMsg chan def.Message) {
 	state = idle
 	dir = def.DirStop
 	floor = startFloor
@@ -50,33 +50,33 @@ func Init(c Channels, startFloor int) {
 	c.doorTimerReset = make(chan bool)
 
 	go doorTimer(c.doorTimeout, c.doorTimerReset)
-	go run(c)
+	go run(c, outgoingMsg)
 
 	log.Println(def.ClrG, "FSM initialised.", def.ClrN)
 }
 
-func run(c Channels) {
+func run(c Channels, outgoingMsg chan def.Message) {
 	for {
 		select {
 		case <-c.NewOrder:
-			eventNewOrder(c)
+			eventNewOrder(c, outgoingMsg)
 		case f := <-c.FloorReached:
-			eventFloorReached(c, f)
+			eventFloorReached(c, f, outgoingMsg)
 		case <-c.doorTimeout:
 			eventDoorTimeout(c)
 		}
 	}
 }
 
-func eventNewOrder(e Channels) {
+func eventNewOrder(e Channels, outgoingMsg chan def.Message) {
 	log.Printf("%sEVENT: New order in state %v.%s", def.ClrY, stateString(state), def.ClrN)
 	switch state {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
 		if queue.ShouldStop(floor, dir) {
 			e.DoorLamp <- true
-			queue.RemoveOrdersAt(floor)
-			go queue.SendOrderCompleteMessage(floor)
+			queue.RemoveOrdersAt(floor, outgoingMsg)		
+
 			e.doorTimerReset <- true
 			state = doorOpen
 		} else {
@@ -87,7 +87,7 @@ func eventNewOrder(e Channels) {
 		// Ignore.
 	case doorOpen:
 		if queue.ShouldStop(floor, dir) {
-			queue.RemoveOrdersAt(floor)
+			queue.RemoveOrdersAt(floor, outgoingMsg)
 			e.doorTimerReset <- true
 		}
 	default:
@@ -97,7 +97,7 @@ func eventNewOrder(e Channels) {
 	}
 }
 
-func eventFloorReached(e Channels, newFloor int) {
+func eventFloorReached(e Channels, newFloor int, outgoingMsg chan def.Message) {
 	log.Printf("%sEVENT: Floor %d reached in state %s.%s", def.ClrY, newFloor+1, stateString(state), def.ClrN)
 	// queue.Print()
 	floor = newFloor
@@ -108,8 +108,8 @@ func eventFloorReached(e Channels, newFloor int) {
 			dir = def.DirStop
 			e.MotorDir <- dir
 			e.DoorLamp <- true
-			queue.RemoveOrdersAt(floor)
-			go queue.SendOrderCompleteMessage(floor)
+			queue.RemoveOrdersAt(floor, outgoingMsg)
+
 			e.doorTimerReset <- true
 			state = doorOpen
 		}

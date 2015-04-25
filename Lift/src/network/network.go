@@ -25,7 +25,7 @@ func Init(outgoingMsg, incomingMsg chan def.Message) {
 
 	go aliveSpammer(outgoingMsg)
 	go forwardOutgoing(outgoingMsg)
-	go forwardIngoing(incomingMsg)
+	go forwardIncoming(incomingMsg)
 
 	log.Println(def.ClrG, "Network initialised.", def.ClrN)
 }
@@ -57,17 +57,19 @@ func forwardOutgoing(outgoingMsg chan def.Message) { //todo: change name to poll
 	}
 }
 
-func forwardIngoing(incomingMsg chan def.Message) {
-	udpMessage := <-receiveChan
-	var message def.Message
+func forwardIncoming(incomingMsg chan def.Message) {
+	for {
+		udpMessage := <-receiveChan
+		var message def.Message
 
-	if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
-		fmt.Printf("json.Unmarshal error: %s\n", err)
+		if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
+			fmt.Printf("json.Unmarshal error: %s\n", err)
+		}
+
+		message.Addr = udpMessage.raddr
+
+		incomingMsg <- message
 	}
-
-	message.Addr = udpMessage.raddr
-
-	incomingMsg <- message
 }
 
 func ParseMessage(udpMessage udpMessage) def.Message {
