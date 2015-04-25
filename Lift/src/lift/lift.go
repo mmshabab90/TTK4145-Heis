@@ -42,7 +42,7 @@ func main() {
 	var err error
 	floor, err = hw.Init()
 	if err != nil {
-		//def.Restart.Run()
+		def.Restart.Run()
 		log.Fatal(err)
 	}
 
