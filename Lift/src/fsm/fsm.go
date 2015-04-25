@@ -6,7 +6,6 @@ import (
 	def "config"
 	"log"
 	"queue"
-	"time"
 )
 
 const (
@@ -14,8 +13,6 @@ const (
 	moving
 	doorOpen
 )
-
-const doorOpenTime = 1 * time.Second // todo move to doorTimer.go
 
 var state int
 var floor int
@@ -25,38 +22,40 @@ type Channels struct {
 	// Events
 	NewOrder     chan bool
 	FloorReached chan int
-	DoorTimeout  chan bool
+	doorTimeout  chan bool
 	// Hardware interaction
 	MotorDir  chan int
 	FloorLamp chan int
 	DoorLamp  chan bool
+	// Door timer
+	doorTimerReset chan bool
 }
 
-var doorReset = make(chan bool) // todo move into init and pass to event funcs
-
-func Init(e Channels, startFloor int) {
+func Init(c Channels, startFloor int) {
 	state = idle
 	dir = def.DirStop
 	floor = startFloor
 
 	go syncLights()
 
-	e.DoorTimeout = make(chan bool)
-	go startDoorTimer(e.DoorTimeout)
-	go run(e)
+	c.doorTimeout = make(chan bool)
+	c.doorTimerReset = make(chan bool)
+
+	go doorTimer(c.doorTimeout, c.doorTimerReset)
+	go run(c)
 
 	log.Println("FSM initialised.")
 }
 
-func run(e Channels) {
+func run(c Channels) {
 	for {
 		select {
-		case <-e.NewOrder:
-			eventNewOrder(e)
-		case f := <-e.FloorReached:
-			eventFloorReached(e, f)
-		case <-e.DoorTimeout:
-			eventDoorTimeout(e)
+		case <-c.NewOrder:
+			eventNewOrder(c)
+		case f := <-c.FloorReached:
+			eventFloorReached(c, f)
+		case <-c.doorTimeout:
+			eventDoorTimeout(c)
 		}
 	}
 }
@@ -70,7 +69,7 @@ func eventNewOrder(e Channels) {
 			e.DoorLamp <- true
 			queue.RemoveOrdersAt(floor)
 			go queue.SendOrderCompleteMessage(floor)
-			doorReset <- true
+			e.doorTimerReset <- true
 			state = doorOpen
 		} else {
 			e.MotorDir <- dir
@@ -81,7 +80,7 @@ func eventNewOrder(e Channels) {
 	case doorOpen:
 		if queue.ShouldStop(floor, dir) {
 			queue.RemoveOrdersAt(floor)
-			doorReset <- true
+			e.doorTimerReset <- true
 		}
 	default:
 		def.CloseConnectionChan <- true
@@ -103,7 +102,7 @@ func eventFloorReached(e Channels, newFloor int) {
 			e.DoorLamp <- true
 			queue.RemoveOrdersAt(floor)
 			go queue.SendOrderCompleteMessage(floor)
-			doorReset <- true
+			e.doorTimerReset <- true
 			state = doorOpen
 		}
 	default:
