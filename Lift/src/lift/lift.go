@@ -22,7 +22,7 @@ var _ = fmt.Println
 var _ = errors.New
 
 //Start a new terminal when restart.Run()
-var restart = exec.Command("gnome-terminal", "-x", "sh", "-c", "go run main.go")
+var restart = exec.Command("gnome-terminal", "-x", "sh", "-c", "lift")
 
 var onlineLifts = make(map[string]network.UdpConnection)
 
@@ -240,19 +240,20 @@ func liftAssigner(newOrderChan chan bool) {
 					// Add it if not found
 					if !found {
 						assignmentQueue[newOrder] = append(assignmentQueue[newOrder], newReply)
-						newOrder.timer.Reset(10 * time.Second)
+						newOrder.timer.Reset(def.CostTime)
 					}
 				} else {
 					// If order not in queue at all, init order list with it
-					newOrder.timer = time.NewTimer(10 * time.Second)
+					newOrder.timer = time.NewTimer(def.CostTime)
 					assignmentQueue[newOrder] = []reply{newReply}
 					go costTimer(&newOrder)
 				}
-				evaluateLists(&assignmentQueue, newOrderChan)
+				evaluateLists(&assignmentQueue)
+
 			case newOrder := <-costTimeoutChan:
-				fmt.Printf("\n ORDER TIMED OUT!\n\n")
+				fmt.Printf("\n COST TIMED OUT!\n\n")
 				newOrder.setTimeout(true)
-				evaluateLists(&assignmentQueue, newOrderChan)
+				evaluateLists(&assignmentQueue)
 			}
 		}
 	}()
@@ -271,13 +272,13 @@ func getReply(m def.Message) reply {
 // the best candidate for all such orders. The best candidate is added to the
 // shared queue.
 // This is very cryptic and ungood.
-func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
+func evaluateLists(que *(map[order][]reply)) {
 	// Loop thru all lists
 	fmt.Printf("Lists: ")
 	fmt.Println(*que)
-	for key, replyList := range *que {
+	for order, replyList := range *que {
 		// Check if the list is complete
-		if len(replyList) == len(onlineLifts) || key.timeout {
+		if len(replyList) == len(onlineLifts) || order.timeout {
 			fmt.Printf("Laddr = %v\n", def.Laddr)
 			var (
 				lowCost = def.MaxInt
@@ -296,15 +297,15 @@ func evaluateLists(que *(map[order][]reply), newOrderChan chan bool) {
 				}
 			}
 			// Print winner:
-			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], key.floor+1, key.button)
+			fmt.Printf("Lift %s won order f=%d b=%d\n", lowAddr[12:15], order.floor+1, order.button)
 
 			// Assign order key to lift
-			queue.AddRemoteOrder(key.floor, key.button, lowAddr)
+			queue.AddRemoteOrder(order.floor, order.button, lowAddr)
 			//queue.PrintQueues()
 
 			// Empty list and stop timer
-			key.timer.Stop()
-			delete(*que, key)
+			order.timer.Stop()
+			delete(*que, order)
 		}
 	}
 }
