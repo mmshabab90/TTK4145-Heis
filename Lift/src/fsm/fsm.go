@@ -1,5 +1,15 @@
 // Package fsm implements a finite state machine for the behaviour of a lift.
 // The lift runs based on a queue stored and managed by the queue package.
+//
+// There are three states:
+// Idle: Lift is stationary, at a floor, door closed, awaiting orders.
+// Moving: Lift is moving, can be between floor or at a floor going past it.
+// Door open: Lift is at a floor with the door open.
+//
+// And three events:
+// New order: A new order is added to the queue.
+// Floor reached: The lift reaches a floor.
+// Door timeout: The door timer times out (the door should close).
 package fsm
 
 import (
@@ -61,7 +71,7 @@ func run(c Channels) {
 }
 
 func eventNewOrder(e Channels) {
-	log.Printf("EVENT: New order in state %v.\n\n", stateString(state))
+	log.Printf("%sEVENT: New order in state %v.\n%s", def.ClrC, stateString(state), def.ClrN)
 	switch state {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
@@ -76,7 +86,7 @@ func eventNewOrder(e Channels) {
 			state = moving
 		}
 	case moving:
-		// Ignore
+		// Ignore.
 	case doorOpen:
 		if queue.ShouldStop(floor, dir) {
 			queue.RemoveOrdersAt(floor)
@@ -90,7 +100,7 @@ func eventNewOrder(e Channels) {
 }
 
 func eventFloorReached(e Channels, newFloor int) {
-	log.Printf("EVENT: Floor %d reached in state %s.\n\n", newFloor, stateString(state))
+	log.Printf("%sEVENT: Floor %d reached in state %s.\n%s", def.ClrC, newFloor, stateString(state), def.ClrN)
 	queue.Print()
 	floor = newFloor
 	e.FloorLamp <- floor
@@ -113,7 +123,7 @@ func eventFloorReached(e Channels, newFloor int) {
 }
 
 func eventDoorTimeout(e Channels) {
-	log.Printf("EVENT: Door timeout in state %s.\n\n", stateString(state))
+	log.Printf("%sEVENT: Door timeout in state %s.\n%s", def.ClrC, stateString(state), def.ClrN)
 	queue.Print()
 	switch state {
 	case doorOpen:
