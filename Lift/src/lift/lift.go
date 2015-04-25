@@ -216,7 +216,6 @@ func liftAssigner(newOrderChan chan bool) {
 		for {
 			select {
 			case message := <-costChan:
-				//newKey, newReply := split(message) //newKey is actually the worst name ever
 				newOrder.makeNewOrder(message)
 				newReply := getReply(message)
 
@@ -256,10 +255,6 @@ func liftAssigner(newOrderChan chan bool) {
 	}()
 }
 
-/*func split(m def.Message) (order, reply) {
-	return order{floor: m.Floor, button: m.Button}, reply{cost: m.Cost, lift: m.Addr}
-}*/ //isn't used anymore
-
 func getReply(m def.Message) reply {
 	return reply{cost: m.Cost, lift: m.Addr}
 }
@@ -297,7 +292,6 @@ func evaluateLists(que *(map[order][]reply)) {
 
 			// Assign order key to lift
 			queue.AddRemoteOrder(order.floor, order.button, lowAddr)
-			//queue.PrintQueues()
 
 			// Empty list and stop timer
 			order.timer.Stop()
@@ -313,8 +307,7 @@ func safeKill() {
 	go func() {
 		<-c
 		hw.SetMotorDirection(def.DirStop)
-		//restart.Run() //vil vi restarte med ctrl+c?
-		log.Fatal("[FATAL]\tUser terminated program")
+		log.Fatal("User terminated program")
 	}()
 }
 

@@ -143,7 +143,7 @@ func udp_connection_reader(conn *net.UDPConn, message_size int, rcv_ch chan udpM
 }
 
 func udp_connection_closer(lconn, bconn *net.UDPConn) {
-	<- def.CloseConnectionChan
+	<-def.CloseConnectionChan
 	lconn.Close()
 	bconn.Close()
 }
