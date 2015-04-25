@@ -13,7 +13,7 @@ type UdpConnection struct {
 	Timer *time.Timer
 }
 
-func UdpInit(localListenPort, broadcastListenPort, message_size int, send_ch, receive_ch chan udpMessage) (err error) {
+func udpInit(localListenPort, broadcastListenPort, message_size int, send_ch, receive_ch chan udpMessage) (err error) {
 	//Generating broadcast address
 	baddr, err = net.ResolveUDPAddr("udp4", "255.255.255.255:"+strconv.Itoa(broadcastListenPort))
 	if err != nil {

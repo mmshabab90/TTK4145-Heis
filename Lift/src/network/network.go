@@ -8,10 +8,8 @@ import (
 	"time"
 )
 
-var ReceiveChan = make(chan udpMessage, 10) //buffered with 10 slots
+var ReceiveChan = make(chan udpMessage, 10)
 var sendChan = make(chan udpMessage)
-
-// --------------- PUBLIC: ---------------
 
 func Init() {
 	// Ports randomly chosen to reduce likelihood of collision.
@@ -20,7 +18,7 @@ func Init() {
 
 	const messageSize = 1024
 
-	err := UdpInit(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
+	err := udpInit(localListenPort, broadcastListenPort, messageSize, sendChan, ReceiveChan)
 	if err != nil {
 		fmt.Print("UdpInit() error: %v \n", err)
 	}
