@@ -3,7 +3,7 @@
 //
 // There are three states:
 // Idle: Lift is stationary, at a floor, door closed, awaiting orders.
-// Moving: Lift is moving, can be between floor or at a floor going past it.
+// Moving: Lift is moving, can be between floors or at a floor going past it.
 // Door open: Lift is at a floor with the door open.
 //
 // And three events:
@@ -71,7 +71,7 @@ func run(c Channels) {
 }
 
 func eventNewOrder(e Channels) {
-	log.Printf("%sEVENT: New order in state %v.\n%s", def.ClrC, stateString(state), def.ClrN)
+	log.Printf("%sEVENT: New order in state %v.%s", def.ClrY, stateString(state), def.ClrN)
 	switch state {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
@@ -100,8 +100,8 @@ func eventNewOrder(e Channels) {
 }
 
 func eventFloorReached(e Channels, newFloor int) {
-	log.Printf("%sEVENT: Floor %d reached in state %s.\n%s", def.ClrC, newFloor, stateString(state), def.ClrN)
-	queue.Print()
+	log.Printf("%sEVENT: Floor %d reached in state %s.%s", def.ClrY, newFloor+1, stateString(state), def.ClrN)
+	// queue.Print()
 	floor = newFloor
 	e.FloorLamp <- floor
 	switch state {
@@ -123,8 +123,8 @@ func eventFloorReached(e Channels, newFloor int) {
 }
 
 func eventDoorTimeout(e Channels) {
-	log.Printf("%sEVENT: Door timeout in state %s.\n%s", def.ClrC, stateString(state), def.ClrN)
-	queue.Print()
+	log.Printf("%sEVENT: Door timeout in state %s.%s", def.ClrY, stateString(state), def.ClrN)
+	// queue.Print()
 	switch state {
 	case doorOpen:
 		dir = queue.ChooseDirection(floor, dir)

@@ -40,6 +40,7 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 	q.Q[floor][button] = status
 	def.SyncLightsChan <- true
 	suggestBackup()
+	Print()
 }
 
 func (q *queue) isActiveOrder(floor, button int) bool { // todo: consider rename

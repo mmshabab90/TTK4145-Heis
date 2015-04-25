@@ -126,40 +126,45 @@ func SendOrderCompleteMessage(floor int) {
 // Print prints local and remote queue to screen in a somewhat legible
 // manner.
 func Print() {
+	fmt.Printf(def.ClrC)
 	fmt.Println("Local   Remote")
 	for f := def.NumFloors - 1; f >= 0; f-- {
-		lifts := "   "
 
+		s1 := ""
 		if local.isActiveOrder(f, def.BtnUp) {
-			fmt.Printf("↑")
+			s1 += "↑"
 		} else {
-			fmt.Printf(" ")
+			s1 += " "
 		}
 		if local.isActiveOrder(f, def.BtnInside) {
-			fmt.Printf("×")
+			s1 += "×"
 		} else {
-			fmt.Printf(" ")
+			s1 += " "
 		}
+		fmt.Printf(s1)
 		if local.isActiveOrder(f, def.BtnDown) {
 			fmt.Printf("↓   %d  ", f+1)
 		} else {
 			fmt.Printf("    %d  ", f+1)
 		}
+
+		s2 := "   "
 		if remote.isActiveOrder(f, def.BtnUp) {
 			fmt.Printf("↑")
-			lifts += "(↑ " + remote.Q[f][def.BtnUp].Addr[12:15] + ")"
+			s2 += "(↑ " + remote.Q[f][def.BtnUp].Addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
 		if remote.isActiveOrder(f, def.BtnDown) {
 			fmt.Printf("↓")
-			lifts += "(↓ " + remote.Q[f][def.BtnDown].Addr[12:15] + ")"
+			s2 += "(↓ " + remote.Q[f][def.BtnDown].Addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
-		fmt.Printf("%s", lifts)
+		fmt.Printf("%s", s2)
 		fmt.Println()
 	}
+	fmt.Printf(def.ClrN)
 }
 
 func incrementFloor(floor, dir int) (int, int) {
