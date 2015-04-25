@@ -36,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	e := fsm.Channels{
+	ch := fsm.Channels{
 		NewOrder:     make(chan bool),
 		FloorReached: make(chan int),
 		MotorDir:     make(chan int, 10),
@@ -44,25 +44,24 @@ func main() {
 		DoorLamp:     make(chan bool, 10),
 		OutgoingMsg:  outgoingMsg,
 	}
-	fsm.Init(e, floor)
+	fsm.Init(ch, floor)
 
 	network.Init(outgoingMsg, incomingMsg)
 
 	go liftAssigner.Run(costChan, &numberOfOnlineLifts)
-	go eventHandler(e)
+	go eventHandler(ch)
 	go syncLights()
 
-	queue.Init(e.NewOrder, outgoingMsg)
+	queue.Init(ch.NewOrder, outgoingMsg)
 
 	// Handle CTRL+C
-	go safeKill() //bad name?
+	go safeKill()
 
-	for { //nicer solution?
-		time.Sleep(100 * time.Second)
-	}
+	balboa := make(chan bool)
+	<-balboa
 }
 
-func eventHandler(c fsm.Channels) {
+func eventHandler(ch fsm.Channels) {
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
 
@@ -79,7 +78,7 @@ func eventHandler(c fsm.Channels) {
 					Button:   keypress.Button}
 			}
 		case floor := <-floorChan:
-			c.FloorReached <- floor
+			ch.FloorReached <- floor
 		case message := <-incomingMsg:
 			handleMessage(message)
 		case connection := <-deadChan:
@@ -88,11 +87,11 @@ func eventHandler(c fsm.Channels) {
 			log.Println(def.ColR, "Order timeout, I can do it myself!", def.ColN)
 			queue.RemoveRemoteOrdersAt(order.Floor)
 			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr)
-		case dir := <-c.MotorDir:
+		case dir := <-ch.MotorDir:
 			hw.SetMotorDirection(dir)
-		case floor := <-c.FloorLamp:
+		case floor := <-ch.FloorLamp:
 			hw.SetFloorLamp(floor)
-		case value := <-c.DoorLamp:
+		case value := <-ch.DoorLamp:
 			hw.SetDoorOpenLamp(value)
 		}
 	}
