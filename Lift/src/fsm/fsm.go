@@ -17,60 +17,67 @@ const (
 	doorOpen
 )
 
-const doorOpenTime = 1 * time.Second
+const doorOpenTime = 1 * time.Second // todo move to doorTimer.go
 
 var state int
 var floor int
 var dir int
 
-type EventChannels struct {
+type Channels struct {
+	// Events
 	NewOrder     chan bool
 	FloorReached chan int
 	DoorTimeout  chan bool
+	// Hardware interation
+	MotorDir  chan int
+	FloorLamp chan int
+	DoorLamp  chan bool
 }
 
 var doorReset = make(chan bool)
 
-func Init(e EventChannels) {
-	log.Println("fsm.Init() starting")
-
+func Init(e Channels, startFloor int) {
 	state = idle
 	dir = def.DirStop
-	floor = hw.Floor()
+	floor = startFloor
 
 	go syncLights()
 
 	e.DoorTimeout = make(chan bool)
 	go startDoorTimer(e.DoorTimeout)
 	go run(e)
+
+	log.Println("fsm initialized")
 }
 
-func run(e EventChannels) {
+func run(e Channels) {
 	for {
 		select {
 		case <-e.NewOrder:
-			eventNewOrder()
+			eventNewOrder(e)
 		case f := <-e.FloorReached:
-			eventFloorReached(f)
+			eventFloorReached(e, f)
 		case <-e.DoorTimeout:
-			eventDoorTimeout()
+			eventDoorTimeout(e)
 		}
 	}
 }
 
-func eventNewOrder() {
+func eventNewOrder(e Channels) {
 	fmt.Printf("\nEVENT: New order in state %v.\n\n", stateString(state))
 	switch state {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
 		if queue.ShouldStop(floor, dir) {
 			hw.SetDoorOpenLamp(true)
+			// e.DoorLamp <- true
 			queue.RemoveOrdersAt(floor)
 			go queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
 			state = doorOpen
 		} else {
 			hw.SetMotorDirection(dir)
+			// e.MotorDir <- dir
 			state = moving
 		}
 	case moving:
@@ -80,10 +87,15 @@ func eventNewOrder() {
 			queue.RemoveOrdersAt(floor)
 			doorReset <- true
 		}
+	default:
+		/*//komenter inn dette når vi vil kjøre restarts
+		def.CloseConnectionChan <- true
+		def.Restart.Run()*/
+		log.Fatalf("This state doesn't exist")
 	}
 }
 
-func eventFloorReached(newFloor int) {
+func eventFloorReached(e Channels, newFloor int) {
 	fmt.Printf("\nEVENT: Floor %d reached in state %s.\n\n", newFloor, stateString(state))
 	queue.Print()
 	floor = newFloor
@@ -93,7 +105,9 @@ func eventFloorReached(newFloor int) {
 		if queue.ShouldStop(floor, dir) {
 			dir = def.DirStop
 			hw.SetMotorDirection(dir)
+			// e.MotorDir <- dir
 			hw.SetDoorOpenLamp(true)
+			// e.DoorLamp <- true
 			queue.RemoveOrdersAt(floor)
 			go queue.SendOrderCompleteMessage(floor)
 			doorReset <- true
@@ -101,11 +115,14 @@ func eventFloorReached(newFloor int) {
 		} else {
 		}
 	default:
-		log.Printf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
+		/*//komenter inn dette når vi vil kjøre restarts
+		def.CloseConnectionChan <- true
+		def.Restart.Run()*/
+		log.Fatalf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
 	}
 }
 
-func eventDoorTimeout() {
+func eventDoorTimeout(e Channels) {
 	fmt.Printf("\nEVENT: Door timeout in state %s.\n\n", stateString(state))
 	queue.Print()
 	switch state {
@@ -119,6 +136,9 @@ func eventDoorTimeout() {
 			state = moving
 		}
 	default:
+		/*//komenter inn dette når vi vil kjøre restarts
+		def.CloseConnectionChan <- true
+		def.Restart.Run()*/
 		log.Fatalf("Makes no sense to time out when not in state door open\n")
 	}
 }

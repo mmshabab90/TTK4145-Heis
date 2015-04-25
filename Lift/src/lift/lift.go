@@ -9,7 +9,6 @@ import (
 	"log"
 	"network"
 	"os"
-	"os/exec"
 	"os/signal"
 	"queue"
 	"time"
@@ -20,9 +19,6 @@ const debugPrint = false
 var _ = log.Println
 var _ = fmt.Println
 var _ = errors.New
-
-//Start a new terminal when restart.Run()
-var restart = exec.Command("gnome-terminal", "-x", "sh", "-c", "lift")
 
 var onlineLifts = make(map[string]network.UdpConnection)
 
@@ -42,15 +38,18 @@ type order struct { //bad name?
 }
 
 func main() {
-	if err := hw.Init(); err != nil {
-		restart.Run()
+	var floor int
+	var err error
+	floor, err = hw.Init()
+	if err != nil {
+		//def.Restart.Run()
 		log.Fatal(err)
 	}
 
-	e := fsm.EventChannels{
+	e := fsm.Channels{
 		NewOrder:     make(chan bool),
 		FloorReached: make(chan int)}
-	fsm.Init(e)
+	fsm.Init(e, floor)
 
 	network.Init()
 
@@ -66,7 +65,7 @@ func main() {
 	}
 }
 
-func poll(e fsm.EventChannels) {
+func poll(e fsm.Channels) {
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
 
@@ -223,7 +222,7 @@ func liftAssigner(newOrderChan chan bool) {
 				newOrder.makeNewOrder(message)
 				newReply := getReply(message)
 
-				for oldOrder := range assignmentQueue {
+				for oldOrder := range assignmentQueue { //todo: make this more goood?
 					if newOrder.isSameOrder(oldOrder) {
 						newOrder = oldOrder
 					}
