@@ -45,19 +45,18 @@ func main() {
 
 	network.Init()
 
-	// Handle CTRL+C
-	go safeKill() //bad name?
-
 	go liftAssigner.Run(costChan, &numberOfOnlineLifts)
 	go eventHandler(e)
 	queue.Init(e.NewOrder)
 
-	for { //nicer solution?
+	// Handle CTRL+C
+	go safeKill() //bad name?
+	for {         //nicer solution?
 		time.Sleep(100 * time.Second)
 	}
 }
 
-func eventHandler(e fsm.Channels) {
+func eventHandler(c fsm.Channels) {
 	buttonChan := pollButtons()
 	floorChan := pollFloors()
 
@@ -74,7 +73,7 @@ func eventHandler(e fsm.Channels) {
 					Button:   keypress.Button}
 			}
 		case floor := <-floorChan:
-			e.FloorReached <- floor
+			c.FloorReached <- floor
 		case udpMessage := <-network.ReceiveChan:
 			handleMessage(network.ParseMessage(udpMessage))
 		case connection := <-deadChan:
@@ -83,11 +82,11 @@ func eventHandler(e fsm.Channels) {
 			fmt.Println("Order timeout, I can do it myself!")
 			queue.RemoveRemoteOrdersAt(order.Floor)
 			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr)
-		case dir := <-e.MotorDir:
+		case dir := <-c.MotorDir:
 			hw.SetMotorDirection(dir)
-		case floor := <-e.FloorLamp:
+		case floor := <-c.FloorLamp:
 			hw.SetFloorLamp(floor)
-		case value := <-e.DoorLamp:
+		case value := <-c.DoorLamp:
 			hw.SetDoorOpenLamp(value)
 		}
 	}

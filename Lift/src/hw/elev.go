@@ -53,6 +53,7 @@ func Init() (int, error) {
 	SetMotorDirection(def.DirStop)
 	SetFloorLamp(floor)
 
+	log.Println(def.ClrG, "Hardware initialised.", def.ClrN)
 	return floor, nil
 }
 

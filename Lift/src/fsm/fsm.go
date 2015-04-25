@@ -54,7 +54,7 @@ func Init(c Channels, startFloor int) {
 	go doorTimer(c.doorTimeout, c.doorTimerReset)
 	go run(c)
 
-	log.Println("FSM initialised.")
+	log.Println(def.ClrG, "FSM initialised.", def.ClrN)
 }
 
 func run(c Channels) {
