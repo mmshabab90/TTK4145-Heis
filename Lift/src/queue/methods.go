@@ -115,19 +115,19 @@ func (q *queue) chooseDirection(floor, dir int) int {
 func (q *queue) shouldStop(floor, dir int) bool {
 	switch dir {
 	case def.DirDown:
-		return q.isActiveOrder(floor, def.ButtonDown) ||
-			q.isActiveOrder(floor, def.ButtonCommand) ||
+		return q.isActiveOrder(floor, def.BtnDown) ||
+			q.isActiveOrder(floor, def.BtnInside) ||
 			floor == 0 ||
 			!q.isOrdersBelow(floor)
 	case def.DirUp:
-		return q.isActiveOrder(floor, def.ButtonUp) ||
-			q.isActiveOrder(floor, def.ButtonCommand) ||
+		return q.isActiveOrder(floor, def.BtnUp) ||
+			q.isActiveOrder(floor, def.BtnInside) ||
 			floor == def.NumFloors-1 ||
 			!q.isOrdersAbove(floor)
 	case def.DirStop:
-		return q.isActiveOrder(floor, def.ButtonDown) ||
-			q.isActiveOrder(floor, def.ButtonUp) ||
-			q.isActiveOrder(floor, def.ButtonCommand)
+		return q.isActiveOrder(floor, def.BtnDown) ||
+			q.isActiveOrder(floor, def.BtnUp) ||
+			q.isActiveOrder(floor, def.BtnInside)
 	default:
 		log.Printf("shouldStop() called with invalid direction %d!\n", dir)
 		return false

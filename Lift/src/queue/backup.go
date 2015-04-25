@@ -31,13 +31,13 @@ func runBackup() {
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
 				if backup.isActiveOrder(f, b) {
-					if b == def.ButtonCommand {
+					if b == def.BtnInside {
 						AddLocalOrder(f, b)
 					} else {
 						def.MessageChan <- def.Message{
-							Kind:   def.NewOrder,
-							Floor:  f,
-							Button: b}
+							Category: def.NewOrder,
+							Floor:    f,
+							Button:   b}
 					}
 				}
 			}

@@ -10,9 +10,9 @@ const NumButtons = 3
 const NumFloors = 4
 
 const (
-	ButtonUp int = iota
-	ButtonDown
-	ButtonCommand //todo: Rename to ButtonInternal or something
+	BtnUp int = iota
+	BtnDown
+	BtnInside
 )
 
 const (
@@ -46,11 +46,11 @@ type Keypress struct {
 
 // Generic network message. No other messages are ever sent on the network.
 type Message struct {
-	Kind   int
-	Floor  int
-	Button int
-	Cost   int
-	Addr   string `json:"-"`
+	Category int
+	Floor    int
+	Button   int
+	Cost     int
+	Addr     string `json:"-"`
 }
 
 var MessageChan = make(chan Message) // vurder buff //todo: change name to outgoingMessages or something

@@ -74,13 +74,13 @@ func poll(e fsm.EventChannels) {
 		select {
 		case keypress := <-buttonChan:
 			switch keypress.Button {
-			case def.ButtonCommand:
+			case def.BtnInside:
 				queue.AddLocalOrder(keypress.Floor, keypress.Button)
-			case def.ButtonUp, def.ButtonDown:
+			case def.BtnUp, def.BtnDown:
 				def.MessageChan <- def.Message{
-					Kind:   def.NewOrder,
-					Floor:  keypress.Floor,
-					Button: keypress.Button}
+					Category: def.NewOrder,
+					Floor:    keypress.Floor,
+					Button:   keypress.Button}
 			}
 		case floor := <-floorChan:
 			e.FloorReached <- floor
@@ -105,8 +105,8 @@ func pollButtons() <-chan def.Keypress {
 		for {
 			for f := 0; f < def.NumFloors; f++ {
 				for b := 0; b < def.NumButtons; b++ {
-					if (f == 0 && b == def.ButtonDown) ||
-						(f == def.NumFloors-1 && b == def.ButtonUp) {
+					if (f == 0 && b == def.BtnDown) ||
+						(f == def.NumFloors-1 && b == def.BtnUp) {
 						continue
 					}
 					if hw.ReadButton(f, b) {
@@ -150,7 +150,7 @@ func handleMessage(message def.Message) {
 
 	//network.PrintMessage(message)
 
-	switch message.Kind {
+	switch message.Category {
 	case def.Alive:
 		if connection, exist := onlineLifts[message.Addr]; exist {
 			connection.Timer.Reset(def.OnlineLiftResetTime)
@@ -172,10 +172,10 @@ func handleMessage(message def.Message) {
 		cost := queue.CalculateCost(message.Floor, message.Button, fsm.Floor(), hw.Floor(), fsm.Direction())
 
 		costMessage := def.Message{
-			Kind:   def.Cost,
-			Floor:  message.Floor,
-			Button: message.Button,
-			Cost:   cost}
+			Category: def.Cost,
+			Floor:    message.Floor,
+			Button:   message.Button,
+			Cost:     cost}
 		//fmt.Printf("handleMessage(): NewOrder sends cost message: f=%d b=%d (with cost %d) from me\n", costMessage.Floor+1, costMessage.Button, costMessage.Cost)
 		def.MessageChan <- costMessage
 	case def.CompleteOrder:

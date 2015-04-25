@@ -33,12 +33,12 @@ func Init() error {
 	// Zero all floor button lamps
 	for f := 0; f < def.NumFloors; f++ {
 		if f != 0 {
-			SetButtonLamp(f, def.ButtonDown, false)
+			SetButtonLamp(f, def.BtnDown, false)
 		}
 		if f != def.NumFloors-1 {
-			SetButtonLamp(f, def.ButtonUp, false)
+			SetButtonLamp(f, def.BtnUp, false)
 		}
-		SetButtonLamp(f, def.ButtonCommand, false)
+		SetButtonLamp(f, def.BtnInside, false)
 	}
 
 	SetStopLamp(false)
@@ -113,11 +113,11 @@ func ReadButton(floor int, button int) bool {
 		log.Printf("Error: Button %d out of range!\n", button)
 		return false
 	}
-	if button == def.ButtonUp && floor == def.NumFloors-1 {
+	if button == def.BtnUp && floor == def.NumFloors-1 {
 		log.Println("Button up from top floor does not exist!")
 		return false
 	}
-	if button == def.ButtonDown && floor == 0 {
+	if button == def.BtnDown && floor == 0 {
 		log.Println("Button down from ground floor does not exist!")
 		return false
 	}
@@ -134,17 +134,17 @@ func SetButtonLamp(floor int, button int, value bool) {
 		log.Printf("Error: Floor %d out of range!\n", floor)
 		return
 	}
-	if button == def.ButtonUp && floor == def.NumFloors-1 {
+	if button == def.BtnUp && floor == def.NumFloors-1 {
 		log.Println("Button up from top floor does not exist!")
 		return
 	}
-	if button == def.ButtonDown && floor == 0 {
+	if button == def.BtnDown && floor == 0 {
 		log.Println("Button down from ground floor does not exist!")
 		return
 	}
-	if button != def.ButtonUp &&
-		button != def.ButtonDown &&
-		button != def.ButtonCommand {
+	if button != def.BtnUp &&
+		button != def.BtnDown &&
+		button != def.BtnInside {
 		log.Printf("Invalid button %d\n", button)
 		return
 	}

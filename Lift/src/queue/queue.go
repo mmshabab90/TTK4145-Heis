@@ -111,9 +111,9 @@ func ReassignOrders(deadAddr string) {
 			if remote.Q[f][b].Addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
 				def.MessageChan <- def.Message{
-					Kind:   def.NewOrder,
-					Floor:  f,
-					Button: b}
+					Category: def.NewOrder,
+					Floor:    f,
+					Button:   b}
 			}
 		}
 	}
@@ -122,7 +122,7 @@ func ReassignOrders(deadAddr string) {
 // SendOrderCompleteMessage communicates to the network that this lift has
 // taken care of orders at the given floor.
 func SendOrderCompleteMessage(floor int) {
-	orderComplete := def.Message{Kind: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
+	orderComplete := def.Message{Category: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
 	def.MessageChan <- orderComplete
 }
 
@@ -133,30 +133,30 @@ func Print() {
 	for f := def.NumFloors - 1; f >= 0; f-- {
 		lifts := "   "
 
-		if local.isActiveOrder(f, def.ButtonUp) {
+		if local.isActiveOrder(f, def.BtnUp) {
 			fmt.Printf("↑")
 		} else {
 			fmt.Printf(" ")
 		}
-		if local.isActiveOrder(f, def.ButtonCommand) {
+		if local.isActiveOrder(f, def.BtnInside) {
 			fmt.Printf("×")
 		} else {
 			fmt.Printf(" ")
 		}
-		if local.isActiveOrder(f, def.ButtonDown) {
+		if local.isActiveOrder(f, def.BtnDown) {
 			fmt.Printf("↓   %d  ", f+1)
 		} else {
 			fmt.Printf("    %d  ", f+1)
 		}
-		if remote.isActiveOrder(f, def.ButtonUp) {
+		if remote.isActiveOrder(f, def.BtnUp) {
 			fmt.Printf("↑")
-			lifts += "(↑ " + remote.Q[f][def.ButtonUp].Addr[12:15] + ")"
+			lifts += "(↑ " + remote.Q[f][def.BtnUp].Addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
-		if remote.isActiveOrder(f, def.ButtonDown) {
+		if remote.isActiveOrder(f, def.BtnDown) {
 			fmt.Printf("↓")
-			lifts += "(↓ " + remote.Q[f][def.ButtonDown].Addr[12:15] + ")"
+			lifts += "(↓ " + remote.Q[f][def.BtnDown].Addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
@@ -195,7 +195,7 @@ func updateLocalQueue() {
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
 				if remote.isActiveOrder(f, b) {
-					if b != def.ButtonCommand && remote.Q[f][b].Addr == def.Laddr.String() {
+					if b != def.BtnInside && remote.Q[f][b].Addr == def.Laddr.String() {
 						local.setOrder(f, b, orderStatus{true, "", nil})
 						newOrder <- true
 					}

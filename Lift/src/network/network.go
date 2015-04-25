@@ -61,12 +61,12 @@ func ParseMessage(udpMessage udpMessage) def.Message {
 
 func PrintMessage(msg def.Message) {
 
-	if msg.Kind == def.Alive {
+	if msg.Category == def.Alive {
 		return
 	}
 
 	fmt.Printf("\n-----Message start-----\n")
-	switch msg.Kind {
+	switch msg.Category {
 	case def.Alive:
 		fmt.Println("I'm alive")
 	case def.NewOrder:
@@ -88,7 +88,7 @@ func PrintMessage(msg def.Message) {
 
 //aliveSpammer() sends mesges with "alive" at an interval
 func aliveSpammer() {
-	alive := def.Message{Kind: def.Alive, Floor: -1, Button: -1, Cost: -1}
+	alive := def.Message{Category: def.Alive, Floor: -1, Button: -1, Cost: -1}
 	for {
 		def.MessageChan <- alive
 		time.Sleep(def.SpamInterval)

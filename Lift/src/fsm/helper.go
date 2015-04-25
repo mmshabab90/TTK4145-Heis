@@ -29,11 +29,11 @@ func stateString(state int) string {
 
 func buttonString(button int) string {
 	switch button {
-	case def.ButtonUp:
+	case def.BtnUp:
 		return "up"
-	case def.ButtonDown:
+	case def.BtnDown:
 		return "down"
-	case def.ButtonCommand:
+	case def.BtnInside:
 		return "command"
 	default:
 		return "error: bad button"
@@ -46,14 +46,14 @@ func syncLights() { // todo: probably move to queue
 
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
-				if (b == def.ButtonUp && f == def.NumFloors-1) ||
-					(b == def.ButtonDown && f == 0) {
+				if (b == def.BtnUp && f == def.NumFloors-1) ||
+					(b == def.BtnDown && f == 0) {
 					continue
 				} else {
 					switch b {
-					case def.ButtonCommand:
+					case def.BtnInside:
 						hw.SetButtonLamp(f, b, queue.IsLocalOrder(f, b))
-					case def.ButtonUp, def.ButtonDown:
+					case def.BtnUp, def.BtnDown:
 						hw.SetButtonLamp(f, b, queue.IsRemoteOrder(f, b))
 					}
 				}
