@@ -49,9 +49,6 @@ func AddRemoteOrder(floor, button int, addr string) {
 	remote.setOrder(floor, button, orderStatus{true, addr, nil})
 	if !alreadyExist {
 		go remote.startTimer(floor, button)
-		fmt.Printf("\n--------------------\n")
-		fmt.Println("New order timer made")
-		fmt.Printf("--------------------\n\n")
 	}
 	updateLocal <- true
 }
