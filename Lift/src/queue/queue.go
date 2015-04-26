@@ -1,3 +1,10 @@
+// Package queue defines and stores queues for the lift. Two queues are used:
+// One local queue containing all orders assigned to this particular lift,
+// and one remote containing all external orders assigned to any lift on the
+// network. The remote order also stores information about the IP of the lift
+// assigned to each order, and it has a timer attached to each order. The
+// timer makes sure that if an order is assigned to a lift, and we never
+// receive an 'order complete' message, the order will still be handled.
 package queue
 
 import (
@@ -7,14 +14,16 @@ import (
 	"time"
 )
 
+// queue defines a queue, a 2D array of orderStatuses representing the
+// buttons on the lift panel.
+type queue struct {
+	Q [def.NumFloors][def.NumButtons]orderStatus
+}
+
 type orderStatus struct {
 	active bool
 	addr   string      `json:"-"`
 	timer  *time.Timer `json:"-"`
-}
-
-type queue struct {
-	Q [def.NumFloors][def.NumButtons]orderStatus
 }
 
 var blankOrder = orderStatus{false, "", nil}
