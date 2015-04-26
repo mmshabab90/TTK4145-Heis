@@ -11,11 +11,10 @@ import (
 // runBackup loads queue data from file if file exists once, and saves
 // backups whenever its asked to.
 func runBackup(outgoingMsg chan<- def.Message) {
-	const filenameLocal = "queueLocalBackupFile"
-	const filenameRemote = "queueRemoteBackupFile"
+	const filename = "lift_backup"
 
 	var backup queue
-	backup.loadFromDisk(filenameLocal)
+	backup.loadFromDisk(filename)
 
 	// Resend all orders found on loaded backup file:
 	if !backup.isEmpty() {
@@ -34,10 +33,7 @@ func runBackup(outgoingMsg chan<- def.Message) {
 	go func() {
 		for {
 			<-takeBackup
-			if err := local.saveToDisk(filenameLocal); err != nil {
-				log.Println(def.ColR, err, def.ColN)
-			}
-			if err := remote.saveToDisk(filenameRemote); err != nil {
+			if err := local.saveToDisk(filename); err != nil {
 				log.Println(def.ColR, err, def.ColN)
 			}
 		}
