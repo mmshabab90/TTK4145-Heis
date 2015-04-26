@@ -11,8 +11,8 @@ import (
 // runBackup loads queue data from file if file exists once, and saves
 // backups whenever its asked to.
 func runBackup(outgoingMsg chan<- def.Message) {
-	filenameLocal := "queueLocalBackupFile"
-	filenameRemote := "queuRemoteBackupFile"
+	const filenameLocal = "queueLocalBackupFile"
+	const filenameRemote = "queueRemoteBackupFile"
 
 	var backup queue
 	backup.loadFromDisk(filenameLocal)
@@ -25,24 +25,20 @@ func runBackup(outgoingMsg chan<- def.Message) {
 					if b == def.BtnInside {
 						AddLocalOrder(f, b)
 					} else {
-						outgoingMsg <- def.Message{
-							Category: def.NewOrder,
-							Floor:    f,
-							Button:   b}
+						outgoingMsg <- def.Message{Category: def.NewOrder, Floor: f, Button: b}
 					}
 				}
 			}
 		}
 	}
-
 	go func() {
 		for {
 			<-takeBackup
 			if err := local.saveToDisk(filenameLocal); err != nil {
-				log.Println(err)
+				log.Println(def.ColR, err, def.ColN)
 			}
 			if err := remote.saveToDisk(filenameRemote); err != nil {
-				log.Println(err)
+				log.Println(def.ColR, err, def.ColN)
 			}
 		}
 	}()
@@ -53,11 +49,11 @@ func (q *queue) saveToDisk(filename string) error {
 
 	data, err := json.Marshal(&q)
 	if err != nil {
-		log.Println("json.Marshal() error: Failed to backup.")
+		log.Println(def.ColR, "json.Marshal() error: Failed to backup.", def.ColN)
 		return err
 	}
 	if err := ioutil.WriteFile(filename, data, 0644); err != nil {
-		log.Println("ioutil.WriteFile() error: Failed to backup.")
+		log.Println(def.ColR, "ioutil.WriteFile() error: Failed to backup.", def.ColN)
 		return err
 	}
 	return nil
@@ -71,10 +67,10 @@ func (q *queue) loadFromDisk(filename string) error {
 
 		data, err := ioutil.ReadFile(filename)
 		if err != nil {
-			log.Println("loadFromDisk() error: Failed to read file.")
+			log.Println(def.ColR, "loadFromDisk() error: Failed to read file.", def.ColN)
 		}
 		if err := json.Unmarshal(data, q); err != nil {
-			log.Println("loadFromDisk() error: Failed to Unmarshal.")
+			log.Println(def.ColR, "loadFromDisk() error: Failed to Unmarshal.", def.ColN)
 		}
 	}
 	return nil
