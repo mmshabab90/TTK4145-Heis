@@ -11,7 +11,7 @@ func (q *queue) startTimer(floor, button int) {
 
 	q.Q[floor][button].Timer = time.NewTimer(orderTimeout)
 	<-q.Q[floor][button].Timer.C
-	OrderTimeoutChan <- def.Keypress{Button: button, Floor: floor} // todo: bad abstraction?
+	OrderTimeoutChan <- def.Keypress{Button: button, Floor: floor}
 }
 
 func (q *queue) stopTimer(floor, button int) {
@@ -36,14 +36,13 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 	if q.isOrder(floor, button) == status.Active {
 		return
 	}
-
 	q.Q[floor][button] = status
 	def.SyncLightsChan <- true
 	takeBackup <- true
-	Print()
+	printQueues()
 }
 
-func (q *queue) isOrder(floor, button int) bool { // todo: consider rename
+func (q *queue) isOrder(floor, button int) bool {
 	return q.Q[floor][button].Active
 }
 
@@ -100,9 +99,6 @@ func (q *queue) chooseDirection(floor, dir int) int {
 	}
 }
 
-// BUG(Whoever): Returns stop also if the lift should turn around, but this
-// is okay(ish) because chooseDirection still returns the direction the lift
-// should move (immediately) after stopping.
 func (q *queue) shouldStop(floor, dir int) bool {
 	switch dir {
 	case def.DirDown:
@@ -126,11 +122,11 @@ func (q *queue) shouldStop(floor, dir int) bool {
 }
 
 func (q *queue) deepCopy() *queue {
-	var queCopy queue
+	queueCopy := new(queue)
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			queCopy.Q[f][b] = q.Q[f][b]
+			queueCopy.Q[f][b] = q.Q[f][b]
 		}
 	}
-	return &queCopy
+	return queueCopy
 }

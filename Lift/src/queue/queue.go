@@ -7,19 +7,17 @@ import (
 	"time"
 )
 
-var _ = log.Println
-
 type orderStatus struct {
 	Active bool
 	Addr   string      `json:"-"`
 	Timer  *time.Timer `json:"-"`
 }
 
-var blankOrder = orderStatus{false, "", nil}
-
 type queue struct {
 	Q [def.NumFloors][def.NumButtons]orderStatus
 }
+
+var blankOrder = orderStatus{false, "", nil}
 
 var local queue
 var remote queue
@@ -27,10 +25,10 @@ var remote queue
 var updateLocal = make(chan bool)
 var takeBackup = make(chan bool, 10)
 var OrderTimeoutChan = make(chan def.Keypress)
-var newOrder = make(chan bool)
+var newOrder chan bool
 
-func Init(newOrderChan chan bool, outgoingMsg chan def.Message) {
-	newOrder = newOrderChan
+func Init(newOrderTemp chan bool, outgoingMsg chan def.Message) {
+	newOrder = newOrderTemp
 	go updateLocalQueue()
 	runBackup(outgoingMsg)
 	log.Println(def.ColG, "Queue initialised.", def.ColN)
@@ -39,11 +37,11 @@ func Init(newOrderChan chan bool, outgoingMsg chan def.Message) {
 // AddLocalOrder adds an order to the local queue.
 func AddLocalOrder(floor int, button int) {
 	local.setOrder(floor, button, orderStatus{true, "", nil})
-
 	newOrder <- true
 }
 
-// AddRemoteOrder adds an order to the remote queue.
+// AddRemoteOrder adds an order to the remote queue, and spawns a timer
+// for the order. (If the order times out, it will be taken care of.)
 func AddRemoteOrder(floor, button int, addr string) {
 	alreadyExist := IsRemoteOrder(floor, button)
 	remote.setOrder(floor, button, orderStatus{true, addr, nil})
@@ -60,7 +58,6 @@ func RemoveRemoteOrdersAt(floor int) {
 		remote.stopTimer(floor, b)
 		remote.setOrder(floor, b, blankOrder)
 	}
-
 	updateLocal <- true
 }
 
@@ -71,11 +68,7 @@ func RemoveOrdersAt(floor int, outgoingMsg chan def.Message) {
 		local.setOrder(floor, b, blankOrder)
 		remote.setOrder(floor, b, blankOrder)
 	}
-
-	orderComplete := def.Message{Category: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
-	outgoingMsg <- orderComplete
-
-	takeBackup <- true
+	outgoingMsg <- def.Message{Category: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
 }
 
 // ShouldStop returns whether the lift should stop when it reaches the given
@@ -92,13 +85,13 @@ func ChooseDirection(floor, dir int) int {
 
 // IsLocalOrder returns whether there in an order with the given floor and
 // button in the local queue.
-func IsLocalOrder(floor, button int) bool { // is this needed?
+func IsLocalOrder(floor, button int) bool {
 	return local.isOrder(floor, button)
 }
 
 // IsRemoteOrder returns true if there is a order with the given floor and
 // button in the remote queue.
-func IsRemoteOrder(floor, button int) bool { //is this needed?
+func IsRemoteOrder(floor, button int) bool {
 	return remote.isOrder(floor, button)
 }
 
@@ -118,9 +111,9 @@ func ReassignOrders(deadAddr string, outgoingMsg chan<- def.Message) {
 	}
 }
 
-// Print prints local and remote queue to screen in a somewhat legible
+// printQueues prints local and remote queue to screen in a somewhat legible
 // manner.
-func Print() {
+func printQueues() {
 	fmt.Printf(def.ColC)
 	fmt.Println("Local   Remote")
 	for f := def.NumFloors - 1; f >= 0; f-- {
@@ -162,6 +155,8 @@ func Print() {
 	fmt.Printf(def.ColN)
 }
 
+// updateLocalQueue checks remote queue for new orders assigned to this lift
+// and copies them to the local queue.
 func updateLocalQueue() {
 	for {
 		<-updateLocal
@@ -169,7 +164,7 @@ func updateLocalQueue() {
 			for b := 0; b < def.NumButtons; b++ {
 				if remote.isOrder(f, b) {
 					if b != def.BtnInside && remote.Q[f][b].Addr == def.Laddr {
-						if !local.isOrder(f, b){
+						if !local.isOrder(f, b) {
 							local.setOrder(f, b, orderStatus{true, "", nil})
 							newOrder <- true
 						}
