@@ -100,7 +100,6 @@ func eventNewOrder(ch Channels) {
 
 func eventFloorReached(ch Channels, newFloor int) {
 	log.Printf("%sEVENT: Floor %d reached in state %s.%s", def.ColY, newFloor+1, stateString(state), def.ColN)
-	// queue.Print()
 	floor = newFloor
 	ch.FloorLamp <- floor
 	switch state {
@@ -122,7 +121,6 @@ func eventFloorReached(ch Channels, newFloor int) {
 
 func eventDoorTimeout(ch Channels) {
 	log.Printf("%sEVENT: Door timeout in state %s.%s", def.ColY, stateString(state), def.ColN)
-	// queue.Print()
 	switch state {
 	case doorOpen:
 		ch.DoorLamp <- false
