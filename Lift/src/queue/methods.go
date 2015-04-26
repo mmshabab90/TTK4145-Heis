@@ -116,8 +116,9 @@ func (q *queue) shouldStop(floor, dir int) bool {
 			q.isOrder(floor, def.BtnUp) ||
 			q.isOrder(floor, def.BtnInside)
 	default:
-		log.Printf("shouldStop() called with invalid direction %d!\n", dir)
-		return false
+		def.CloseConnectionChan <- true
+		def.Restart.Run()
+		log.Fatalf(def.ColR, "This direction doesn't exist", def.ColN)
 	}
 }
 

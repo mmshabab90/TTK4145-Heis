@@ -94,7 +94,7 @@ func eventNewOrder(ch Channels) {
 	default:
 		def.CloseConnectionChan <- true
 		def.Restart.Run()
-		log.Fatalf("This state doesn't exist")
+		log.Fatalf(def.ColR, "This state doesn't exist", def.ColN)
 	}
 }
 
@@ -115,7 +115,7 @@ func eventFloorReached(ch Channels, newFloor int) {
 	default:
 		def.CloseConnectionChan <- true
 		def.Restart.Run()
-		log.Fatalf("Makes no sense to arrive at a floor in state %s.\n", stateString(state))
+		log.Fatalf("%sMakes no sense to arrive at a floor in state %s%s.\n", def.ColR, stateString(state), def.ColN)
 	}
 }
 
@@ -134,6 +134,6 @@ func eventDoorTimeout(ch Channels) {
 	default:
 		def.CloseConnectionChan <- true
 		def.Restart.Run()
-		log.Fatalf("Makes no sense to time out when not in state door open\n")
+		log.Fatalln(def.ColR, "Makes no sense to time out when not in state door open", def.ColN)
 	}
 }
