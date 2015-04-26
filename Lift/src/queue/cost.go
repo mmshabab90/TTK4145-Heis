@@ -18,10 +18,10 @@ func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int)
 	dir := currDir
 
 	if currFloor == -1 {
-		// Between floors, add 1 cost
+		// Between floors, add 1 cost.
 		cost++
 	} else if dir != def.DirStop {
-		// At floor, but moving, add 2 cost
+		// At floor, but moving, add 2 cost.
 		cost += 2
 	}
 	floor, dir = incrementFloor(floor, dir)
