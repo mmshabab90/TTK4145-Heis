@@ -1,9 +1,8 @@
-// Package hw defines interactions with the lift hardware at the real time
-// lab at The Department of Engineering Cybernetics at NTNU, Trondheim,
-// Norway.
-//
-// This file is a golang port of elev.c from the hand out driver
-// (https://github.com/TTK4145/Project)
+/*
+ *  This file is a golang port of elev.c from the hand out driver
+ *  https://github.com/TTK4145/Project
+ */
+
 package hw
 
 import (
@@ -25,8 +24,6 @@ var buttonChannelMatrix = [def.NumFloors][def.NumButtons]int{
 	{BUTTON_UP4, BUTTON_DOWN4, BUTTON_COMMAND4},
 }
 
-// Init initialises the lift hardware and moves the lift to a defined state.
-// (Descending until it reaches a floor.)
 func Init() (int, error) {
 	// Init hardware
 	if !ioInit() {
@@ -45,22 +42,22 @@ func Init() (int, error) {
 	}
 
 	SetStopLamp(false)
-	SetDoorLamp(false)
+	SetDoorOpenLamp(false)
 
 	// Move to defined state
-	SetMotorDir(def.DirDown)
+	SetMotorDirection(def.DirDown)
 	floor := Floor()
 	for floor == -1 {
 		floor = Floor()
 	}
-	SetMotorDir(def.DirStop)
+	SetMotorDirection(def.DirStop)
 	SetFloorLamp(floor)
 
 	log.Println(def.ColG, "Hardware initialised.", def.ColN)
 	return floor, nil
 }
 
-func SetMotorDir(dirn int) {
+func SetMotorDirection(dirn int) {
 	if dirn == 0 {
 		ioWriteAnalog(MOTOR, 0)
 	} else if dirn > 0 {
@@ -72,7 +69,7 @@ func SetMotorDir(dirn int) {
 	}
 }
 
-func SetDoorLamp(value bool) {
+func SetDoorOpenLamp(value bool) {
 	if value {
 		ioSetBit(LIGHT_DOOR_OPEN)
 	} else {
@@ -166,6 +163,8 @@ func SetButtonLamp(floor int, button int, value bool) {
 		ioClearBit(lampChannelMatrix[floor][button])
 	}
 }
+
+// Not used:
 
 func SetStopLamp(value bool) {
 	if value {

@@ -1,13 +1,12 @@
 package fsm
 
-import (
-	def "config"
-)
-
+// Direction returns the direction as stored in the state machine.
 func Direction() int {
 	return dir
 }
 
+// Floor returns the floor as stored in the state machine.
+// If the lift is between floors, it returns the previous floor.
 func Floor() int {
 	return floor
 }
@@ -24,18 +23,3 @@ func stateString(state int) string {
 		return "error: bad state"
 	}
 }
-
-func buttonString(button int) string {
-	switch button {
-	case def.BtnUp:
-		return "up"
-	case def.BtnDown:
-		return "down"
-	case def.BtnInside:
-		return "command"
-	default:
-		return "error: bad button"
-	}
-}
-
-

@@ -23,14 +23,6 @@ const (
 // Local IP address
 var Laddr string
 
-//message kind constants
-const (
-	Alive int = iota + 1
-	NewOrder
-	CompleteOrder
-	Cost
-)
-
 type Keypress struct {
 	Button int
 	Floor  int
@@ -45,7 +37,15 @@ type Message struct {
 	Addr     string `json:"-"`
 }
 
-var SyncLightsChan = make(chan bool) // todo move!
+// Network message category constants
+const (
+	Alive int = iota + 1
+	NewOrder
+	CompleteOrder
+	Cost
+)
+
+var SyncLightsChan = make(chan bool)
 var CloseConnectionChan = make(chan bool)
 
 // Start a new terminal when restart.Run()

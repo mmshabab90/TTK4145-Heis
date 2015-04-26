@@ -76,10 +76,9 @@ func eventNewOrder(ch Channels) {
 	case idle:
 		dir = queue.ChooseDirection(floor, dir)
 		if queue.ShouldStop(floor, dir) {
-			ch.DoorLamp <- true
-			queue.RemoveOrdersAt(floor, ch.OutgoingMsg)
-
 			ch.doorTimerReset <- true
+			queue.RemoveOrdersAt(floor, ch.OutgoingMsg)
+			ch.DoorLamp <- true
 			state = doorOpen
 		} else {
 			ch.MotorDir <- dir
@@ -89,8 +88,8 @@ func eventNewOrder(ch Channels) {
 		// Ignore.
 	case doorOpen:
 		if queue.ShouldStop(floor, dir) {
-			queue.RemoveOrdersAt(floor, ch.OutgoingMsg)
 			ch.doorTimerReset <- true
+			queue.RemoveOrdersAt(floor, ch.OutgoingMsg)
 		}
 	default:
 		def.CloseConnectionChan <- true
@@ -107,12 +106,11 @@ func eventFloorReached(ch Channels, newFloor int) {
 	switch state {
 	case moving:
 		if queue.ShouldStop(floor, dir) {
+			ch.doorTimerReset <- true
+			queue.RemoveOrdersAt(floor, ch.OutgoingMsg)
+			ch.DoorLamp <- true
 			dir = def.DirStop
 			ch.MotorDir <- dir
-			ch.DoorLamp <- true
-			queue.RemoveOrdersAt(floor, ch.OutgoingMsg)
-
-			ch.doorTimerReset <- true
 			state = doorOpen
 		}
 	default:
@@ -127,8 +125,8 @@ func eventDoorTimeout(ch Channels) {
 	// queue.Print()
 	switch state {
 	case doorOpen:
-		dir = queue.ChooseDirection(floor, dir)
 		ch.DoorLamp <- false
+		dir = queue.ChooseDirection(floor, dir)
 		ch.MotorDir <- dir
 		if dir == def.DirStop {
 			state = idle

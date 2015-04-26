@@ -19,9 +19,9 @@ type order struct { //bad name?
 	timer  *time.Timer
 }
 
-// Run collects cost values from all lifts for each new order, and assigns
-// a lift to each order when either all online lifts have replied or after
-// a timeout.
+// Run collects cost values from all lifts for each new order, and attempts
+// to find the best lift for each order, when either all online lifts have
+// replied or after a timeout.
 func Run(costReply <-chan def.Message, numberOfOnlineLifts *int) {
 	assignmentQueue := make(map[order][]reply)
 
@@ -69,13 +69,11 @@ func Run(costReply <-chan def.Message, numberOfOnlineLifts *int) {
 	}
 }
 
-// chooseBestLift considers each order that waits to be assigned a lift.
-//
-// goes through the map of orders with associated costs,
-// checks if any orders have received answers from all live lifts or the
-// timer has timed out, and finds the best candidate for all such orders.
-//The best candidate is added to the shared queue.
-// This is very cryptic and ungood. // todo don't admit this
+// chooseBestLift checks if any of the orders waiting for a lift assignment
+// have collected enough information to have a lift assigned. For all orders
+// that have, it selects a lift, and adds it to the queue.
+// It assumes that all lifts always make the same decision, but if they do not,
+// a timer for each order assured that this never gives unhandled orders.
 func chooseBestLift(que *(map[order][]reply), numberOfOnlineLifts *int, orderTimedOut bool) {
 	const maxInt = int(^uint(0) >> 1)
 	// Loop through all lists

@@ -88,11 +88,11 @@ func eventHandler(ch fsm.Channels) {
 			queue.RemoveRemoteOrdersAt(order.Floor)
 			queue.AddRemoteOrder(order.Floor, order.Button, def.Laddr)
 		case dir := <-ch.MotorDir:
-			hw.SetMotorDirection(dir)
+			hw.SetMotorDir(dir)
 		case floor := <-ch.FloorLamp:
 			hw.SetFloorLamp(floor)
 		case value := <-ch.DoorLamp:
-			hw.SetDoorOpenLamp(value)
+			hw.SetDoorLamp(value)
 		}
 	}
 }
@@ -201,7 +201,7 @@ func safeKill() {
 	var c = make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
 	<-c
-	hw.SetMotorDirection(def.DirStop)
+	hw.SetMotorDir(def.DirStop)
 	log.Fatal(def.ColR, "User terminated program", def.ColN)
 }
 
