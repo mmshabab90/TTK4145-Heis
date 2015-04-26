@@ -94,8 +94,10 @@ func (q *queue) chooseDirection(floor, dir int) int {
 			return def.DirStop
 		}
 	default:
-		log.Printf("ChooseDirection(): called with invalid direction %d, returning stop\n", dir)
-		return def.DirStop
+		def.CloseConnectionChan <- true
+		def.Restart.Run()
+		log.Printf("%sChooseDirection(): called with invalid direction %d, returning stop%s\n", def.ColR, dir, def.ColN)
+		return 0
 	}
 }
 
