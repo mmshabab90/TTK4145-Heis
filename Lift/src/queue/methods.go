@@ -9,21 +9,21 @@ import (
 func (q *queue) startTimer(floor, button int) {
 	const orderTimeout = 30 * time.Second
 
-	q.Q[floor][button].timer = time.NewTimer(orderTimeout)
-	<-q.Q[floor][button].timer.C
+	q.matrix[floor][button].timer = time.NewTimer(orderTimeout)
+	<-q.matrix[floor][button].timer.C
 	OrderTimeoutChan <- def.Keypress{Button: button, Floor: floor}
 }
 
 func (q *queue) stopTimer(floor, button int) {
-	if q.Q[floor][button].timer != nil {
-		q.Q[floor][button].timer.Stop()
+	if q.matrix[floor][button].timer != nil {
+		q.matrix[floor][button].timer.Stop()
 	}
 }
 
 func (q *queue) isEmpty() bool {
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			if q.Q[f][b].active {
+			if q.matrix[f][b].active {
 				return false
 			}
 		}
@@ -36,14 +36,14 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 	if q.isOrder(floor, button) == status.active {
 		return
 	}
-	q.Q[floor][button] = status
+	q.matrix[floor][button] = status
 	def.SyncLightsChan <- true
 	takeBackup <- true
 	printQueues()
 }
 
 func (q *queue) isOrder(floor, button int) bool {
-	return q.Q[floor][button].active
+	return q.matrix[floor][button].active
 }
 
 func (q *queue) isOrdersAbove(floor int) bool {
@@ -129,7 +129,7 @@ func (q *queue) deepCopy() *queue {
 	queueCopy := new(queue)
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			queueCopy.Q[f][b] = q.Q[f][b]
+			queueCopy.matrix[f][b] = q.matrix[f][b]
 		}
 	}
 	return queueCopy

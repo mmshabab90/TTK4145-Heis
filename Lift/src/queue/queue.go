@@ -17,7 +17,7 @@ import (
 // queue defines a queue, a 2D array of orderStatuses representing the
 // buttons on the lift panel.
 type queue struct {
-	Q [def.NumFloors][def.NumButtons]orderStatus
+	matrix [def.NumFloors][def.NumButtons]orderStatus
 }
 
 type orderStatus struct {
@@ -109,7 +109,7 @@ func IsRemoteOrder(floor, button int) bool {
 func ReassignOrders(deadAddr string, outgoingMsg chan<- def.Message) {
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			if remote.Q[f][b].addr == deadAddr {
+			if remote.matrix[f][b].addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
 				outgoingMsg <- def.Message{Category: def.NewOrder, Floor: f, Button: b}
 			}
@@ -145,13 +145,13 @@ func printQueues() {
 		s2 := "   "
 		if remote.isOrder(f, def.BtnUp) {
 			fmt.Printf("↑")
-			s2 += "(↑ " + remote.Q[f][def.BtnUp].addr[12:15] + ")"
+			s2 += "(↑ " + remote.matrix[f][def.BtnUp].addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
 		if remote.isOrder(f, def.BtnDown) {
 			fmt.Printf("↓")
-			s2 += "(↓ " + remote.Q[f][def.BtnDown].addr[12:15] + ")"
+			s2 += "(↓ " + remote.matrix[f][def.BtnDown].addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
@@ -169,7 +169,7 @@ func updateLocalQueue() {
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
 				if remote.isOrder(f, b) {
-					if b != def.BtnInside && remote.Q[f][b].addr == def.Laddr {
+					if b != def.BtnInside && remote.matrix[f][b].addr == def.Laddr {
 						if !local.isOrder(f, b) {
 							local.setOrder(f, b, orderStatus{true, "", nil})
 							newOrder <- true
