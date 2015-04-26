@@ -20,13 +20,16 @@ type queue struct {
 	matrix [def.NumFloors][def.NumButtons]orderStatus
 }
 
+// orderStatus defines the status of an order: Whether it is active, which
+// lift is assigned to take it, and how long it has been active. (The latter
+// two are only used in the remote queue.)
 type orderStatus struct {
 	active bool
 	addr   string      `json:"-"`
 	timer  *time.Timer `json:"-"`
 }
 
-var blankOrder = orderStatus{false, "", nil}
+var inactive = orderStatus{active: false, addr: "", timer: nil}
 
 var local queue
 var remote queue
@@ -65,7 +68,7 @@ func AddRemoteOrder(floor, button int, addr string) {
 func RemoveRemoteOrdersAt(floor int) {
 	for b := 0; b < def.NumButtons; b++ {
 		remote.stopTimer(floor, b)
-		remote.setOrder(floor, b, blankOrder)
+		remote.setOrder(floor, b, inactive)
 	}
 	updateLocal <- true
 }
@@ -74,10 +77,10 @@ func RemoveRemoteOrdersAt(floor int) {
 func RemoveOrdersAt(floor int, outgoingMsg chan<- def.Message) {
 	for b := 0; b < def.NumButtons; b++ {
 		remote.stopTimer(floor, b)
-		local.setOrder(floor, b, blankOrder)
-		remote.setOrder(floor, b, blankOrder)
+		local.setOrder(floor, b, inactive)
+		remote.setOrder(floor, b, inactive)
 	}
-	outgoingMsg <- def.Message{Category: def.CompleteOrder, Floor: floor, Button: -1, Cost: -1}
+	outgoingMsg <- def.Message{Category: def.CompleteOrder, Floor: floor}
 }
 
 // ShouldStop returns whether the lift should stop when it reaches the given
@@ -110,7 +113,7 @@ func ReassignOrders(deadAddr string, outgoingMsg chan<- def.Message) {
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
 			if remote.matrix[f][b].addr == deadAddr {
-				remote.setOrder(f, b, blankOrder)
+				remote.setOrder(f, b, inactive)
 				outgoingMsg <- def.Message{Category: def.NewOrder, Floor: f, Button: b}
 			}
 		}

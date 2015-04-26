@@ -24,23 +24,20 @@ func CalculateCost(targetFloor, targetButton, prevFloor, currFloor, currDir int)
 		// At floor, but moving, add 2 cost
 		cost += 2
 	}
-
 	floor, dir = incrementFloor(floor, dir)
 
-	for n := 0; !(floor == targetFloor && q.shouldStop(floor, dir)); n++ {
+	// Simulate how the lift will move, and accumulate cost until it 'reaches' target.
+	// Break after 10 iterations to assure against a stuck loop.
+	for n := 0; !(floor == targetFloor && q.shouldStop(floor, dir)) && n < 10; n++ {
 		if q.shouldStop(floor, dir) {
 			cost += 2
-			q.setOrder(floor, def.BtnUp, blankOrder)
-			q.setOrder(floor, def.BtnDown, blankOrder)
-			q.setOrder(floor, def.BtnInside, blankOrder)
+			q.setOrder(floor, def.BtnUp, inactive)
+			q.setOrder(floor, def.BtnDown, inactive)
+			q.setOrder(floor, def.BtnInside, inactive)
 		}
 		dir = q.chooseDirection(floor, dir)
 		floor, dir = incrementFloor(floor, dir)
 		cost += 2
-
-		if n > 20 {
-			break
-		}
 	}
 	return cost
 }
