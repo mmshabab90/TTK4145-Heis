@@ -102,10 +102,7 @@ func ReassignOrders(deadAddr string, outgoingMsg chan<- def.Message) {
 		for b := 0; b < def.NumButtons; b++ {
 			if remote.Q[f][b].addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
-				outgoingMsg <- def.Message{ // todo put on one line
-					Category: def.NewOrder,
-					Floor:    f,
-					Button:   b}
+				outgoingMsg <- def.Message{Category: def.NewOrder, Floor: f, Button: b}
 			}
 		}
 	}
