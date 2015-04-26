@@ -169,8 +169,10 @@ func updateLocalQueue() {
 			for b := 0; b < def.NumButtons; b++ {
 				if remote.isOrder(f, b) {
 					if b != def.BtnInside && remote.Q[f][b].Addr == def.Laddr {
-						local.setOrder(f, b, orderStatus{true, "", nil})
-						newOrder <- true
+						if !local.isOrder(f, b){
+							local.setOrder(f, b, orderStatus{true, "", nil})
+							newOrder <- true
+						}
 					}
 				}
 			}
