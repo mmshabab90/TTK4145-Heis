@@ -105,7 +105,7 @@ func chooseBestLift(unassigned map[order][]reply, numOnline *int, orderTimedOut 
 	}
 }
 
-func costTimer(newOrder *order, timeout chan *order) {
+func costTimer(newOrder *order, timeout chan<- *order) {
 	<-newOrder.timer.C
 	timeout <- newOrder
 }

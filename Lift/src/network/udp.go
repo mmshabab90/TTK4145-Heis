@@ -58,7 +58,7 @@ func udpInit(localListenPort, broadcastListenPort, message_size int, send_ch, re
 	return err
 }
 
-func udp_transmit_server(lconn, bconn *net.UDPConn, send_ch chan udpMessage) {
+func udp_transmit_server(lconn, bconn *net.UDPConn, send_ch <-chan udpMessage) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("ERROR in udp_transmit_server: %s \n Closing connection.", r)
@@ -92,7 +92,7 @@ func udp_transmit_server(lconn, bconn *net.UDPConn, send_ch chan udpMessage) {
 	}
 }
 
-func udp_receive_server(lconn, bconn *net.UDPConn, message_size int, receive_ch chan udpMessage) {
+func udp_receive_server(lconn, bconn *net.UDPConn, message_size int, receive_ch chan<- udpMessage) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("ERROR in udp_receive_server: %s \n Closing connection.", r)
@@ -119,7 +119,7 @@ func udp_receive_server(lconn, bconn *net.UDPConn, message_size int, receive_ch 
 	}
 }
 
-func udp_connection_reader(conn *net.UDPConn, message_size int, rcv_ch chan udpMessage) {
+func udp_connection_reader(conn *net.UDPConn, message_size int, rcv_ch chan<- udpMessage) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("ERROR in udp_connection_reader: %s \n Closing connection.", r)

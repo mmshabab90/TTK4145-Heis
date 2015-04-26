@@ -118,8 +118,9 @@ func (q *queue) shouldStop(floor, dir int) bool {
 	default:
 		def.CloseConnectionChan <- true
 		def.Restart.Run()
-		log.Fatalf(def.ColR, "This direction doesn't exist", def.ColN)
+		log.Fatalln(def.ColR, "This direction doesn't exist", def.ColN)
 	}
+	return false
 }
 
 func (q *queue) deepCopy() *queue {

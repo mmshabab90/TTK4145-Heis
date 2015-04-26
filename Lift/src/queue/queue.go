@@ -62,7 +62,7 @@ func RemoveRemoteOrdersAt(floor int) {
 }
 
 // RemoveOrdersAt removes all orders at the given floor in local and remote queue.
-func RemoveOrdersAt(floor int, outgoingMsg chan def.Message) {
+func RemoveOrdersAt(floor int, outgoingMsg chan<- def.Message) {
 	for b := 0; b < def.NumButtons; b++ {
 		remote.stopTimer(floor, b)
 		local.setOrder(floor, b, blankOrder)
