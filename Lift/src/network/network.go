@@ -8,9 +8,6 @@ import (
 	"time"
 )
 
-var receiveChan = make(chan udpMessage, 10)
-var sendChan = make(chan udpMessage)
-
 func Init(outgoingMsg, incomingMsg chan def.Message) {
 	// Ports randomly chosen to reduce likelihood of port collision.
 	const localListenPort = 37103
@@ -18,20 +15,22 @@ func Init(outgoingMsg, incomingMsg chan def.Message) {
 
 	const messageSize = 1024
 
-	err := udpInit(localListenPort, broadcastListenPort, messageSize, sendChan, receiveChan)
+	var udpSend = make(chan udpMessage)
+	var udpReceive = make(chan udpMessage, 10)
+	err := udpInit(localListenPort, broadcastListenPort, messageSize, udpSend, udpReceive)
 	if err != nil {
 		fmt.Print("UdpInit() error: %v \n", err)
 	}
 
 	go aliveSpammer(outgoingMsg)
-	go forwardOutgoing(outgoingMsg)
-	go forwardIncoming(incomingMsg)
+	go forwardOutgoing(outgoingMsg, udpSend)
+	go forwardIncoming(incomingMsg, udpReceive)
 
 	log.Println(def.ColG, "Network initialised.", def.ColN)
 }
 
-// aliveSpammer  sends messages on the network to periodically notify
-// all lifts that this lift is still online ("alive").
+// aliveSpammer periodically sends messages on the network to notify all
+// lifts that this lift is still online ("alive").
 func aliveSpammer(outgoingMsg chan<- def.Message) {
 	const spamInterval = 400 * time.Millisecond
 	alive := def.Message{Category: def.Alive, Floor: -1, Button: -1, Cost: -1}
@@ -44,22 +43,22 @@ func aliveSpammer(outgoingMsg chan<- def.Message) {
 // forwardOutgoing continuosly checks for messages to be sent on the network
 // by reading the OutgoingMsg channel. Each message read is sent to the udp file
 // as JSON.
-func forwardOutgoing(outgoingMsg chan def.Message) { //todo: change name to pollOutgoing or something
+func forwardOutgoing(outgoingMsg chan def.Message, udpSend chan udpMessage) {
 	for {
 		msg := <-outgoingMsg
 
 		jsonMsg, err := json.Marshal(msg)
 		if err != nil {
-			fmt.Printf("json.Marshal error: %v\n", err)
+			log.Printf("%sjson.Marshal error: %v\n%s", def.ColR, err, def.ColN)
 		}
 
-		sendChan <- udpMessage{raddr: "broadcast", data: jsonMsg, length: len(jsonMsg)}
+		udpSend <- udpMessage{raddr: "broadcast", data: jsonMsg, length: len(jsonMsg)}
 	}
 }
 
-func forwardIncoming(incomingMsg chan def.Message) {
+func forwardIncoming(incomingMsg chan<- def.Message, udpReceive <-chan udpMessage) {
 	for {
-		udpMessage := <-receiveChan
+		udpMessage := <-udpReceive
 		var message def.Message
 
 		if err := json.Unmarshal(udpMessage.data[:udpMessage.length], &message); err != nil {
@@ -67,32 +66,6 @@ func forwardIncoming(incomingMsg chan def.Message) {
 		}
 
 		message.Addr = udpMessage.raddr
-
 		incomingMsg <- message
 	}
-}
-
-func PrintMessage(msg def.Message) {
-
-	if msg.Category == def.Alive {
-		return
-	}
-
-	fmt.Printf("\n-----Message start-----\n")
-	switch msg.Category {
-	case def.Alive:
-		fmt.Println("I'm alive")
-	case def.NewOrder:
-		fmt.Println("New order")
-	case def.CompleteOrder:
-		fmt.Println("Complete order")
-	case def.Cost:
-		fmt.Println("Cost:")
-	default:
-		fmt.Println("Invalid message type!\n")
-	}
-	fmt.Printf("Floor: %d\n", msg.Floor)
-	fmt.Printf("Button: %d\n", msg.Button)
-	fmt.Printf("Cost:   %d\n", msg.Cost)
-	fmt.Println("-----Message end-------\n")
 }
