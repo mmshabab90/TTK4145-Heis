@@ -9,7 +9,9 @@ import (
 )
 
 // runBackup loads queue data from file if file exists once, and saves
-// backups whenever its asked to.
+// backups whenever its asked to. If it finds a non-empty backed up queue,
+// its internal order are added to the local queue, and its external orders
+// are reassigned by sending as new orders on the network.
 func runBackup(outgoingMsg chan<- def.Message) {
 	const filename = "lift_backup"
 
