@@ -8,9 +8,9 @@ import (
 )
 
 type orderStatus struct {
-	Active bool
-	Addr   string      `json:"-"`
-	Timer  *time.Timer `json:"-"`
+	active bool
+	addr   string      `json:"-"`
+	timer  *time.Timer `json:"-"`
 }
 
 type queue struct {
@@ -100,9 +100,9 @@ func IsRemoteOrder(floor, button int) bool {
 func ReassignOrders(deadAddr string, outgoingMsg chan<- def.Message) {
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			if remote.Q[f][b].Addr == deadAddr {
+			if remote.Q[f][b].addr == deadAddr {
 				remote.setOrder(f, b, blankOrder)
-				outgoingMsg <- def.Message{
+				outgoingMsg <- def.Message{ // todo put on one line
 					Category: def.NewOrder,
 					Floor:    f,
 					Button:   b}
@@ -139,13 +139,13 @@ func printQueues() {
 		s2 := "   "
 		if remote.isOrder(f, def.BtnUp) {
 			fmt.Printf("↑")
-			s2 += "(↑ " + remote.Q[f][def.BtnUp].Addr[12:15] + ")"
+			s2 += "(↑ " + remote.Q[f][def.BtnUp].addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
 		if remote.isOrder(f, def.BtnDown) {
 			fmt.Printf("↓")
-			s2 += "(↓ " + remote.Q[f][def.BtnDown].Addr[12:15] + ")"
+			s2 += "(↓ " + remote.Q[f][def.BtnDown].addr[12:15] + ")"
 		} else {
 			fmt.Printf(" ")
 		}
@@ -163,7 +163,7 @@ func updateLocalQueue() {
 		for f := 0; f < def.NumFloors; f++ {
 			for b := 0; b < def.NumButtons; b++ {
 				if remote.isOrder(f, b) {
-					if b != def.BtnInside && remote.Q[f][b].Addr == def.Laddr {
+					if b != def.BtnInside && remote.Q[f][b].addr == def.Laddr {
 						if !local.isOrder(f, b) {
 							local.setOrder(f, b, orderStatus{true, "", nil})
 							newOrder <- true

@@ -9,21 +9,21 @@ import (
 func (q *queue) startTimer(floor, button int) {
 	const orderTimeout = 30 * time.Second
 
-	q.Q[floor][button].Timer = time.NewTimer(orderTimeout)
-	<-q.Q[floor][button].Timer.C
+	q.Q[floor][button].timer = time.NewTimer(orderTimeout)
+	<-q.Q[floor][button].timer.C
 	OrderTimeoutChan <- def.Keypress{Button: button, Floor: floor}
 }
 
 func (q *queue) stopTimer(floor, button int) {
-	if q.Q[floor][button].Timer != nil {
-		q.Q[floor][button].Timer.Stop()
+	if q.Q[floor][button].timer != nil {
+		q.Q[floor][button].timer.Stop()
 	}
 }
 
 func (q *queue) isEmpty() bool {
 	for f := 0; f < def.NumFloors; f++ {
 		for b := 0; b < def.NumButtons; b++ {
-			if q.Q[f][b].Active {
+			if q.Q[f][b].active {
 				return false
 			}
 		}
@@ -33,7 +33,7 @@ func (q *queue) isEmpty() bool {
 
 func (q *queue) setOrder(floor, button int, status orderStatus) {
 	// Ignore if order to be set is equal to order already in queue.
-	if q.isOrder(floor, button) == status.Active {
+	if q.isOrder(floor, button) == status.active {
 		return
 	}
 	q.Q[floor][button] = status
@@ -43,7 +43,7 @@ func (q *queue) setOrder(floor, button int, status orderStatus) {
 }
 
 func (q *queue) isOrder(floor, button int) bool {
-	return q.Q[floor][button].Active
+	return q.Q[floor][button].active
 }
 
 func (q *queue) isOrdersAbove(floor int) bool {
