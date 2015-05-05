@@ -1,45 +1,40 @@
 package main
 
-import(
+import (
 	. "fmt"
 	"runtime"
-	"time"
 )
 
-var(
-	i int = 0
-) 
+var i = 0
 
-<<<<<<< HEAD
-func thread1foo(){
-	for j := 0; j < 1000000; j++{
-=======
-func increase() {
-	for j := 0; j < 1000000; j++ {
->>>>>>> bc43ba34e43f9a46131a21e82a1536a7d15b2b61
+const million = 1000000
+
+func increase(c chan<- bool) {
+	for j := 0; j < million; j++ {
 		i++
 	}
+	c <- true
 }
 
-<<<<<<< HEAD
-func thread2foo(){
-	for j := 0; j < 1000000; j++{
-=======
-func decrease() {
-	for j := 0; j < 1000000; j++ {
->>>>>>> bc43ba34e43f9a46131a21e82a1536a7d15b2b61
+func decrease(c chan<- bool) {
+	for j := 0; j < million; j++ {
 		i--
 	}
+	c <- true
 }
 
 func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	go increase()
-	go decrease()
+	incrDone := make(chan bool)
+	decrDone := make(chan bool)
 
-	time.Sleep(100*time.Millisecond)
-	
+	go increase(incrDone)
+	go decrease(decrDone)
+
+	<-incrDone
+	<-decrDone
+
 	Println(i)
 }
