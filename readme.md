@@ -1,5 +1,5 @@
-Morten Late Night Tales
-=======================
+Heisprosjekt i TTK4145
+======================
 
 Datastrukturer
 --------------
